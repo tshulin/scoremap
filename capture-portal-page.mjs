@@ -1,28 +1,12 @@
-/**
- * capture-portal-page.mjs
- * ---------------------------------------------------------------------------
- * Single task: dump the RAW HTML of one portal page (or all) to captures/,
- * so parsers can be developed offline against real payloads.
- *
- * Usage:
- *   bun scripts/capture-portal-page.mjs <page|all>
- *
- * Pages:
- *   student-info | documents | attendance | gradebook |
- *   gradebook-classdetail | home
- *
- * Output:
- *   captures/<page>.html  (gitignored — contains personal data, never commit)
- *   One console line per page: bytes written, redirected=true/false,
- *   "dataSource" array count. redirected=true on gradebook means the portal
- *   bounced to Home — i.e. no active grading period yet.
- *
- * Credentials come from env vars via lib/session.mjs (see .env.example).
- */
+// Save raw portal pages locally for parser development.
+// Usage: bun scripts/capture-portal-page.mjs <page|all>
 
-// TODO: import { getSessionFromEnv } from './lib/session.mjs';
-// TODO: import { capturesDir } from './lib/paths.mjs';
-// TODO: import { fetchFollow } from '../src/lib/server/synergy/http.ts';
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
+import { getSessionFromEnv } from './lib/session.mjs';
+import { capturesDir } from './lib/paths.mjs';
+import { fetchFollow } from './lib/http.mjs';
+import { countDataSourceArrays } from './lib/inspect.mjs';
 
 const PAGES = {
 	'student-info': 'PXP2_Student.aspx?AGU=0',
@@ -38,8 +22,42 @@ if (!target || (target !== 'all' && !(target in PAGES))) {
 	console.error(`Usage: bun scripts/capture-portal-page.mjs <page|all>\npages: ${Object.keys(PAGES).join(' | ')}`);
 	process.exit(1);
 }
+const selected = target === 'all' ? Object.entries(PAGES) : [[target, PAGES[target]]];
 
-// TODO: getSessionFromEnv() -> for each selected page: fetchFollow ->
-//       write captures/<name>.html -> report bytes / redirected / dataSource count.
-console.error('Placeholder — capture not implemented yet.');
-process.exit(1);
+let session;
+try {
+	session = await getSessionFromEnv();
+} catch (e) {
+	console.error(e.message);
+	process.exit(1);
+}
+console.log(`Session established for ${session.domain}\n`);
+
+const outDir = await capturesDir();
+let errors = 0;
+
+for (const [name, page] of selected) {
+	try {
+		const { body, finalUrl, redirected } = await fetchFollow(
+			`https://${session.domain}/${page}`,
+			{ method: 'GET' },
+			session.jar
+		);
+		await fs.writeFile(path.join(outDir, `${name}.html`), body, 'utf8');
+		console.log(
+			`${name.padEnd(22)} ${String(body.length).padStart(8)} bytes  redirected=${redirected}  dataSourceArrays=${countDataSourceArrays(body)}`
+		);
+		if (redirected) {
+			console.log(
+				`${' '.repeat(23)}-> landed on ${new URL(finalUrl).pathname} (module unavailable${name.startsWith('gradebook') ? ' — likely no active grading period' : ''})`
+			);
+		}
+	} catch (e) {
+		console.log(`${name.padEnd(22)} ERROR: ${e.message}`);
+		errors++;
+	}
+}
+
+console.log(`\nSaved to ${outDir}`);
+console.log('Captures contain personal data — never commit or share them.');
+process.exit(errors > 0 ? 1 : 0);
