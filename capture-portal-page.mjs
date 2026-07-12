@@ -1,5 +1,6 @@
 // Save raw portal pages locally for parser development.
 // Usage: bun scripts/capture-portal-page.mjs <page|all>
+//
 
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
