@@ -1,24 +1,55 @@
-// Check live portal responses without printing student data.
+// Check live page clients without printing student data.
 // Usage: npx tsx tools/pull-real-data.ts <resource|all>
-// Set SYNERGY_DOMAIN plus either SYNERGY_COOKIE (browser-copied) or
-// SYNERGY_USERNAME + SYNERGY_PASSWORD (real WebForms login).
+// Set SYNERGY_DOMAIN and either SYNERGY_COOKIE or portal credentials.
 
 import { CookieJar, fetchFollow } from '../src/portal/http.js';
 import { login, validatePortalDomain, type PortalSession } from '../src/portal/login.js';
+import {
+	downloadDocument,
+	fetchAttendance,
+	fetchDocuments,
+	fetchStudentInfo
+} from '../src/portal/pages/index.js';
 
-// DevExpress embeds portal grids in dataSource arrays.
-const countDataSourceArrays = (html: string): number => (html.match(/"dataSource":/g) ?? []).length;
+const present = (value: string | undefined): string => (value ? 'present' : 'MISSING');
 
-interface ResourceSpec {
-	page: string;
-	expectGrids: boolean;
-}
+const RESOURCES: Record<string, (session: PortalSession) => Promise<string>> = {
+	'student-info': async (session) => {
+		const info = await fetchStudentInfo(session);
+		return `name=${present(info.name)} permId=${present(info.permId)} gender=${present(
+			info.gender
+		)} grade=${present(info.grade)} photo=${info.photoBase64 ? `${info.photoBase64.length}b64chars` : 'none'}`;
+	},
+	documents: async (session) => {
+		const docs = await fetchDocuments(session);
+		const categories = new Set(docs.map((doc) => doc.category));
+		const withToken = docs.filter((doc) => doc.docToken !== '').length;
+		const summary = `documents=${docs.length} withDocToken=${withToken} categories=${categories.size} dates=${
+			docs.every((doc) => /^\d{4}-\d{2}-\d{2}$/.test(doc.uploadDate)) ? 'all ISO' : 'NOT ISO'
+		}`;
 
-const RESOURCES: Record<string, ResourceSpec> = {
-	'student-info': { page: 'PXP2_Student.aspx?AGU=0', expectGrids: false },
-	documents: { page: 'PXP2_Documents.aspx?AGU=0', expectGrids: true },
-	attendance: { page: 'PXP2_Attendance.aspx?AGU=0', expectGrids: true },
-	gradebook: { page: 'PXP2_Gradebook.aspx?AGU=0', expectGrids: true }
+		const first = docs[0];
+		if (!first?.docToken) return `${summary}; no document to download`;
+		const file = await downloadDocument(session, first.docToken);
+		return `${summary} | download: ${file.mimeType} ${file.bytes.length}bytes name=${present(file.fileName)}`;
+	},
+	attendance: async (session) => {
+		const attendance = await fetchAttendance(session);
+		const withPeriods = attendance.absences.filter((a) => a.periods !== undefined).length;
+		return `school=${present(attendance.schoolName)} absences=${attendance.absences.length} withPeriods=${withPeriods}`;
+	},
+	gradebook: async (session) => {
+		const { redirected, finalUrl, body } = await fetchFollow(
+			`https://${session.domain}/PXP2_Gradebook.aspx?AGU=0`,
+			{ method: 'GET' },
+			session.jar
+		);
+		if (redirected) {
+			throw new Error(`redirected to ${new URL(finalUrl).pathname} (no active grading period)`);
+		}
+		const grids = (body.match(/"dataSource":/g) ?? []).length;
+		return `page rendered, dataSourceArrays=${grids}`;
+	}
 };
 
 async function sessionFromEnv(): Promise<{ session: PortalSession; mode: 'cookie' | 'login' }> {
@@ -46,29 +77,6 @@ async function sessionFromEnv(): Promise<{ session: PortalSession; mode: 'cookie
 	throw new Error('Set SYNERGY_COOKIE, or SYNERGY_USERNAME + SYNERGY_PASSWORD. See env.example.');
 }
 
-async function checkResource(
-	name: string,
-	{ page, expectGrids }: ResourceSpec,
-	session: PortalSession
-): Promise<{ ok: boolean; detail: string }> {
-	const { body, finalUrl, redirected, status } = await fetchFollow(
-		`https://${session.domain}/${page}`,
-		{ method: 'GET' },
-		session.jar
-	);
-	const grids = countDataSourceArrays(body);
-	const detail = `status=${status} bytes=${body.length} dataSourceArrays=${grids}`;
-	if (status >= 400) return { ok: false, detail: `${detail} — HTTP error` };
-	if (redirected) {
-		const why = name === 'gradebook' ? ' (likely no active grading period)' : '';
-		return { ok: false, detail: `${detail} — redirected to ${new URL(finalUrl).pathname}${why}` };
-	}
-	if (expectGrids && grids === 0) {
-		return { ok: false, detail: `${detail} — expected embedded "dataSource" grids, found none` };
-	}
-	return { ok: true, detail };
-}
-
 const target = process.argv[2];
 if (!target || (target !== 'all' && !(target in RESOURCES))) {
 	console.error(
@@ -89,15 +97,13 @@ try {
 console.log(`Session established for ${session.domain} (${mode} mode)\n`);
 
 let failures = 0;
-for (const [name, spec] of selected) {
-	let result: { ok: boolean; detail: string };
+for (const [name, check] of selected) {
 	try {
-		result = await checkResource(name, spec, session);
+		console.log(`OK   ${name.padEnd(14)} ${await check(session)}`);
 	} catch (e) {
-		result = { ok: false, detail: e instanceof Error ? e.message : String(e) };
+		failures++;
+		console.log(`FAIL ${name.padEnd(14)} ${e instanceof Error ? e.message : String(e)}`);
 	}
-	if (!result.ok) failures++;
-	console.log(`${result.ok ? 'OK  ' : 'FAIL'} ${name.padEnd(14)} ${result.detail}`);
 }
 
 console.log(`\n${failures === 0 ? 'ALL CHECKS PASSED' : `${failures} CHECK(S) FAILED`}`);
