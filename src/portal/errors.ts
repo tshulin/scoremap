@@ -15,6 +15,8 @@ export class SessionExpiredError extends PortalError {}
 
 export class ModuleUnavailableError extends PortalError {}
 
+export class NoActiveGradingPeriodError extends PortalError {}
+
 export class ParseError extends PortalError {}
 
 export class PortalHttpError extends PortalError {
