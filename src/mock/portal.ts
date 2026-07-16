@@ -72,9 +72,15 @@ export function createMockPortal(options: MockPortalOptions = {}) {
 		return c.html('<html><body>Gradebook fixture unavailable</body></html>');
 	});
 
+	const knownDocTokens = new Set(
+		[...fixture('documents.html').matchAll(/docToken=([^"&\\]+)/g)].map(([, token]) => token!)
+	);
+
 	app.get('/PXP_ShowDocument.aspx', (c) => {
 		const token = c.req.query('docToken');
-		if (!token) return c.html('<html><body>Document not available</body></html>');
+		if (!token || !knownDocTokens.has(token)) {
+			return c.html('<html><body>Document not available</body></html>');
+		}
 		return new Response(PDF_BYTES, {
 			headers: {
 				'content-type': 'application/pdf',
