@@ -73,6 +73,17 @@ export const EXTRA_CREDIT: RawAssignmentRow = {
 	PointPossible: ''
 };
 
+// Extra credit with no ScoreMaxValue and no total in Points: nothing supplies a
+// pointsPossible, so the domain object has none at all.
+export const EXTRA_CREDIT_NO_MAX: RawAssignmentRow = {
+	...base,
+	Score: '3',
+	DisplayScore: '3 extra credit',
+	Points: '3 / ',
+	Point: '3',
+	PointPossible: ''
+};
+
 export const NOT_FOR_GRADING: RawAssignmentRow = {
 	...base,
 	DisplayScore: '3 out of 4',

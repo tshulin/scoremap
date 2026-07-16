@@ -72,26 +72,10 @@ Review the sanitized fixture before committing it. Then implement the page mappi
 period selection. Verify weighted and unweighted course calculations against the grades
 shown by the portal.
 
-### Check extra credit against a real row
-
-Found while building the placeholder, and unresolved because it depends on data we have
-never seen. `isCalculable` (`src/calc/points.ts`) requires **both** `pointsEarned` and
-`pointsPossible` to be defined. For an extra-credit row the portal sends
-`PointPossible: ''`, and `rawAssignmentToDomain` then resolves `pointsPossible` from
-`ScoreMaxValue`, falling back to the `Points` text. Our `EXTRA_CREDIT` fixture has
-`ScoreMaxValue: '4'`, so it works.
-
-But if a real extra-credit row arrives with `PointPossible: ''`, **no** `ScoreMaxValue`,
-and no parseable `Points`, then `pointsPossible` is undefined, `isCalculable` returns
-false, and the assignment is dropped from the grade entirely — the student's bonus points
-would silently vanish. Note that `pointsPossible` is meaningless for extra credit anyway:
-`pointTotals` deliberately never adds it to the denominator.
-
-When real gradebook rows are available, check whether any extra-credit row lacks
-`ScoreMaxValue`. If so, `isCalculable` should accept an extra-credit assignment on
-`pointsEarned` alone (which means relaxing `CalculableAssignment.pointsPossible`). Do not
-change it speculatively before then — Part 8's tests all construct extra credit with both
-fields, so they would not catch the difference either way.
+Extra credit no longer needs live data to be safe: `isCalculable` was fixed on 2026-07-16
+to accept an extra-credit assignment on `pointsEarned` alone (see the plan's Part 8 notes).
+Both row shapes — with and without `ScoreMaxValue` — now count. Still confirm the totals
+against the portal UI when real rows land, as part of the verification above.
 
 ## Attendance rows
 

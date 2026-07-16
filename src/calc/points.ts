@@ -5,20 +5,17 @@ export interface Points {
 	pointsPossible: number;
 }
 
-export type CalculableAssignment = Assignment & {
-	pointsEarned: number;
-	pointsPossible: number;
-	notForGrade: false;
-};
+// Extra credit never enters the denominator, so it needs no pointsPossible to be usable.
+// The portal only sends one via ScoreMaxValue, which it may omit entirely.
+export type CalculableAssignment = Assignment & { pointsEarned: number; notForGrade: false } & (
+		{ extraCredit: true } | { extraCredit: false; pointsPossible: number }
+	);
 
 export type CategorizedAssignment = CalculableAssignment & { category: string };
 
 export function isCalculable(assignment: Assignment): assignment is CalculableAssignment {
-	return (
-		assignment.pointsEarned !== undefined &&
-		assignment.pointsPossible !== undefined &&
-		!assignment.notForGrade
-	);
+	if (assignment.notForGrade || assignment.pointsEarned === undefined) return false;
+	return assignment.extraCredit || assignment.pointsPossible !== undefined;
 }
 
 export function isCategorized(assignment: Assignment): assignment is CategorizedAssignment {
