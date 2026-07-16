@@ -12,6 +12,15 @@ export default tseslint.config(
 	prettier,
 	{
 		rules: {
+			// Allow intentionally unused names prefixed with an underscore.
+			'@typescript-eslint/no-unused-vars': [
+				'error',
+				{
+					argsIgnorePattern: '^_',
+					varsIgnorePattern: '^_',
+					caughtErrorsIgnorePattern: '^_'
+				}
+			],
 			'no-restricted-imports': [
 				'error',
 				{
