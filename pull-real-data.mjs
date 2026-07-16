@@ -1,6 +1,5 @@
-// Smoke-test the portal without printing any personal values.
+// Check portal responses without printing student data.
 // Usage: bun scripts/pull-real-data.mjs <resource|all>
-//
 import { getSessionFromEnv } from './lib/session.mjs';
 import { fetchFollow } from './lib/http.mjs';
 import { countDataSourceArrays } from './lib/inspect.mjs';

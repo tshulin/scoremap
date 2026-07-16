@@ -1,0 +1,8 @@
+node_modules/
+gradecompass/
+legacy/
+lib/
+captures/
+*.mjs
+*.md
+package-lock.json

@@ -1,21 +1,6 @@
-/**
- * generate-mock-fixtures.mjs
- * ---------------------------------------------------------------------------
- * Regenerate the SYNTHETIC MSW mock fixtures used for offline/demo development.
- * Writes to src/lib/mocks/data/ (gitignored). Run this after a fresh clone, or
- * whenever the mock data folder is empty, so the app has data to render without
- * a real StudentVUE account.
- *
- *   bun functionality/scripts/generate-mock-fixtures.mjs
- *
- * All data here is fake — no real students, IDs, or grades. The fixtures are the
- * INNER XML that the proxy would return (before SOAP-envelope wrapping); the MSW
- * handler wraps them in an envelope, and the client parses them normally.
- *
- * IMPORTANT: field names must match the parsed shapes the UI reads. In particular
- * every Course needs CourseName + CourseID (the sidebar renders them), or the app
- * crashes with "Cannot read properties of undefined (reading 'replace')".
- */
+// Generate the synthetic XML used by the old MSW setup.
+// Usage: bun functionality/scripts/generate-mock-fixtures.mjs
+// CourseName and CourseID are required because the sidebar reads both fields.
 
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
@@ -28,8 +13,7 @@ await fs.mkdir(dir, { recursive: true });
 const XMLNS =
 	'xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"';
 
-// A minimal but structurally valid one-page PDF (correct xref offsets) so that
-// "open document" in the UI actually renders something.
+// This small PDF is enough to exercise the document viewer.
 function buildPdf() {
 	const enc = (s) => Buffer.from(s, 'latin1');
 	const objs = [
@@ -69,7 +53,6 @@ const docRows = docs
 	)
 	.join('\n');
 
-// One reusable course template. Marks -> GradeCalculationSummary (weights) + Assignments.
 const course = (period, title, name, id, room, staff, image, mark, cats, assigns) => `
 		<Course Period="${period}" Title="${title}" CourseName="${name}" CourseID="${id}" Room="${room}" Staff="${staff}" StaffEMail="staff${id}@demo.net" StaffGU="GU-STAFF-${id}" ImageType="${image}" HighlightPercentageCutOffForProgressBar="70" UsesRichContent="false">
 			<Marks>

@@ -1,15 +1,5 @@
-/**
- * verify-fixtures.mjs
- * ---------------------------------------------------------------------------
- * Parse the mock fixtures through the SAME client-side code path the app uses
- * (wrapEnvelope -> unwrapEnvelope -> parseResult / parseGradebookXML) and assert
- * they produce the shapes the UI expects. Catches malformed fixtures BEFORE they
- * crash the browser (e.g. a Course missing _CourseName, which the sidebar reads).
- *
- * By default it checks the app's mock data in src/lib/mocks/data. Pass a folder
- * to check a different set (e.g. the reference fixtures):
- *   bun functionality/scripts/verify-fixtures.mjs functionality/fixtures
- */
+// Pass the old XML fixtures through the same parsing path used by the client.
+// Usage: bun functionality/scripts/verify-fixtures.mjs [fixture-directory]
 
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
@@ -28,12 +18,11 @@ const dir = process.argv[2]
 	? path.resolve(process.cwd(), process.argv[2])
 	: path.join(repoRoot, 'src/lib/mocks/data');
 
-const removeCourseType = (name) => name.replace(/ \([A-Z]+\)$/, ''); // mirrors src/lib/index.ts
+const removeCourseType = (name) => name.replace(/ \([A-Z]+\)$/, '');
 
 async function read(file) {
 	return fs.readFile(path.join(dir, file), 'utf8');
 }
-// MSW wraps the fixture in a SOAP envelope; the client unwraps + parses it.
 const roundTrip = (raw) => parseResult(unwrapEnvelope(wrapEnvelope(raw, Operation.Request), Operation.Request));
 
 let failures = 0;
@@ -45,7 +34,7 @@ const bad = (m) => {
 
 console.log(`Verifying fixtures in ${dir}\n`);
 
-// Documents (filename may be StudentDocuments.xml in the app, Documents.xml in reference set)
+// The app and reference fixture sets use different document filenames.
 try {
 	const raw = await read('StudentDocuments.xml').catch(() => read('Documents.xml'));
 	const list = roundTrip(raw).StudentDocuments?.StudentDocumentDatas?.StudentDocumentData;
@@ -57,7 +46,6 @@ try {
 	bad('Documents: ' + e.message);
 }
 
-// Gradebook — the crash-prone one. Every Course needs _CourseName and _CourseID.
 try {
 	const raw = await read('Gradebook.xml');
 	const gb = parseGradebookXML(unwrapEnvelope(wrapEnvelope(raw, Operation.Request), Operation.Request));
@@ -74,13 +62,12 @@ try {
 	bad('Gradebook: ' + e.message);
 }
 
-// The remaining fixtures just need to parse without throwing.
 for (const f of ['StudentInfo.xml', 'Attendance.xml', 'DocumentData.xml', 'SynergyMailDataXML.xml', 'AttachmentXML.xml']) {
 	try {
 		await read(f).then(roundTrip);
 		ok(`${f} parses`);
 	} catch (e) {
-		// Missing optional reference files are not failures.
+		// Reference fixture sets do not always include these files.
 		if (e.code === 'ENOENT') console.log(`  --   ${f} not present (skipped)`);
 		else bad(`${f}: ${e.message}`);
 	}

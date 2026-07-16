@@ -1,26 +1,6 @@
-/**
- * capture-portal-payloads.mjs
- * ---------------------------------------------------------------------------
- * Capture RAW StudentVUE (PXP2 web portal) responses so the PENDING translators
- * — above all the Gradebook translator — can be built and verified against real
- * payloads. This is THE script to run once a grading period is active (fall) and
- * the gradebook page actually renders data.
- *
- * Nothing personal is stored in the repo: credentials/cookie come from env vars,
- * and the output goes to functionality/captures/ which is gitignored.
- *
- * Usage (PowerShell):
- *   $env:SYNERGY_DOMAIN   = "yourdistrict-psv.edupoint.com"
- *   $env:SYNERGY_USERNAME = "you@school.net"
- *   $env:SYNERGY_PASSWORD = "your-password"
- *   # ...or skip login with a browser-captured cookie instead of user/pass:
- *   # $env:SYNERGY_COOKIE = "ASP.NET_SessionId=xxx; EESPSV=yyy"
- *   bun functionality/scripts/capture-portal-payloads.mjs
- *
- * Then open functionality/captures/gradebook.html and find the embedded
- * `"dataSource":[ ... ]` JSON arrays — those hold the courses / marks /
- * assignments the Gradebook translator must map to the legacy XML shape.
- */
+// Old capture script for the original GradeCompass layout. Output may contain
+// student data and belongs only in the gitignored functionality/captures folder.
+// Run it during an active grading period if a real gradebook payload is needed.
 
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
@@ -53,13 +33,13 @@ async function getSession() {
 	return await login({ domain, username, password });
 }
 
-// Portal pages worth capturing. Gradebook is the important one for future work.
 const PAGES = {
 	'student-info': 'PXP2_Student.aspx?AGU=0',
 	documents: 'PXP2_Documents.aspx?AGU=0',
 	attendance: 'PXP2_Attendance.aspx?AGU=0',
 	gradebook: 'PXP2_Gradebook.aspx?AGU=0',
-	'gradebook-classdetail': 'PXP2_ClassGrades.aspx?AGU=0', // some districts render per-class detail here
+	// Some districts put assignment details on this page.
+	'gradebook-classdetail': 'PXP2_ClassGrades.aspx?AGU=0',
 	home: 'Home_PXP2.aspx'
 };
 

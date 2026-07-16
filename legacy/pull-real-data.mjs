@@ -1,19 +1,5 @@
-/**
- * pull-real-data.mjs
- * ---------------------------------------------------------------------------
- * Smoke-test the REAL server-side client.ts fetchers against a live portal, to
- * confirm the integration works end-to-end. Prints only shapes/counts — never
- * the underlying personal values — so its output is safe to share.
- *
- * Credentials/cookie come from env vars (see env.example). Nothing is written
- * to disk.
- *
- * Usage (PowerShell):
- *   $env:SYNERGY_DOMAIN   = "yourdistrict-psv.edupoint.com"
- *   $env:SYNERGY_USERNAME = "you@school.net"; $env:SYNERGY_PASSWORD = "..."
- *   # or: $env:SYNERGY_COOKIE = "ASP.NET_SessionId=xxx; EESPSV=yyy"
- *   bun functionality/scripts/pull-real-data.mjs
- */
+// Run the old server-side client against a live portal. This prints field
+// presence and row counts only; credentials come from the SYNERGY_* variables.
 
 import { createJar, cookieHeader } from '../../src/lib/server/synergy/http.ts';
 import { login } from '../../src/lib/server/synergy/login.ts';
