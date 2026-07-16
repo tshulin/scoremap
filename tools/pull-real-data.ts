@@ -2,12 +2,15 @@
 // Usage: npx tsx tools/pull-real-data.ts <resource|all>
 // Set SYNERGY_DOMAIN and either SYNERGY_COOKIE or portal credentials.
 
+import { portalBase } from '../src/portal/base.js';
+import { NoActiveGradingPeriodError, ParseError } from '../src/portal/errors.js';
 import { CookieJar, fetchFollow } from '../src/portal/http.js';
 import { login, validatePortalDomain, type PortalSession } from '../src/portal/login.js';
 import {
 	downloadDocument,
 	fetchAttendance,
 	fetchDocuments,
+	fetchGradebook,
 	fetchStudentInfo
 } from '../src/portal/pages/index.js';
 
@@ -39,16 +42,22 @@ const RESOURCES: Record<string, (session: PortalSession) => Promise<string>> = {
 		return `school=${present(attendance.schoolName)} absences=${attendance.absences.length} withPeriods=${withPeriods}`;
 	},
 	gradebook: async (session) => {
-		const { redirected, finalUrl, body } = await fetchFollow(
-			`https://${session.domain}/PXP2_Gradebook.aspx?AGU=0`,
-			{ method: 'GET' },
-			session.jar
-		);
-		if (redirected) {
-			throw new Error(`redirected to ${new URL(finalUrl).pathname} (no active grading period)`);
+		try {
+			await fetchGradebook(session);
+			return 'parsed';
+		} catch (e) {
+			if (e instanceof NoActiveGradingPeriodError) {
+				throw new Error(e.message, { cause: e });
+			}
+			if (!(e instanceof ParseError)) throw e;
+			const { body } = await fetchFollow(
+				`${portalBase(session.domain)}/PXP2_Gradebook.aspx?AGU=0`,
+				{ method: 'GET' },
+				session.jar
+			);
+			const grids = (body.match(/"dataSource":/g) ?? []).length;
+			return `gradebook page rendered; dataSourceArrays=${grids}. Capture with: npx tsx tools/capture-portal-page.ts gradebook`;
 		}
-		const grids = (body.match(/"dataSource":/g) ?? []).length;
-		return `page rendered, dataSourceArrays=${grids}`;
 	}
 };
 
