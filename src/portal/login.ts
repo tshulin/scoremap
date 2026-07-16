@@ -1,3 +1,4 @@
+import { portalBase } from './base.js';
 import { AuthError, InvalidDomainError, PortalShapeError } from './errors.js';
 import { CookieJar, fetchFollow, type FetchFollowOptions } from './http.js';
 
@@ -54,7 +55,7 @@ export async function login(
 	validatePortalDomain(domain);
 	const jar = new CookieJar();
 	const page = await fetchFollow(
-		`https://${domain}/${LOGIN_PAGE}`,
+		`${portalBase(domain)}/${LOGIN_PAGE}`,
 		{ method: 'GET' },
 		jar,
 		options

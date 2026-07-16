@@ -1,11 +1,12 @@
 import type { ZodType } from 'zod';
+import { portalBase } from '../base.js';
 import { ParseError } from '../errors.js';
 import { fetchFollow, type FetchFollowOptions, type PageResult } from '../http.js';
 import type { PortalSession } from '../login.js';
 import { assertSessionAlive } from '../session.js';
 
 export const portalUrl = (session: PortalSession, path: string): string =>
-	`https://${session.domain}/${path}`;
+	`${portalBase(session.domain)}/${path}`;
 
 export async function getPage(
 	session: PortalSession,
