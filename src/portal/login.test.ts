@@ -108,6 +108,18 @@ describe('login', () => {
 		await expect(login(CREDS, { fetchImpl: impl })).rejects.toThrow(AuthError);
 	});
 
+	it('succeeds even when the landing page contains a password input', async () => {
+		const { impl } = scriptedFetch([
+			() => page(LOGIN_FORM_HTML),
+			() => redirect('/Home_PXP2.aspx'),
+			() => page('<html>home <input type="password" name="changePwd"></html>')
+		]);
+
+		await expect(login(CREDS, { fetchImpl: impl })).resolves.toMatchObject({
+			domain: CREDS.domain
+		});
+	});
+
 	it('throws PortalShapeError when the page has no WebForms state', async () => {
 		const { impl } = scriptedFetch([() => page('<html>not a portal</html>')]);
 

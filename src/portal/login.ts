@@ -90,8 +90,8 @@ export async function login(
 		options
 	);
 
-	// Rejected credentials leave the user on the login form.
-	if (/type="password"/i.test(result.body)) {
+	// Failed logins stay on the login page.
+	if (/PXP2_Login/i.test(new URL(result.finalUrl).pathname)) {
 		throw new AuthError('Login failed. Check the username and password.');
 	}
 
