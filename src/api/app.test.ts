@@ -250,6 +250,74 @@ describe('GET /api/gradebook', () => {
 	});
 });
 
+describe('GET /api/gradebook — placeholder data', () => {
+	const placeholderApp = (options: Parameters<typeof apiHarness>[0] = {}) =>
+		apiHarness({ ...options, app: { config: { placeholderData: true } } });
+
+	it('serves the sample when the portal has no active grading period', async () => {
+		const { app } = placeholderApp({ gradebookAvailable: false });
+		const token = await tokenFrom(app);
+		const res = await app.request('/api/gradebook', { headers: authed(token) });
+
+		expect(res.status).toBe(200);
+		const gradebook = (await res.json()) as { courses: Array<{ name: string }> };
+		expect(gradebook.courses.length).toBeGreaterThan(0);
+	});
+
+	it('serves the sample when the parser is not implemented yet', async () => {
+		const { app } = placeholderApp({ gradebookAvailable: true });
+		const token = await tokenFrom(app);
+		const res = await app.request('/api/gradebook', { headers: authed(token) });
+
+		expect(res.status).toBe(200);
+	});
+
+	it('marks the response so the client can say it is not real', async () => {
+		const { app } = placeholderApp();
+		const token = await tokenFrom(app);
+		const res = await app.request('/api/gradebook', { headers: authed(token) });
+
+		expect(res.headers.get('x-grademax-placeholder')).toBe('true');
+	});
+
+	it('does not mark responses that came from the portal', async () => {
+		const { app } = placeholderApp();
+		const token = await tokenFrom(app);
+		const res = await app.request('/api/student', { headers: authed(token) });
+
+		expect(res.headers.get('x-grademax-placeholder')).toBeNull();
+	});
+
+	it('records that a placeholder was served', async () => {
+		const { app, logs } = placeholderApp();
+		const token = await tokenFrom(app);
+		await app.request('/api/gradebook', { headers: authed(token) });
+
+		expect(logs).toContainEqual(
+			expect.objectContaining({ event: 'placeholder_served', resource: 'gradebook' })
+		);
+	});
+
+	it('still surfaces a real fault rather than papering over it with sample data', async () => {
+		// A portal outage must not look like a working gradebook.
+		const { app } = apiHarness({
+			app: { config: { placeholderData: true } },
+			fetchImpl: () => Promise.resolve(new Response('down', { status: 500 }))
+		});
+		const res = await login(app);
+
+		expect(res.status).toBe(502);
+	});
+
+	it('is off unless asked for', async () => {
+		const { app } = apiHarness();
+		const token = await tokenFrom(app);
+		const res = await app.request('/api/gradebook', { headers: authed(token) });
+
+		expect(res.status).toBe(409);
+	});
+});
+
 describe('session use', () => {
 	it('uses a valid token for later requests', async () => {
 		const { app } = apiHarness();

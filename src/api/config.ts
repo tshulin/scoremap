@@ -5,6 +5,7 @@ export interface ApiConfig {
 	loginLimit: number;
 	loginWindowMs: number;
 	trustProxy: boolean;
+	placeholderData: boolean;
 }
 
 const DEFAULTS = {
@@ -49,6 +50,17 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
 				env['LOGIN_RATE_WINDOW_MINUTES'],
 				DEFAULTS.loginWindowMinutes
 			) * 60_000,
-		trustProxy: boolean('TRUST_PROXY', env['TRUST_PROXY'], false)
+		trustProxy: boolean('TRUST_PROXY', env['TRUST_PROXY'], false),
+		placeholderData: placeholder(env)
 	};
+}
+
+// Invented grades must never reach a student who believes they are real, so production
+// refuses to start rather than quietly ignoring the flag.
+function placeholder(env: NodeJS.ProcessEnv): boolean {
+	const on = boolean('PLACEHOLDER_DATA', env['PLACEHOLDER_DATA'], false);
+	if (on && env['NODE_ENV'] === 'production') {
+		throw new Error('PLACEHOLDER_DATA must not be enabled when NODE_ENV=production.');
+	}
+	return on;
 }

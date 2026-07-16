@@ -27,7 +27,8 @@ describe('loadConfig', () => {
 			sessionTtlMs: 5 * 60_000,
 			loginLimit: 3,
 			loginWindowMs: 10 * 60_000,
-			trustProxy: true
+			trustProxy: true,
+			placeholderData: false
 		});
 	});
 
@@ -49,5 +50,31 @@ describe('loadConfig', () => {
 	it('accepts the usual spellings of a boolean', () => {
 		expect(loadConfig({ TRUST_PROXY: '1' }).trustProxy).toBe(true);
 		expect(loadConfig({ TRUST_PROXY: 'FALSE' }).trustProxy).toBe(false);
+	});
+});
+
+describe('loadConfig — placeholder data', () => {
+	it('is off by default', () => {
+		expect(loadConfig({}).placeholderData).toBe(false);
+	});
+
+	it('can be turned on outside production', () => {
+		expect(loadConfig({ PLACEHOLDER_DATA: 'true' }).placeholderData).toBe(true);
+		expect(loadConfig({ PLACEHOLDER_DATA: 'true', NODE_ENV: 'development' }).placeholderData).toBe(
+			true
+		);
+	});
+
+	it('refuses to start in production rather than serving invented grades', () => {
+		expect(() => loadConfig({ PLACEHOLDER_DATA: 'true', NODE_ENV: 'production' })).toThrow(
+			/must not be enabled when NODE_ENV=production/
+		);
+	});
+
+	it('leaves production alone when it is off', () => {
+		expect(loadConfig({ NODE_ENV: 'production' }).placeholderData).toBe(false);
+		expect(loadConfig({ PLACEHOLDER_DATA: 'false', NODE_ENV: 'production' }).placeholderData).toBe(
+			false
+		);
 	});
 });

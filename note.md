@@ -1,6 +1,52 @@
 # Portal data still needed
 
-Updated July 15, 2026.
+Updated July 16, 2026.
+
+## Placeholder data (so the frontend can be built now)
+
+Neither blocked resource stops frontend work. Both stand-ins are dev-only.
+
+| Resource | Stand-in | How |
+|---|---|---|
+| Gradebook | `SAMPLE_GRADEBOOK` in `src/mock/placeholders.ts` | `PLACEHOLDER_DATA=true` |
+| Attendance | the **real parser** over `attendance-absences.html` | `MOCK_WITH_ABSENCES=true` |
+
+`npm run dev:mock` turns both on by default and prints which data is real.
+
+The two are deliberately different mechanisms. Attendance has a working parser, so its
+placeholder runs through it — that exercises real code. The gradebook has no parser and no
+observed page, so its placeholder is a **domain-level object**, not invented HTML: a parser
+written against made-up markup would only learn to read our own fiction, pass its own
+tests, and be discarded the day real data arrives.
+
+Safety, because invented grades reaching a student who thinks they are real is the worst
+outcome here:
+
+- `PLACEHOLDER_DATA` is off by default and `loadConfig` **throws** if it is on while
+  `NODE_ENV=production`.
+- Placeholder responses carry `X-Grademax-Placeholder: true`; the frontend should show a
+  clear "sample data" banner on it. Real portal responses never carry it.
+- The gradebook only falls back on `NoActiveGradingPeriodError` or `ParseError` — the two
+  blocked states. A portal outage or auth failure still surfaces as an error, and each
+  fallback logs `placeholder_served`.
+- Because it is a fallback rather than a replacement, real grades win automatically once
+  Part 7b lands and the term starts. No config change, no frontend change.
+
+`SAMPLE_GRADEBOOK` is validated against `GradebookSchema` at import, and a test asserts
+each course's stated `percentage` matches what `src/calc/` computes from its assignments —
+otherwise the UI would show two different grades for one course. It covers extra credit, a
+not-for-grading row, an ungraded assignment, an earned zero, scaled points, an unweighted
+course, an empty course, and a weighted category with no graded work (the renormalization
+case: Algebra II is 85%, not the 68% you get by treating ungraded Finals as a zero).
+
+### To remove when real data lands
+
+1. Delete `src/mock/placeholders.ts` and `src/mock/placeholders.test.ts`.
+2. Drop the fallback in `src/api/routes/resources.ts` (`isGradebookBlocked`,
+   `PLACEHOLDER_HEADER`) and its tests in `src/api/app.test.ts`.
+3. Drop `placeholderData` from `src/api/config.ts` + its tests, and `PLACEHOLDER_DATA`
+   from `src/mock/dev.ts`.
+4. Tell the frontend to drop the `X-Grademax-Placeholder` banner.
 
 ## Gradebook
 
@@ -25,6 +71,27 @@ npx tsx tools/sanitize-capture.ts captures/gradebook.html
 Review the sanitized fixture before committing it. Then implement the page mapping and
 period selection. Verify weighted and unweighted course calculations against the grades
 shown by the portal.
+
+### Check extra credit against a real row
+
+Found while building the placeholder, and unresolved because it depends on data we have
+never seen. `isCalculable` (`src/calc/points.ts`) requires **both** `pointsEarned` and
+`pointsPossible` to be defined. For an extra-credit row the portal sends
+`PointPossible: ''`, and `rawAssignmentToDomain` then resolves `pointsPossible` from
+`ScoreMaxValue`, falling back to the `Points` text. Our `EXTRA_CREDIT` fixture has
+`ScoreMaxValue: '4'`, so it works.
+
+But if a real extra-credit row arrives with `PointPossible: ''`, **no** `ScoreMaxValue`,
+and no parseable `Points`, then `pointsPossible` is undefined, `isCalculable` returns
+false, and the assignment is dropped from the grade entirely — the student's bonus points
+would silently vanish. Note that `pointsPossible` is meaningless for extra credit anyway:
+`pointTotals` deliberately never adds it to the denominator.
+
+When real gradebook rows are available, check whether any extra-credit row lacks
+`ScoreMaxValue`. If so, `isCalculable` should accept an extra-credit assignment on
+`pointsEarned` alone (which means relaxing `CalculableAssignment.pointsPossible`). Do not
+change it speculatively before then — Part 8's tests all construct extra credit with both
+fields, so they would not catch the difference either way.
 
 ## Attendance rows
 
