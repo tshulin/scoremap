@@ -5,6 +5,14 @@ export class PortalError extends Error {
 	}
 }
 
+export class InvalidDomainError extends PortalError {}
+
+export class AuthError extends PortalError {}
+
+export class PortalShapeError extends PortalError {}
+
+export class SessionExpiredError extends PortalError {}
+
 export class PortalHttpError extends PortalError {
 	readonly url: string;
 	readonly status: number | undefined;
