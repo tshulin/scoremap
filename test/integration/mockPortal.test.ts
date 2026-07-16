@@ -1,13 +1,20 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { assertNotBounced } from '../../src/extract/index.js';
 import { createMockPortal, MOCK_CREDENTIALS, mockPortalFetch } from '../../src/mock/portal.js';
-import { AuthError, ModuleUnavailableError, SessionExpiredError } from '../../src/portal/errors.js';
+import {
+	AuthError,
+	ModuleUnavailableError,
+	NoActiveGradingPeriodError,
+	ParseError,
+	SessionExpiredError
+} from '../../src/portal/errors.js';
 import { fetchFollow } from '../../src/portal/http.js';
 import { login, type PortalSession } from '../../src/portal/login.js';
 import {
 	downloadDocument,
 	fetchAttendance,
 	fetchDocuments,
+	fetchGradebook,
 	fetchStudentInfo
 } from '../../src/portal/pages/index.js';
 import { SessionStore } from '../../src/portal/session.js';
@@ -92,6 +99,18 @@ describe('page clients against the mock portal', () => {
 		);
 		expect(page.redirected).toBe(true);
 		expect(new URL(page.finalUrl).pathname).toBe('/Home_PXP2.aspx');
+	});
+
+	it('surfaces the out-of-term gradebook as NoActiveGradingPeriodError', async () => {
+		await expect(fetchGradebook(session, undefined, opts)).rejects.toThrow(
+			NoActiveGradingPeriodError
+		);
+	});
+
+	it('reaches the parser when a grading period is open', async () => {
+		const { session: s, opts: o } = await signIn({ gradebookAvailable: true });
+
+		await expect(fetchGradebook(s, undefined, o)).rejects.toThrow(ParseError);
 	});
 
 	it('surfaces a dead portal session as SessionExpiredError', async () => {
