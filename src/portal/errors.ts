@@ -13,6 +13,10 @@ export class PortalShapeError extends PortalError {}
 
 export class SessionExpiredError extends PortalError {}
 
+export class ModuleUnavailableError extends PortalError {}
+
+export class ParseError extends PortalError {}
+
 export class PortalHttpError extends PortalError {
 	readonly url: string;
 	readonly status: number | undefined;
