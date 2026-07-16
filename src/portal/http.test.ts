@@ -183,6 +183,28 @@ describe('fetchFollow', () => {
 		await expect(attempt).rejects.toThrow(PortalHttpError);
 		await expect(attempt).rejects.toThrow('Request to https://portal.example/down failed');
 	});
+
+	it('treats a 5xx as a portal failure instead of handing the error page to a parser', async () => {
+		const impl = async () =>
+			new Response('<html><body>Server Error</body></html>', { status: 503 });
+
+		const attempt = fetchFollow('https://portal.example/p', {}, new CookieJar(), {
+			fetchImpl: impl
+		});
+
+		await expect(attempt).rejects.toThrow(PortalHttpError);
+		await expect(attempt).rejects.toThrow(/HTTP 503/);
+	});
+
+	it('still returns 4xx bodies, which can carry a real page', async () => {
+		const impl = async () => new Response('<html>Not found</html>', { status: 404 });
+
+		const result = await fetchFollow('https://portal.example/p', {}, new CookieJar(), {
+			fetchImpl: impl
+		});
+
+		expect(result.status).toBe(404);
+	});
 });
 
 describe('fetchFollowRaw', () => {

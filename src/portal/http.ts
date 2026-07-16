@@ -141,6 +141,15 @@ export async function fetchFollow(
 	options: FetchFollowOptions = {}
 ): Promise<PageResult> {
 	const { response, finalUrl, redirected } = await fetchFollowRaw(url, init, jar, options);
+
+	if (response.status >= 500) {
+		await response.text().catch(() => {});
+		throw new PortalHttpError(`The portal returned HTTP ${response.status} for ${finalUrl}`, {
+			url: finalUrl,
+			status: response.status
+		});
+	}
+
 	let body: string;
 	try {
 		body = await response.text();
