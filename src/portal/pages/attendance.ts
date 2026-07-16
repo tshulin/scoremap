@@ -1,4 +1,9 @@
-import { AttendanceSchema, type Absence, type Attendance } from '../../domain/index.js';
+import {
+	AbsenceSchema,
+	AttendanceSchema,
+	type Absence,
+	type Attendance
+} from '../../domain/index.js';
 import {
 	assertNotBounced,
 	bootstrapValue,
@@ -6,6 +11,7 @@ import {
 	stripTags,
 	toIsoDate
 } from '../../extract/index.js';
+import { ParseError } from '../errors.js';
 import type { FetchFollowOptions } from '../http.js';
 import type { PortalSession } from '../login.js';
 import { asString, getPage, validate } from './shared.js';
@@ -64,12 +70,27 @@ export async function fetchAttendance(
 	assertNotBounced(page, 'Attendance');
 
 	const rows = findDataSourceWithKeys(page.body, ROW_KEYS);
+	const absences: Absence[] = [];
+	let unreadableAbsences = 0;
+
+	// Per row, so one unexpected shape costs that row rather than the whole page. Only a
+	// ParseError means "this row is not what we expected"; anything else is our own bug and
+	// must still surface.
+	for (const [index, row] of rows.entries()) {
+		try {
+			absences.push(validate(AbsenceSchema, toAbsence(row), `absence row ${index + 1}`));
+		} catch (error) {
+			if (!(error instanceof ParseError)) throw error;
+			unreadableAbsences++;
+		}
+	}
 
 	return validate(
 		AttendanceSchema,
 		{
 			schoolName: bootstrapValue(page.body, 'school') ?? '',
-			absences: rows.map(toAbsence)
+			absences,
+			unreadableAbsences
 		},
 		'attendance'
 	);

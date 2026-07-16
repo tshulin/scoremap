@@ -72,7 +72,8 @@ describe('AttendanceSchema', () => {
 	it('accepts the common empty-absences shape', () => {
 		expect(AttendanceSchema.parse({ schoolName: 'Foothill', absences: [] })).toEqual({
 			schoolName: 'Foothill',
-			absences: []
+			absences: [],
+			unreadableAbsences: 0
 		});
 	});
 
@@ -83,7 +84,21 @@ describe('AttendanceSchema', () => {
 				{ date: '2026-03-01', reason: 'Excused', periods: [{ period: '1', reason: 'Excused' }] }
 			]
 		};
-		expect(AttendanceSchema.parse(att)).toEqual(att);
+		expect(AttendanceSchema.parse(att)).toEqual({ ...att, unreadableAbsences: 0 });
+	});
+
+	it('always tells the client how many rows were unreadable, even when none were', () => {
+		// Defaulted rather than optional, so the client never has to treat "absent" and
+		// "zero" differently.
+		expect(
+			AttendanceSchema.parse({ schoolName: 'Foothill', absences: [] }).unreadableAbsences
+		).toBe(0);
+	});
+
+	it('rejects a negative or fractional count', () => {
+		const base = { schoolName: 'Foothill', absences: [] };
+		expect(AttendanceSchema.safeParse({ ...base, unreadableAbsences: -1 }).success).toBe(false);
+		expect(AttendanceSchema.safeParse({ ...base, unreadableAbsences: 1.5 }).success).toBe(false);
 	});
 });
 

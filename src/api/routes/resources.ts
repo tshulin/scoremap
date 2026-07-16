@@ -52,9 +52,20 @@ export function resourceRoutes(deps: ApiDeps) {
 		});
 	});
 
-	app.get('/attendance', requireSession, async (c) =>
-		c.json(await withSession(c.get('token'), (s) => fetchAttendance(s, deps.fetchOptions)))
-	);
+	app.get('/attendance', requireSession, async (c) => {
+		const attendance = await withSession(c.get('token'), (s) =>
+			fetchAttendance(s, deps.fetchOptions)
+		);
+		// How we find out the reconstructed row shape is wrong, once real absences exist.
+		if (attendance.unreadableAbsences > 0) {
+			deps.log({
+				event: 'unreadable_rows',
+				resource: 'attendance',
+				count: attendance.unreadableAbsences
+			});
+		}
+		return c.json(attendance);
+	});
 
 	app.get('/gradebook', requireSession, async (c) => {
 		const { period } = GradebookQuerySchema.parse({ period: c.req.query('period') });

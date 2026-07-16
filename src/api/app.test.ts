@@ -173,6 +173,14 @@ describe('resource endpoints', () => {
 		expect(res.status).toBe(200);
 		expect(await res.json()).toMatchObject({ absences: expect.any(Array) });
 	});
+
+	it('tells the client how many absence rows could not be read', async () => {
+		const { app } = apiHarness({ withAbsences: true });
+		const token = await tokenFrom(app);
+		const res = await app.request('/api/attendance', { headers: authed(token) });
+
+		expect(await res.json()).toMatchObject({ unreadableAbsences: 0 });
+	});
 });
 
 describe('GET /api/documents/:docToken', () => {

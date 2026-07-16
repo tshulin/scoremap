@@ -16,7 +16,10 @@ export const AbsenceSchema = z.object({
 
 export const AttendanceSchema = z.object({
 	schoolName: z.string(),
-	absences: z.array(AbsenceSchema)
+	absences: z.array(AbsenceSchema),
+	// Rows the parser could not read. Surfaced rather than hidden: a short absence list a
+	// student believes is complete could hide an unexcused absence.
+	unreadableAbsences: z.number().int().min(0).default(0)
 });
 
 export type AbsencePeriod = z.infer<typeof AbsencePeriodSchema>;

@@ -103,8 +103,20 @@ npx tsx tools/capture-portal-page.ts attendance
 If a populated row becomes available, sanitize it and update the parser and fixture. The
 portal JavaScript referenced by the attendance grid may also reveal the period shape.
 
-Before release, decide how to handle an unexpected row shape. Skipping an unreadable row
-with a warning is preferable to failing the whole attendance response.
+**Unexpected row shapes — decided and implemented 2026-07-16.** Each row is validated on its
+own. A row that raises `ParseError` is skipped and counted in `Attendance.unreadableAbsences`
+rather than failing the page: previously one bad date threw from `toIsoDate` inside
+`rows.map(toAbsence)` and took every absence down with it.
+
+The count is **reported, not swallowed**. Silently dropping a row would leave a student
+looking at a short list they believe is complete, which could hide an unexcused absence — the
+frontend must surface `unreadableAbsences > 0` as "N absences couldn't be displayed". Only
+`ParseError` is caught; any other error is our own bug and still fails loudly.
+
+`/api/attendance` logs `{event: 'unreadable_rows', resource: 'attendance', count}`. **That log
+is how we find out this reconstruction is wrong** — if real absences start arriving and the
+count climbs, the row shape guessed above is off, and the fixture and parser need the real
+data.
 
 ## Capture safety
 

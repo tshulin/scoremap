@@ -77,7 +77,8 @@ describe('page clients against the mock portal', () => {
 	it('reads attendance for an account with no absences', async () => {
 		await expect(fetchAttendance(session, opts)).resolves.toEqual({
 			schoolName: 'Example High School',
-			absences: []
+			absences: [],
+			unreadableAbsences: 0
 		});
 	});
 
