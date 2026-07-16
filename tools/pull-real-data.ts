@@ -1,8 +1,10 @@
 // Check live portal responses without printing student data.
 // Usage: npx tsx tools/pull-real-data.ts <resource|all>
-// Set SYNERGY_DOMAIN and copy SYNERGY_COOKIE from a browser session.
+// Set SYNERGY_DOMAIN plus either SYNERGY_COOKIE (browser-copied) or
+// SYNERGY_USERNAME + SYNERGY_PASSWORD (real WebForms login).
 
 import { CookieJar, fetchFollow } from '../src/portal/http.js';
+import { login, validatePortalDomain, type PortalSession } from '../src/portal/login.js';
 
 // DevExpress embeds portal grids in dataSource arrays.
 const countDataSourceArrays = (html: string): number => (html.match(/"dataSource":/g) ?? []).length;
@@ -19,34 +21,35 @@ const RESOURCES: Record<string, ResourceSpec> = {
 	gradebook: { page: 'PXP2_Gradebook.aspx?AGU=0', expectGrids: true }
 };
 
-interface Session {
-	domain: string;
-	jar: CookieJar;
-}
-
-function sessionFromEnv(): Session {
+async function sessionFromEnv(): Promise<{ session: PortalSession; mode: 'cookie' | 'login' }> {
 	const domain = process.env.SYNERGY_DOMAIN;
 	if (!domain) {
 		throw new Error('Set SYNERGY_DOMAIN (e.g. "yourdistrict-psv.edupoint.com"). See env.example.');
 	}
+	validatePortalDomain(domain);
+
 	const cookieString = process.env.SYNERGY_COOKIE;
-	if (!cookieString) {
-		throw new Error(
-			'Set SYNERGY_COOKIE (browser-copied, e.g. "ASP.NET_SessionId=x; EESPSV=y").\n' +
-				'For credential login, use `node pull-real-data.mjs`.'
-		);
+	if (cookieString) {
+		const jar = CookieJar.fromCookieString(cookieString);
+		if (jar.size === 0) {
+			throw new Error('SYNERGY_COOKIE is set but has no name=value pairs.');
+		}
+		return { session: { domain, jar }, mode: 'cookie' };
 	}
-	const jar = CookieJar.fromCookieString(cookieString);
-	if (jar.size === 0) {
-		throw new Error('SYNERGY_COOKIE is set but has no name=value pairs.');
+
+	const username = process.env.SYNERGY_USERNAME;
+	const password = process.env.SYNERGY_PASSWORD;
+	if (username && password) {
+		return { session: await login({ domain, username, password }), mode: 'login' };
 	}
-	return { domain, jar };
+
+	throw new Error('Set SYNERGY_COOKIE, or SYNERGY_USERNAME + SYNERGY_PASSWORD. See env.example.');
 }
 
 async function checkResource(
 	name: string,
 	{ page, expectGrids }: ResourceSpec,
-	session: Session
+	session: PortalSession
 ): Promise<{ ok: boolean; detail: string }> {
 	const { body, finalUrl, redirected, status } = await fetchFollow(
 		`https://${session.domain}/${page}`,
@@ -75,14 +78,15 @@ if (!target || (target !== 'all' && !(target in RESOURCES))) {
 }
 const selected = Object.entries(RESOURCES).filter(([name]) => target === 'all' || name === target);
 
-let session: Session;
+let session: PortalSession;
+let mode: string;
 try {
-	session = sessionFromEnv();
+	({ session, mode } = await sessionFromEnv());
 } catch (e) {
 	console.error(e instanceof Error ? e.message : String(e));
 	process.exit(1);
 }
-console.log(`Session configured for ${session.domain}\n`);
+console.log(`Session established for ${session.domain} (${mode} mode)\n`);
 
 let failures = 0;
 for (const [name, spec] of selected) {
