@@ -7,7 +7,9 @@ export const PortalErrorCodeSchema = z.enum([
 	'MODULE_UNAVAILABLE',
 	'PORTAL_UNAVAILABLE',
 	'PARSE_FAILED',
-	'VALIDATION'
+	'VALIDATION',
+	'RATE_LIMITED',
+	'INTERNAL'
 ]);
 
 export type PortalErrorCode = z.infer<typeof PortalErrorCodeSchema>;
