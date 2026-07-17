@@ -5,7 +5,7 @@ import tseslint from 'typescript-eslint';
 export default tseslint.config(
 	{
 		// These scripts predate the TypeScript backend and are kept as reference tools.
-		ignores: ['node_modules/', 'gradecompass/', 'legacy/', 'lib/', 'captures/', '*.mjs']
+		ignores: ['node_modules/', 'gradecompass/', 'legacy/', 'lib/', 'captures/', '*.mjs', 'web/']
 	},
 	eslint.configs.recommended,
 	...tseslint.configs.recommended,
