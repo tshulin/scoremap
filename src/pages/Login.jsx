@@ -22,13 +22,27 @@ function Login() {
   const [password, setPassword] = React.useState('');
   const [domain, setDomain] = React.useState('');
   const [agreed, setAgreed] = React.useState(false);
+  const [pending, setPending] = React.useState(false);
+  const [error, setError] = React.useState('');
 
-  // Connect the StudentVUE account, then land on the dashboard. The password
-  // stays on the device; only username/domain/agreement enter session state.
+  // Sign in through the Grademax backend (which logs in to StudentVUE
+  // server-side), then land on the dashboard.
   const handleLogin = async () => {
-    if (!agreed) return;
-    await signIn({ username, domain, agreed });
-    navigate('/dashboard');
+    if (!agreed || pending) return;
+    if (!username || !password || !domain) {
+      setError('Enter your StudentVUE username, password, and district domain.');
+      return;
+    }
+    setPending(true);
+    setError('');
+    try {
+      await signIn({ username, password, domain });
+      navigate('/dashboard');
+    } catch (e) {
+      setError(e && e.message ? e.message : 'Sign-in failed. Try again.');
+    } finally {
+      setPending(false);
+    }
   };
 
   return (
@@ -114,7 +128,9 @@ function Login() {
                   marginTop: 8,
                 }}
               >
-                Your device connects directly to StudentVUE. We can't see your password or your grades.
+                Grademax signs in to StudentVUE for you to fetch your grades. Your password is
+                used only for that sign-in, is kept in memory just while your session is active,
+                and is never written to disk or logged.
               </div>
             </div>
 
@@ -205,9 +221,29 @@ function Login() {
               </span>
             </label>
 
+            {error && (
+              <div
+                role="alert"
+                style={{
+                  padding: '12px 16px',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'rgba(251, 44, 54, 0.14)',
+                  color: 'var(--color-grade-bad)',
+                  fontSize: 14,
+                  lineHeight: 1.5,
+                }}
+              >
+                {error}
+              </div>
+            )}
+
             <div className="gm-login-submit">
-              <Button variant="primary" disabled={!agreed} onClick={handleLogin}>
-                <span aria-hidden="true">→</span> Log in
+              <Button variant="primary" disabled={!agreed || pending} onClick={handleLogin}>
+                {pending ? 'Signing in…' : (
+                  <>
+                    <span aria-hidden="true">→</span> Log in
+                  </>
+                )}
               </Button>
             </div>
           </div>

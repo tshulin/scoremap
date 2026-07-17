@@ -18,14 +18,17 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../lib/ds.js';
 import Sidebar from '../components/Sidebar.jsx';
-import { useClasses, useSession } from '../data/SyncProvider.jsx';
+import SyncPill from '../components/SyncPill.jsx';
+import { useClasses, useSession, useSyncMeta, useSyncStatus } from '../data/SyncProvider.jsx';
 import { gradeBandColor } from '../lib/grades.js';
 
 function DashboardPage() {
   const navigate = useNavigate();
   const classes = useClasses();
   const session = useSession();
-  const totalNew = classes.reduce((n, c) => n + c.isNew, 0);
+  const meta = useSyncMeta();
+  const { status } = useSyncStatus();
+  const totalNew = classes.reduce((n, c) => n + (c.isNew || 0), 0);
   const [hovered, setHovered] = React.useState(null);
 
   // ---- small building blocks ----
@@ -77,36 +80,26 @@ function DashboardPage() {
       <main style={{ flex: 1, padding: '32px 40px 48px', boxSizing: 'border-box' }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           {/* sync status */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 12,
-                padding: '7px 14px',
-                borderRadius: 'var(--radius-pill)',
-                border: '1px solid var(--color-hairline-strong)',
-                background: 'var(--color-surface-card)',
-                fontSize: 13,
-                color: 'var(--color-body)',
-              }}
-            >
-              <span>Last updated {session.lastUpdated}</span>
-              <a href="#" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                <span aria-hidden="true">↻</span> Refresh
-              </a>
-            </div>
-          </div>
+          <SyncPill />
 
           {/* semester selector */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
-            <Button variant="secondary" size="sm">
-              {session.semester} <span aria-hidden="true" style={{ opacity: 0.7 }}>⌄</span>
-            </Button>
-          </div>
+          {session.semester && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
+              <Button variant="secondary" size="sm">
+                {session.semester} <span aria-hidden="true" style={{ opacity: 0.7 }}>⌄</span>
+              </Button>
+            </div>
+          )}
 
           {/* class rows */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {classes.length === 0 && (
+              <div style={{ textAlign: 'center', color: 'var(--color-muted)', fontSize: 15, padding: '48px 0' }}>
+                {status === 'syncing'
+                  ? 'Syncing your gradebook…'
+                  : meta.gradebook.message || 'No grades available yet.'}
+              </div>
+            )}
             {classes.map((c) => {
               const color = gradeBandColor(c.grade);
               const hov = hovered === c.name;
@@ -163,9 +156,9 @@ function DashboardPage() {
 
                   <div style={{ flex: '1 1 240px', display: 'flex', alignItems: 'center', gap: 16, minWidth: 220 }}>
                     <div style={{ width: 150, flexShrink: 0, textAlign: 'right', fontSize: 22, fontWeight: 600, letterSpacing: '-0.5px', color: 'var(--color-ink)', whiteSpace: 'nowrap' }}>
-                      {c.grade} {c.pct}%
+                      {c.pct != null ? `${c.grade} ${c.pct}%` : '—'}
                     </div>
-                    <ProgressBar pct={c.pct} color={color} />
+                    <ProgressBar pct={c.pct ?? 0} color={color} />
                   </div>
                 </div>
               );
@@ -173,22 +166,24 @@ function DashboardPage() {
           </div>
 
           {/* new assignments summary */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 28 }}>
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 20,
-                background: 'var(--color-surface-card)',
-                border: '1px solid var(--color-hairline-strong)',
-                borderRadius: 'var(--radius-lg)',
-                padding: '16px 20px',
-              }}
-            >
-              <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-ink)' }}>{totalNew} new assignments</span>
-              <Button variant="secondary" size="sm">Mark as seen</Button>
+          {totalNew > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 28 }}>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 20,
+                  background: 'var(--color-surface-card)',
+                  border: '1px solid var(--color-hairline-strong)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '16px 20px',
+                }}
+              >
+                <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-ink)' }}>{totalNew} new assignments</span>
+                <Button variant="secondary" size="sm">Mark as seen</Button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* footer */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 40, fontSize: 14, color: 'var(--color-body)' }}>

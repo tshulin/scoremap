@@ -9,12 +9,13 @@
  */
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useClasses, useSession } from '../data/SyncProvider.jsx';
+import { useClasses, useSession, useSignOut } from '../data/SyncProvider.jsx';
 import { SunIcon, MoonIcon, LogOutIcon } from '../lib/icons.jsx';
 
 function Sidebar() {
   const classes = useClasses();
   const session = useSession();
+  const signOut = useSignOut();
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
@@ -35,8 +36,9 @@ function Sidebar() {
     setMenuOpen(false);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setMenuOpen(false);
+    await signOut();
     navigate('/login');
   };
 

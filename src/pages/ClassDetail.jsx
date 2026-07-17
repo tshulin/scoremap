@@ -13,10 +13,14 @@
  */
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { Button } from '../lib/ds.js';
 import Sidebar from '../components/Sidebar.jsx';
+import SyncPill from '../components/SyncPill.jsx';
 import { scoreBandColor as bandColor } from '../lib/grades.js';
 import { useAssignments, useClass, useGradeHistory } from '../data/SyncProvider.jsx';
+
+// Category name → chip tone. Real portal categories vary by teacher
+// ("Tests", "Assessments", "Homework", …), so tone is a keyword match.
+const assessmentLike = (type) => /test|exam|assess|quiz|final/i.test(type);
 
 function ClassDetail() {
   const { classId } = useParams();
@@ -25,16 +29,19 @@ function ClassDetail() {
   const ASSIGNMENTS = useAssignments(classId);
 
   const CLASS_NAME = cls ? cls.name : 'Class';
-  const GRADE = cls ? `${cls.grade} ${cls.pct}%` : '';
+  const GRADE = cls ? (cls.pct != null ? `${cls.grade} ${cls.pct}%` : '—') : '';
 
   const [hypothetical, setHypothetical] = React.useState(false);
   const [breakdown, setBreakdown] = React.useState(false);
   const [filter, setFilter] = React.useState('All');
 
   // ---- grade-over-time series ----
+  // The backend has no grade-history endpoint yet, so this is empty until it
+  // does — the chart renders only with 2+ points.
   const dates = history.dates;
   const values = history.values;
 
+  const types = [...new Set(ASSIGNMENTS.map((a) => a.type))];
   const visible = ASSIGNMENTS.filter((a) => filter === 'All' || a.type === filter);
 
   // ---- chart geometry ----
@@ -107,14 +114,7 @@ function ClassDetail() {
       <main style={{ flex: 1, padding: '32px 40px 64px', boxSizing: 'border-box' }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           {/* sync status */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, padding: '7px 14px', borderRadius: 'var(--radius-pill)', border: '1px solid var(--color-hairline-strong)', background: 'var(--color-surface-card)', fontSize: 13, color: 'var(--color-body)' }}>
-              <span>Last updated last month</span>
-              <a href="#" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                <span aria-hidden="true">↻</span> Refresh
-              </a>
-            </div>
-          </div>
+          <SyncPill />
 
           {/* header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 24, marginBottom: 20, flexWrap: 'wrap' }}>
@@ -127,6 +127,7 @@ function ClassDetail() {
           </div>
 
           {/* chart */}
+          {values.length >= 2 && (
           <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block', marginBottom: 20 }}>
             <defs>
               <linearGradient id="gradeFill" x1="0" y1="0" x2="0" y2="1">
@@ -149,6 +150,7 @@ function ClassDetail() {
               <text key={d} x={xAt(i)} y={H - 10} textAnchor="middle" fontSize="12" fill="var(--color-muted)">{d}</text>
             ))}
           </svg>
+          )}
 
           {/* toggles (Pin chart deliberately omitted) */}
           <div style={{ display: 'flex', gap: 40, flexWrap: 'wrap', marginBottom: 28 }}>
@@ -156,20 +158,28 @@ function ClassDetail() {
             <Check label="Show category breakdown" checked={breakdown} onChange={setBreakdown} />
           </div>
 
-          {/* filter */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: 4, borderRadius: 'var(--radius-lg)', background: 'var(--color-surface-card)', border: '1px solid var(--color-hairline-strong)' }}>
-              <FilterTab id="All" />
-              <FilterTab id="Assessments" dot="var(--color-grade-bad)" />
-              <FilterTab id="Assignments" dot="var(--color-grade-good)" />
+          {/* filter — one tab per category present in the data */}
+          {types.length > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: 4, borderRadius: 'var(--radius-lg)', background: 'var(--color-surface-card)', border: '1px solid var(--color-hairline-strong)', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '100%' }}>
+                <FilterTab id="All" />
+                {types.map((t) => (
+                  <FilterTab key={t} id={t} dot={assessmentLike(t) ? 'var(--color-grade-bad)' : 'var(--color-grade-good)'} />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* assignment list */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {visible.map((a) => (
+            {visible.length === 0 && (
+              <div style={{ textAlign: 'center', color: 'var(--color-muted)', fontSize: 15, padding: '48px 0' }}>
+                No assignments yet.
+              </div>
+            )}
+            {visible.map((a, i) => (
               <div
-                key={a.title}
+                key={`${a.title}-${i}`}
                 style={{
                   background: 'var(--color-surface-card)',
                   border: '1px solid var(--color-hairline-strong)',
@@ -186,20 +196,22 @@ function ClassDetail() {
                 <div style={{ minWidth: 0, flex: '1 1 240px' }}>
                   <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)', marginBottom: 10 }}>{a.title}</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    <Chip tone={a.type === 'Assessments' ? 'assessment' : 'assignment'}>{a.type}</Chip>
+                    <Chip tone={assessmentLike(a.type) ? 'assessment' : 'assignment'}>{a.type}</Chip>
                     {a.scaled && <Chip>Scaled</Chip>}
+                    {a.extraCredit && <Chip>Extra credit</Chip>}
+                    {a.notForGrade && <Chip>Not for grade</Chip>}
                     <Chip>{a.date}</Chip>
                   </div>
                 </div>
                 <div style={{ flex: '1 1 420px', maxWidth: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'flex-end', gap: 14, whiteSpace: 'nowrap' }}>
-                    <span style={{ fontSize: 15, fontWeight: 600, color: a.negative ? 'var(--color-grade-bad)' : 'var(--color-muted)' }}>{a.delta}</span>
+                    {a.delta && <span style={{ fontSize: 15, fontWeight: 600, color: a.negative ? 'var(--color-grade-bad)' : 'var(--color-muted)' }}>{a.delta}</span>}
                     {a.scaledScore && <span style={{ fontSize: 15, color: 'var(--color-muted)' }}>{a.scaledScore}</span>}
                     <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)' }}>{a.score}</span>
-                    <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)' }}>{a.pct}%</span>
+                    <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)' }}>{a.pct != null ? `${a.pct}%` : '—'}</span>
                   </div>
                   <div style={{ width: '58.333%', alignSelf: 'flex-end', height: 8, borderRadius: 'var(--radius-pill)', background: 'var(--color-surface-dark-elevated)', overflow: 'hidden' }}>
-                    <div style={{ width: `${Math.min(a.pct, 100)}%`, height: '100%', background: bandColor(a.pct), borderRadius: 'var(--radius-pill)' }} />
+                    <div style={{ width: `${a.pct != null ? Math.min(a.pct, 100) : 0}%`, height: '100%', background: bandColor(a.pct ?? 0), borderRadius: 'var(--radius-pill)' }} />
                   </div>
                 </div>
               </div>

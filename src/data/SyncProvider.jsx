@@ -1,37 +1,77 @@
-// SyncProvider — makes the StudentVUE-synced snapshot available to the app.
+// SyncProvider — owns the signed-in session and the synced data.
 //
-// The provider shows the cached snapshot immediately (no loading flicker — the
-// design has none) and re-syncs in the background, which is exactly what the
-// "Last updated … · Refresh" pill communicates. Pages read the data through the
-// hooks below instead of hardcoded arrays.
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { snapshot as initialSnapshot } from './snapshot.js';
+// Status: 'signedOut' | 'syncing' | 'ready' | 'error'. On mount, an existing
+// token (page reload) triggers a background sync; a 401 from any resource
+// clears the token and drops back to signedOut. Pages read data through the
+// hooks below; RequireAuth (App.jsx) redirects to /login when signed out.
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import * as api from './api.js';
+import { emptySnapshot } from './snapshot.js';
 import { sync as syncStudentVue } from './studentvue.js';
 
 const SyncContext = createContext(null);
 
 export function SyncProvider({ children }) {
-  const [data, setData] = useState(initialSnapshot);
-
-  // Background refresh from the sync layer on mount.
+  const [data, setData] = useState(emptySnapshot);
+  const [status, setStatus] = useState(api.hasToken() ? 'syncing' : 'signedOut');
+  const [error, setError] = useState(null);
+  // Re-arm on every mount: StrictMode's dev-only unmount/remount would
+  // otherwise leave this false forever and every sync result would be dropped.
+  const alive = useRef(true);
   useEffect(() => {
-    let alive = true;
-    syncStudentVue().then((fresh) => {
-      if (alive) setData(fresh);
-    });
-    return () => {
-      alive = false;
-    };
+    alive.current = true;
+    return () => { alive.current = false; };
   }, []);
 
-  // Sign in / re-sync against a StudentVUE domain (used by the login flow).
-  const signIn = useCallback(async (credentials) => {
-    const fresh = await syncStudentVue(credentials);
-    setData(fresh);
-    return fresh;
+  const runSync = useCallback(async (knownStudent) => {
+    setStatus('syncing');
+    setError(null);
+    try {
+      const fresh = await syncStudentVue(knownStudent);
+      if (!alive.current) return fresh;
+      setData(fresh);
+      setStatus('ready');
+      return fresh;
+    } catch (e) {
+      if (!alive.current) throw e;
+      if (e.status === 401) {
+        api.clearToken();
+        setData(emptySnapshot);
+        setStatus('signedOut');
+      } else {
+        setError(e);
+        setStatus('error');
+      }
+      throw e;
+    }
   }, []);
 
-  const value = useMemo(() => ({ ...data, signIn }), [data, signIn]);
+  // Resume the session on reload.
+  useEffect(() => {
+    if (api.hasToken()) runSync().catch(() => {});
+  }, [runSync]);
+
+  const signIn = useCallback(
+    async (credentials) => {
+      const student = await api.login(credentials);
+      return runSync(student);
+    },
+    [runSync],
+  );
+
+  const signOut = useCallback(async () => {
+    await api.logout().catch(() => {});
+    if (!alive.current) return;
+    setData(emptySnapshot);
+    setStatus('signedOut');
+  }, []);
+
+  const refresh = useCallback(() => runSync().catch(() => {}), [runSync]);
+
+  const value = useMemo(
+    () => ({ ...data, status, error, signIn, signOut, refresh }),
+    [data, status, error, signIn, signOut, refresh],
+  );
   return <SyncContext.Provider value={value}>{children}</SyncContext.Provider>;
 }
 
@@ -43,7 +83,15 @@ function useSync() {
 
 export const useSession = () => useSync().session;
 export const useClasses = () => useSync().classes;
+export const useAttendance = () => useSync().attendance;
+export const useDocuments = () => useSync().documents;
+export const useSyncMeta = () => useSync().meta;
+export const useSyncStatus = () => {
+  const { status, error, refresh } = useSync();
+  return { status, error, refresh };
+};
 export const useSignIn = () => useSync().signIn;
+export const useSignOut = () => useSync().signOut;
 
 export function useClass(id) {
   const { classes } = useSync();
@@ -52,10 +100,10 @@ export function useClass(id) {
 
 export function useAssignments(id) {
   const { assignmentsByClass } = useSync();
-  return assignmentsByClass[id] || assignmentsByClass.__default || [];
+  return assignmentsByClass[id] || [];
 }
 
 export function useGradeHistory(id) {
   const { historyByClass } = useSync();
-  return historyByClass[id] || historyByClass.__default || { dates: [], values: [] };
+  return historyByClass[id] || { dates: [], values: [] };
 }

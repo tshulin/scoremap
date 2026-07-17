@@ -1,10 +1,10 @@
 /**
  * Attendance — month calendar + list view (route: /attendance).
  *
- * FRONTEND ONLY. The data below is local placeholder data matching StudentVUE's
- * attendance shape; the data/StudentVUE layer will supply the real records later
- * (swap ATTENDANCE / PERIOD_CLASS for that source when it's wired). Nothing here
- * touches the backend.
+ * Records come from the backend's /api/attendance via the sync layer. Each
+ * record: { date, status, note, reason, periods: [{ period, reason, note }] }.
+ * `unreadableAbsences` counts rows the backend parser could not read — shown as
+ * a warning so a short list is never mistaken for a complete one.
  *
  * Two views, toggled by a segmented control:
  *   • Calendar — the selected month, navigable forward/back; days with records
@@ -14,29 +14,8 @@
  */
 import React, { useMemo, useState } from 'react';
 import Sidebar from '../components/Sidebar.jsx';
-
-// --- placeholder data (backend/StudentVUE will replace this) ---
-// `reason` is the per-day excusal reason StudentVUE reports (Field Trip, etc.);
-// the list expands to show it per class. Backend will supply the real values.
-const ATTENDANCE = [
-  { date: '2026-02-27', status: 'excused', note: 'DECA State conference', reason: 'Field Trip', periods: [1, 2, 3, 4, 5, 6] },
-  { date: '2026-02-26', status: 'excused', note: 'DECA State conference', reason: 'Field Trip', periods: [1, 2, 3, 4, 5, 6] },
-  { date: '2026-01-16', status: 'excused', note: 'DECA Career Development Conference Jan 16 to Jan 18 (students miss periods 4, 5 and 6 only)', reason: 'Field Trip', periods: [4, 5, 6] },
-  { date: '2026-01-07', status: 'excused', note: "In Tami Raaker's room", reason: 'Field Trip', periods: [1] },
-  { date: '2025-12-01', status: 'excused', note: '', reason: 'Excused Absence', periods: [1, 2, 3, 4, 5, 6] },
-  { date: '2025-10-27', status: 'excused', note: '', reason: 'Excused Absence', periods: [1, 2, 3, 4, 5, 6] },
-  { date: '2025-09-18', status: 'excused', note: 'ROP Leadership Summit', reason: 'Field Trip', periods: [1, 2, 3, 4, 5, 6] },
-  { date: '2025-09-03', status: 'excused', note: '', reason: 'Excused Absence', periods: [1, 2, 3, 4, 5, 6] },
-];
-
-const PERIOD_CLASS = {
-  1: 'Integrated Marketing Comm',
-  2: 'AP Computer Science A',
-  3: 'Hon Pre-Calculus',
-  4: 'AP World History',
-  5: 'Sophomore English',
-  6: 'Chemistry',
-};
+import SyncPill from '../components/SyncPill.jsx';
+import { useAttendance, useClasses, useSyncMeta } from '../data/SyncProvider.jsx';
 
 // StudentVUE status bands → design-system band colors.
 const STATUS = {
@@ -85,18 +64,28 @@ function StatusBadge({ status }) {
 function Attendance() {
   const now = new Date();
 
+  const { records, unreadableAbsences } = useAttendance();
+  const meta = useSyncMeta();
+  const classes = useClasses();
+
   const [view, setView] = useState('calendar');
   const [cursor, setCursor] = useState(new Date(now.getFullYear(), now.getMonth(), 1));
   const [expanded, setExpanded] = useState({});
 
+  // Period number → class name, from the synced gradebook (empty out of term).
+  const periodClass = useMemo(
+    () => Object.fromEntries(classes.map((c) => [c.periodNum, c.name])),
+    [classes],
+  );
+
   const byDate = useMemo(() => {
     const m = {};
-    ATTENDANCE.forEach((e) => {
+    records.forEach((e) => {
       (m[e.date] = m[e.date] || []).push(e);
     });
     return m;
-  }, []);
-  const sorted = useMemo(() => [...ATTENDANCE].sort((a, b) => b.date.localeCompare(a.date)), []);
+  }, [records]);
+  const sorted = useMemo(() => [...records].sort((a, b) => b.date.localeCompare(a.date)), [records]);
 
   const year = cursor.getFullYear();
   const month = cursor.getMonth();
@@ -170,26 +159,28 @@ function Attendance() {
       <main style={{ flex: 1, padding: '32px 40px 64px', boxSizing: 'border-box' }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           {/* sync status */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
+          <SyncPill />
+
+          {(unreadableAbsences > 0 || meta.attendance.message) && (
             <div
+              role="alert"
               style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 12,
-                padding: '7px 14px',
-                borderRadius: 'var(--radius-pill)',
-                border: '1px solid var(--color-hairline-strong)',
-                background: 'var(--color-surface-card)',
-                fontSize: 13,
-                color: 'var(--color-body)',
+                margin: '0 auto 24px',
+                maxWidth: 640,
+                padding: '12px 16px',
+                borderRadius: 'var(--radius-md)',
+                background: 'rgba(240, 177, 0, 0.14)',
+                color: 'var(--color-grade-mid)',
+                fontSize: 14,
+                lineHeight: 1.5,
+                textAlign: 'center',
               }}
             >
-              <span>Last updated last month</span>
-              <a href="#" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                <span aria-hidden="true">↻</span> Refresh
-              </a>
+              {meta.attendance.message
+                ? `Attendance could not be loaded: ${meta.attendance.message}`
+                : `${unreadableAbsences} attendance ${unreadableAbsences === 1 ? 'record' : 'records'} could not be read — this list may be incomplete.`}
             </div>
-          </div>
+          )}
 
           {/* header + view toggle */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 20, marginBottom: 24, flexWrap: 'wrap' }}>
@@ -384,9 +375,13 @@ function Attendance() {
 
                     {open && (
                       <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {(e.periods || []).length === 0 && (
+                          <div style={{ fontSize: 15, color: 'var(--color-body)' }}>{e.reason || '—'}</div>
+                        )}
                         {(e.periods || []).map((p) => (
-                          <div key={p} style={{ fontSize: 15, color: 'var(--color-body)' }}>
-                            {PERIOD_CLASS[p] || `Period ${p}`}: {e.reason || '—'}
+                          <div key={p.period} style={{ fontSize: 15, color: 'var(--color-body)' }}>
+                            {periodClass[p.period] || `Period ${p.period}`}: {p.reason || '—'}
+                            {p.note ? ` — ${p.note}` : ''}
                           </div>
                         ))}
                       </div>

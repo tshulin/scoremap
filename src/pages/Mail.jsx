@@ -193,25 +193,20 @@ function Mail() {
 
       <main style={{ flex: 1, padding: '32px 40px 64px', boxSizing: 'border-box' }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
-          {/* sync status */}
+          {/* Mail is the one section with no backend endpoint yet — these are
+              sample messages, and the banner must say so. */}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
             <div
               style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 12,
-                padding: '7px 14px',
+                padding: '6px 14px',
                 borderRadius: 'var(--radius-pill)',
-                border: '1px solid var(--color-hairline-strong)',
-                background: 'var(--color-surface-card)',
+                background: 'rgba(240, 177, 0, 0.14)',
+                color: 'var(--color-grade-mid)',
                 fontSize: 13,
-                color: 'var(--color-body)',
+                fontWeight: 600,
               }}
             >
-              <span>Last updated last month</span>
-              <a href="#" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                <span aria-hidden="true">↻</span> Refresh
-              </a>
+              Sample messages — Mail is not connected to StudentVUE yet.
             </div>
           </div>
 

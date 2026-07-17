@@ -1,45 +1,27 @@
 /**
  * Documents — the student's document center (route: /documents).
  *
- * FRONTEND ONLY. DOCUMENTS below is local placeholder data matching the shape a
- * StudentVUE pull produces (title, category, date, and eventually a download
- * url). The backend will supply the real list + the per-document link later —
- * swap DOCUMENTS and wire `openDoc` to the real url then.
+ * The list comes from the backend's /api/documents via the sync layer; clicking
+ * a document downloads it through /api/documents/:docToken (auth header
+ * required, so it goes through fetch, not a plain link).
  *
- * A segmented filter (All / Transcript / Report Card / MAP Growth Family Report)
- * narrows the list; the category badge is shown only in "All" (redundant once a
- * single category is selected).
+ * A segmented filter (one tab per category present) narrows the list; the
+ * category badge is shown only in "All" (redundant once a single category is
+ * selected).
  */
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Sidebar from '../components/Sidebar.jsx';
+import SyncPill from '../components/SyncPill.jsx';
+import { downloadDocument } from '../data/api.js';
+import { useDocuments, useSyncMeta } from '../data/SyncProvider.jsx';
 
-// --- placeholder data (backend/StudentVUE will replace this) ---
-const DOCUMENTS = [
-  { id: 'd1', title: '25-26 Q4 Progress Report FHS', category: 'Report Card', date: '2026-05-04' },
-  { id: 'd2', title: '25-26 Q3 Report Card FHS', category: 'Report Card', date: '2026-03-24' },
-  { id: 'd3', title: '25-26 Q3 Progress Report', category: 'Report Card', date: '2026-02-17' },
-  { id: 'd4', title: '25-26 S1 Transcript - 1-22-2026', category: 'Transcript', date: '2026-01-22' },
-  { id: 'd5', title: '25-26 S1 Transcript dtd 1-16-2026 Madabhavi, Shali', category: 'Transcript', date: '2026-01-16' },
-  { id: 'd6', title: '25-26 S1 Report Card', category: 'Report Card', date: '2026-01-13' },
-  { id: 'd7', title: '25-26 Q2 Progress Report', category: 'Report Card', date: '2025-11-17' },
-  { id: 'd8', title: '25-26 Transcript dtd 10-31-2025', category: 'Transcript', date: '2025-10-31' },
-  { id: 'd9', title: '24-25 S2 Transcript dtd 6-16-2025', category: 'Transcript', date: '2025-06-16' },
-  { id: 'd10', title: '24-25 Transcript dtd 5-1-2025', category: 'Transcript', date: '2025-05-01' },
-  { id: 'd11', title: '24-25 Transcript 1-16-2025', category: 'Transcript', date: '2025-01-16' },
-  { id: 'd12', title: '2023-2024 Spring MAP Family Report', category: 'MAP Growth Family Report', date: '2024-06-07' },
-  { id: 'd13', title: '2023-2024 Winter MAP Family Report', category: 'MAP Growth Family Report', date: '2024-02-08' },
-  { id: 'd14', title: '2023-2024 Fall MAP Family Report', category: 'MAP Growth Family Report', date: '2023-09-15' },
-  { id: 'd15', title: '22-23 Fall MAP Family Report', category: 'MAP Growth Family Report', date: '2022-09-15' },
-];
-
-// Category → band color + subtle chip background (matches the filter dots).
+// Known category → band color + subtle chip background (matches the filter
+// dots). Categories the portal sends that aren't listed get a neutral chip.
 const CATEGORY = {
   Transcript: { color: 'var(--color-grade-bad)', bg: 'rgba(251, 44, 54, 0.14)' },
   'Report Card': { color: 'var(--color-grade-mid)', bg: 'rgba(240, 177, 0, 0.14)' },
   'MAP Growth Family Report': { color: 'var(--color-text-link)', bg: 'rgba(77, 168, 255, 0.14)' },
 };
-
-const FILTERS = ['All', 'Transcript', 'Report Card', 'MAP Growth Family Report'];
 
 const fmtDate = (iso) => {
   const [y, m, d] = iso.split('-').map(Number);
@@ -47,16 +29,39 @@ const fmtDate = (iso) => {
 };
 
 function Documents() {
+  const documents = useDocuments();
+  const meta = useSyncMeta();
   const [filter, setFilter] = useState('All');
   const [hovered, setHovered] = useState(null);
+  const [downloading, setDownloading] = useState(null);
+  const [downloadError, setDownloadError] = useState('');
 
-  const visible = DOCUMENTS
+  const categories = useMemo(
+    () => [...new Set(documents.map((d) => d.category))],
+    [documents],
+  );
+
+  const visible = documents
     .filter((d) => filter === 'All' || d.category === filter)
     .sort((a, b) => b.date.localeCompare(a.date));
 
-  // Opening a document is a backend concern (needs the real url) — placeholder.
-  const openDoc = (doc) => {
-    if (doc.url) window.open(doc.url, '_blank', 'noopener');
+  const openDoc = async (doc) => {
+    if (downloading) return;
+    setDownloading(doc.id);
+    setDownloadError('');
+    try {
+      const { blob, fileName } = await downloadDocument(doc.docToken);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 30_000);
+    } catch (e) {
+      setDownloadError(e && e.message ? e.message : 'Download failed.');
+    } finally {
+      setDownloading(null);
+    }
   };
 
   function FilterTab({ id, dot }) {
@@ -116,49 +121,57 @@ function Documents() {
       <main style={{ flex: 1, padding: '32px 40px 64px', boxSizing: 'border-box' }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           {/* sync status */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 12,
-                padding: '7px 14px',
-                borderRadius: 'var(--radius-pill)',
-                border: '1px solid var(--color-hairline-strong)',
-                background: 'var(--color-surface-card)',
-                fontSize: 13,
-                color: 'var(--color-body)',
-              }}
-            >
-              <span>Last updated last month</span>
-              <a href="#" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                <span aria-hidden="true">↻</span> Refresh
-              </a>
-            </div>
-          </div>
+          <SyncPill />
 
-          {/* category filter */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
+          {(meta.documents.message || downloadError) && (
             <div
+              role="alert"
               style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-                padding: 4,
-                borderRadius: 'var(--radius-lg)',
-                background: 'var(--color-surface-card)',
-                border: '1px solid var(--color-hairline-strong)',
-                maxWidth: '100%',
-                flexWrap: 'wrap',
-                justifyContent: 'center',
+                margin: '0 auto 24px',
+                maxWidth: 640,
+                padding: '12px 16px',
+                borderRadius: 'var(--radius-md)',
+                background: 'rgba(251, 44, 54, 0.14)',
+                color: 'var(--color-grade-bad)',
+                fontSize: 14,
+                lineHeight: 1.5,
+                textAlign: 'center',
               }}
             >
-              <FilterTab id="All" />
-              <FilterTab id="Transcript" dot="var(--color-grade-bad)" />
-              <FilterTab id="Report Card" dot="var(--color-grade-mid)" />
-              <FilterTab id="MAP Growth Family Report" dot="var(--color-text-link)" />
+              {meta.documents.message
+                ? `Documents could not be loaded: ${meta.documents.message}`
+                : downloadError}
             </div>
-          </div>
+          )}
+
+          {/* category filter — one tab per category present */}
+          {categories.length > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: 4,
+                  borderRadius: 'var(--radius-lg)',
+                  background: 'var(--color-surface-card)',
+                  border: '1px solid var(--color-hairline-strong)',
+                  maxWidth: '100%',
+                  flexWrap: 'wrap',
+                  justifyContent: 'center',
+                }}
+              >
+                <FilterTab id="All" />
+                {categories.map((cat) => (
+                  <FilterTab
+                    key={cat}
+                    id={cat}
+                    dot={CATEGORY[cat] ? CATEGORY[cat].color : 'var(--color-muted)'}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* document list — narrower than the full content width */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 820, margin: '0 auto' }}>
