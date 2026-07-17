@@ -20,9 +20,13 @@ const savedTheme = (() => {
 })();
 document.documentElement.setAttribute('data-theme', savedTheme || 'dark');
 
+// Router base = Vite's base path (e.g. /grademax/ on GitHub Pages), so routes
+// resolve under the deploy prefix.
+const basename = import.meta.env.BASE_URL.replace(/\/$/, '');
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <SyncProvider>
         <App />
       </SyncProvider>
