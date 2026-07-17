@@ -1,0 +1,74 @@
+:root {
+  --font-sans: 'Inter', -apple-system, system-ui, sans-serif;
+
+  /* Display */
+  --text-display-mega-size: 64px;
+  --text-display-mega-weight: 600;
+  --text-display-mega-leading: 1.05;
+  --text-display-mega-tracking: -1.92px;
+
+  --text-display-xl-size: 48px;
+  --text-display-xl-weight: 600;
+  --text-display-xl-leading: 1.1;
+  --text-display-xl-tracking: -1.44px;
+
+  --text-display-lg-size: 36px;
+  --text-display-lg-weight: 600;
+  --text-display-lg-leading: 1.15;
+  --text-display-lg-tracking: -1.08px;
+
+  --text-display-md-size: 28px;
+  --text-display-md-weight: 600;
+  --text-display-md-leading: 1.2;
+  --text-display-md-tracking: -0.84px;
+
+  --text-display-sm-size: 22px;
+  --text-display-sm-weight: 600;
+  --text-display-sm-leading: 1.25;
+  --text-display-sm-tracking: -0.5px;
+
+  /* Titles */
+  --text-title-md-size: 18px;
+  --text-title-md-weight: 600;
+  --text-title-md-leading: 1.4;
+  --text-title-md-tracking: 0;
+
+  --text-title-sm-size: 16px;
+  --text-title-sm-weight: 600;
+  --text-title-sm-leading: 1.4;
+  --text-title-sm-tracking: 0;
+
+  /* Body */
+  --text-body-md-size: 16px;
+  --text-body-md-weight: 400;
+  --text-body-md-leading: 1.5;
+  --text-body-md-tracking: 0;
+
+  --text-body-sm-size: 14px;
+  --text-body-sm-weight: 400;
+  --text-body-sm-leading: 1.5;
+  --text-body-sm-tracking: 0;
+
+  --text-caption-size: 13px;
+  --text-caption-weight: 400;
+  --text-caption-leading: 1.4;
+  --text-caption-tracking: 0;
+
+  --text-caption-uppercase-size: 11px;
+  --text-caption-uppercase-weight: 600;
+  --text-caption-uppercase-leading: 1.4;
+  --text-caption-uppercase-tracking: 0.88px;
+
+  --text-button-size: 14px;
+  --text-button-weight: 500;
+  --text-button-leading: 1.0;
+  --text-button-tracking: 0;
+
+  --text-nav-link-size: 14px;
+  --text-nav-link-weight: 500;
+  --text-nav-link-leading: 1.4;
+  --text-nav-link-tracking: 0;
+
+  /* Tabular numerals for grades/percentages */
+  --text-numeric-feature: 'tnum' 1;
+}
