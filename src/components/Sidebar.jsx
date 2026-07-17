@@ -1,24 +1,84 @@
 /**
  * Sidebar — shared logged-in left nav (Grades + class list, Attendance,
- * Documents, Mail, privacy note, Feedback, profile). Used by Dashboard and
- * ClassDetail so the chrome stays identical across the app.
- *
- * Props:
- *   activeClass — class name to highlight in the nav (optional)
- *   onClass(name) / onGrades() — navigation callbacks (optional; default to
- *     static POC harness files)
+ * Documents, Mail, privacy note, Feedback, profile). Self-navigating: it reads
+ * the current route to highlight the active item and routes on click, so pages
+ * just render <Sidebar /> with no props.
  *
  * Design-system note: the reference has an icon per item; Grademax ships no
  * icon set (see design-system readme "Iconography"), so items are text-only.
- *
- * Attaches to window.Sidebar. Under a bundler: export default Sidebar.
  */
 import React from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useClasses, useSession } from '../data/SyncProvider.jsx';
+import { SunIcon, MoonIcon, LogOutIcon } from '../lib/icons.jsx';
 
-function Sidebar({ activeId = null, onClass, onGrades }) {
+function Sidebar() {
   const classes = useClasses();
   const session = useSession();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const [theme, setTheme] = React.useState(
+    () => (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) || 'dark',
+  );
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try {
+      localStorage.setItem('grademax-theme', next);
+    } catch (e) {
+      /* ignore */
+    }
+    setTheme(next);
+    setMenuOpen(false);
+  };
+
+  const handleLogout = () => {
+    setMenuOpen(false);
+    navigate('/login');
+  };
+
+  function MenuRow({ icon, label, onClick }) {
+    const [hov, setHov] = React.useState(false);
+    return (
+      <button
+        onClick={onClick}
+        onMouseEnter={() => setHov(true)}
+        onMouseLeave={() => setHov(false)}
+        role="menuitem"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          width: '100%',
+          padding: '9px 10px',
+          border: 'none',
+          borderRadius: 'var(--radius-sm)',
+          background: hov ? 'var(--color-hairline)' : 'transparent',
+          color: 'var(--color-ink)',
+          fontFamily: 'var(--font-sans)',
+          fontSize: 14,
+          fontWeight: 500,
+          cursor: 'pointer',
+          textAlign: 'left',
+        }}
+      >
+        <span style={{ display: 'inline-flex', color: 'var(--color-body)' }}>{icon}</span>
+        {label}
+      </button>
+    );
+  }
+
+  // Derive the active section + class straight from the URL.
+  let section = 'grades';
+  let activeClassId = null;
+  if (pathname.startsWith('/attendance')) section = 'attendance';
+  else if (pathname.startsWith('/documents')) section = 'documents';
+  else if (pathname.startsWith('/mail')) section = 'mail';
+  else if (pathname.startsWith('/grades/')) activeClassId = decodeURIComponent(pathname.split('/')[2] || '');
+
   function NavItem({ label, active, sub, onClick }) {
     const [hov, setHov] = React.useState(false);
     return (
@@ -45,9 +105,6 @@ function Sidebar({ activeId = null, onClass, onGrades }) {
     );
   }
 
-  const goClass = (id) => () => { if (onClass) onClass(id); };
-  const goGrades = () => { if (onGrades) onGrades(); };
-
   return (
     <aside
       style={{
@@ -69,14 +126,14 @@ function Sidebar({ activeId = null, onClass, onGrades }) {
       </div>
 
       <nav style={{ flex: 1, overflowY: 'auto' }}>
-        <NavItem label="Grades" active={!activeId} onClick={goGrades} />
+        <NavItem label="Grades" active={section === 'grades' && !activeClassId} onClick={() => navigate('/dashboard')} />
         {classes.map((c) => (
-          <NavItem key={c.id} label={c.name} sub active={activeId === c.id} onClick={goClass(c.id)} />
+          <NavItem key={c.id} label={c.name} sub active={activeClassId === c.id} onClick={() => navigate(`/grades/${c.id}`)} />
         ))}
         <div style={{ height: 12 }} />
-        <NavItem label="Attendance" />
-        <NavItem label="Documents" />
-        <NavItem label="Mail" />
+        <NavItem label="Attendance" active={section === 'attendance'} onClick={() => navigate('/attendance')} />
+        <NavItem label="Documents" active={section === 'documents'} onClick={() => navigate('/documents')} />
+        <NavItem label="Mail" active={section === 'mail'} onClick={() => navigate('/mail')} />
       </nav>
 
       <div
@@ -95,18 +152,64 @@ function Sidebar({ activeId = null, onClass, onGrades }) {
       </div>
 
       <NavItem label="Feedback" />
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '10px 12px',
-          marginTop: 4,
-          borderTop: '1px solid var(--color-hairline)',
-        }}
-      >
-        <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-ink)' }}>{session.studentName}</span>
-        <span aria-hidden="true" style={{ color: 'var(--color-muted)', cursor: 'pointer', fontSize: 18, lineHeight: 1 }}>⋮</span>
+      <div style={{ position: 'relative', marginTop: 4 }}>
+        {menuOpen && (
+          <>
+            {/* click-away overlay */}
+            <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
+            <div
+              role="menu"
+              style={{
+                position: 'absolute',
+                bottom: 'calc(100% + 6px)',
+                left: 8,
+                right: 8,
+                zIndex: 41,
+                background: 'var(--color-surface-dark-elevated)',
+                border: '1px solid var(--color-hairline-strong)',
+                borderRadius: 'var(--radius-lg)',
+                boxShadow: 'var(--shadow-soft-drop)',
+                padding: 6,
+              }}
+            >
+              <MenuRow
+                icon={theme === 'dark' ? <SunIcon size={16} /> : <MoonIcon size={16} />}
+                label={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                onClick={toggleTheme}
+              />
+              <MenuRow icon={<LogOutIcon size={16} />} label="Log Out" onClick={handleLogout} />
+            </div>
+          </>
+        )}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '10px 12px',
+            borderTop: '1px solid var(--color-hairline)',
+          }}
+        >
+          <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-ink)' }}>{session.studentName}</span>
+          <button
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label="Account menu"
+            aria-haspopup="true"
+            aria-expanded={menuOpen}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              color: 'var(--color-muted)',
+              cursor: 'pointer',
+              fontSize: 18,
+              lineHeight: 1,
+              padding: '2px 6px',
+              borderRadius: 'var(--radius-sm)',
+            }}
+          >
+            ⋮
+          </button>
+        </div>
       </div>
     </aside>
   );

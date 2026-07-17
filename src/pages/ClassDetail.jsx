@@ -12,14 +12,13 @@
  * and import Sidebar + the DS components.
  */
 import React from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Button } from '../lib/ds.js';
 import Sidebar from '../components/Sidebar.jsx';
 import { scoreBandColor as bandColor } from '../lib/grades.js';
 import { useAssignments, useClass, useGradeHistory } from '../data/SyncProvider.jsx';
 
 function ClassDetail() {
-  const navigate = useNavigate();
   const { classId } = useParams();
   const cls = useClass(classId);
   const history = useGradeHistory(classId);
@@ -103,11 +102,7 @@ function ClassDetail() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-canvas)', fontFamily: 'var(--font-sans)' }}>
-      <Sidebar
-        activeId={classId}
-        onGrades={() => navigate('/dashboard')}
-        onClass={(id) => navigate(`/grades/${id}`)}
-      />
+      <Sidebar />
 
       <main style={{ flex: 1, padding: '32px 40px 64px', boxSizing: 'border-box' }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>

@@ -71,7 +71,7 @@ function DashboardPage() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-canvas)', fontFamily: 'var(--font-sans)' }}>
       {/* ---------- Sidebar ---------- */}
-      <Sidebar onClass={(id) => navigate(`/grades/${id}`)} />
+      <Sidebar />
 
       {/* ---------- Main ---------- */}
       <main style={{ flex: 1, padding: '32px 40px 48px', boxSizing: 'border-box' }}>

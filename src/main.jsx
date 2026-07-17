@@ -10,6 +10,16 @@ import './index.css';
 import App from './App.jsx';
 import { SyncProvider } from './data/SyncProvider.jsx';
 
+// Apply the saved theme before first paint (defaults to dark).
+const savedTheme = (() => {
+  try {
+    return localStorage.getItem('grademax-theme');
+  } catch {
+    return null;
+  }
+})();
+document.documentElement.setAttribute('data-theme', savedTheme || 'dark');
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
