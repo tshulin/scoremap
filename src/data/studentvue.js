@@ -8,6 +8,7 @@
 // provider can sign the user out.
 import * as api from './api.js';
 import { emptySnapshot } from './snapshot.js';
+import { GradebookSchema } from '../domain/index';
 
 const slug = (name) =>
   name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -56,10 +57,16 @@ function mapAssignment(a) {
     pct,
     extraCredit: a.extraCredit,
     notForGrade: a.notForGrade,
+    // The untouched domain assignment — src/calc/ computes over this.
+    raw: a,
   };
 }
 
-function mapGradebook(gradebook) {
+function mapGradebook(rawGradebook) {
+  // The same schema the backend validates against, re-checked in the browser
+  // so shape drift fails loudly instead of rendering nonsense.
+  const gradebook = GradebookSchema.parse(rawGradebook);
+
   const classes = [];
   const assignmentsByClass = {};
   const used = new Set();
@@ -82,6 +89,9 @@ function mapGradebook(gradebook) {
       grade: graded ? mark.letter : '—',
       pct: graded ? round(mark.percentage, 2) : null,
       isNew: 0,
+      // Weighted-category config for src/calc/; undefined = straight points.
+      categories:
+        mark && mark.categories && mark.categories.length > 0 ? mark.categories : undefined,
     });
     assignmentsByClass[id] = (mark ? mark.assignments : []).map(mapAssignment);
   }
