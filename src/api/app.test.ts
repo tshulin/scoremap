@@ -411,6 +411,15 @@ describe('CORS', () => {
 
 		expect(res.headers.get('access-control-expose-headers')).toContain('Content-Disposition');
 	});
+
+	// A cross-origin frontend (e.g. GitHub Pages) must be able to read the placeholder
+	// flag, or sample grades would render without their "sample data" banner.
+	it('exposes X-Grademax-Placeholder so cross-origin frontends can flag sample data', async () => {
+		const { app } = apiHarness({ app: { config: { allowedOrigin: 'http://localhost:5173' } } });
+		const res = await app.request('/api/health', { headers: { Origin: 'http://localhost:5173' } });
+
+		expect(res.headers.get('access-control-expose-headers')).toContain('X-Grademax-Placeholder');
+	});
 });
 
 describe('login rate limiting', () => {

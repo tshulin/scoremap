@@ -35,7 +35,7 @@ export function createApp(options: CreateAppOptions = {}) {
 			origin: config.allowedOrigin,
 			allowMethods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
 			allowHeaders: ['Authorization', 'Content-Type'],
-			exposeHeaders: ['Content-Disposition'],
+			exposeHeaders: ['Content-Disposition', 'X-Grademax-Placeholder'],
 			credentials: false
 		})
 	);
