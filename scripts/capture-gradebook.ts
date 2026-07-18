@@ -31,7 +31,9 @@ fs.mkdirSync(outDir, { recursive: true });
 
 const PAGES = [
 	{ name: 'gradebook', path: 'PXP2_Gradebook.aspx?AGU=0' },
-	{ name: 'classgrades', path: 'PXP2_ClassGrades.aspx?AGU=0' }
+	{ name: 'classgrades', path: 'PXP2_ClassGrades.aspx?AGU=0' },
+	// For verifying the absence row shape once a real absence exists (see attendance.ts).
+	{ name: 'attendance', path: 'PXP2_Attendance.aspx?AGU=0' }
 ];
 
 const options = { fetchImpl: createRelayFetch({ relayUrl }) };
