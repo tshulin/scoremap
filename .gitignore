@@ -7,3 +7,6 @@ dist
 CLAUDE.md
 CLAUDE.local.md
 .claude/
+
+# Raw portal captures (real personal data) — never commit
+captures/

@@ -179,14 +179,15 @@ export async function sync(knownStudent) {
   }
 
   if (attendance.status === 'fulfilled') {
+    const att = attendance.value.attendance;
     data.attendance = {
-      schoolName: attendance.value.schoolName,
-      records: attendance.value.absences.map(mapAbsence),
-      unreadableAbsences: attendance.value.unreadableAbsences,
+      schoolName: att.schoolName,
+      records: att.absences.map(mapAbsence),
+      unreadableAbsences: att.unreadableAbsences,
     };
-    data.meta.attendance = { ok: true, message: '' };
+    data.meta.attendance = { ok: true, placeholder: attendance.value.placeholder, message: '' };
   } else {
-    data.meta.attendance = { ok: false, message: attendance.reason.message };
+    data.meta.attendance = { ok: false, placeholder: false, message: attendance.reason.message };
   }
 
   if (documents.status === 'fulfilled') {

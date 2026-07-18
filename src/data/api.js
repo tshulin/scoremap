@@ -16,7 +16,8 @@ import { fetchStudentInfo } from '../portal/pages/studentInfo';
 import { fetchDocuments, downloadDocument as portalDownloadDocument } from '../portal/pages/documents';
 import { fetchAttendance } from '../portal/pages/attendance';
 import { fetchGradebook } from '../portal/pages/gradebook/index';
-import { SessionExpiredError } from '../portal/errors';
+import { SessionExpiredError, NoActiveGradingPeriodError, ParseError } from '../portal/errors';
+import { SAMPLE_GRADEBOOK, SAMPLE_ATTENDANCE, PLACEHOLDER_DATA } from './placeholders';
 
 // Set at build time (deploy workflow); wss:// in production, ws://localhost in dev.
 const RELAY_URL = import.meta.env.VITE_RELAY_URL || 'ws://localhost:8080';
@@ -139,18 +140,37 @@ export function getDocuments() {
   return withSession((s) => fetchDocuments(s, options));
 }
 
-export function getAttendance() {
-  return withSession((s) => fetchAttendance(s, options));
+// Returns { attendance, placeholder }. With VITE_PLACEHOLDER_DATA on and no real
+// absences, serves SAMPLE_ATTENDANCE (flagged as sample) so the UI can be seen;
+// otherwise returns the real (possibly empty) attendance.
+export async function getAttendance() {
+  return withSession(async (s) => {
+    const attendance = await fetchAttendance(s, options);
+    if (PLACEHOLDER_DATA && attendance.absences.length === 0) {
+      return {
+        attendance: { ...SAMPLE_ATTENDANCE, schoolName: attendance.schoolName || SAMPLE_ATTENDANCE.schoolName },
+        placeholder: true,
+      };
+    }
+    return { attendance, placeholder: false };
+  });
 }
 
-// Returns { gradebook, placeholder }. There is no browser-side sample gradebook,
-// so `placeholder` is always false; an out-of-term portal throws
-// NO_ACTIVE_GRADING_PERIOD, which the sync layer turns into a friendly message.
+// Returns { gradebook, placeholder }. Real grades always win. Only when the portal
+// has no gradebook to give — NO_ACTIVE_GRADING_PERIOD (out of term) or PARSE_FAILED
+// (parser not written yet) — AND VITE_PLACEHOLDER_DATA is on do we serve
+// SAMPLE_GRADEBOOK, flagged as sample. Once the parser lands and the term is active,
+// this fallback is never reached.
 export async function getGradebook() {
-  return withSession(async (s) => ({
-    gradebook: await fetchGradebook(s, undefined, options),
-    placeholder: false,
-  }));
+  return withSession(async (s) => {
+    try {
+      return { gradebook: await fetchGradebook(s, undefined, options), placeholder: false };
+    } catch (e) {
+      const blocked = e instanceof NoActiveGradingPeriodError || e instanceof ParseError;
+      if (PLACEHOLDER_DATA && blocked) return { gradebook: SAMPLE_GRADEBOOK, placeholder: true };
+      throw e;
+    }
+  });
 }
 
 export async function downloadDocument(docToken) {

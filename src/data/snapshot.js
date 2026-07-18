@@ -19,7 +19,7 @@ export const emptySnapshot = {
   },
   meta: {
     gradebook: { ok: false, placeholder: false, message: '' },
-    attendance: { ok: false, message: '' },
+    attendance: { ok: false, placeholder: false, message: '' },
     documents: { ok: false, message: '' },
   },
 };

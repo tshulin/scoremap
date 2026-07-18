@@ -60,6 +60,20 @@ function SyncPill({ note }) {
           Sample gradebook — real grades appear once the term starts.
         </div>
       )}
+      {meta.attendance.placeholder && (
+        <div
+          style={{
+            padding: '6px 14px',
+            borderRadius: 'var(--radius-pill)',
+            background: 'rgba(240, 177, 0, 0.14)',
+            color: 'var(--color-grade-mid)',
+            fontSize: 13,
+            fontWeight: 600,
+          }}
+        >
+          Sample attendance — real absences appear once they’re recorded.
+        </div>
+      )}
       {note}
     </div>
   );
