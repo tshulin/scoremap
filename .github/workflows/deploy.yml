@@ -2,9 +2,9 @@
 #
 # One-time repo setup (Settings):
 #   - Pages -> Source: "GitHub Actions"
-#   - (optional) Actions variable VITE_API_BASE pointing at the backend API,
-#     e.g. https://api.example.com/api - until it is set, the build bakes in
-#     the placeholder below and login will fail with a clear network error.
+#   - Actions variable VITE_RELAY_URL pointing at your blind relay over wss,
+#     e.g. wss://relay.example.org - until it is set, the build bakes in the
+#     placeholder below and login will fail with a clear connection error.
 name: deploy-web
 
 on:
@@ -35,7 +35,7 @@ jobs:
         env:
           # Project sites are served from /<repo>/.
           VITE_BASE: /grademax/
-          VITE_API_BASE: ${{ vars.VITE_API_BASE || 'https://REPLACE-WITH-YOUR-VPS-DOMAIN/api' }}
+          VITE_RELAY_URL: ${{ vars.VITE_RELAY_URL || 'wss://REPLACE-WITH-YOUR-RELAY-DOMAIN' }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
