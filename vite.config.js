@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -11,6 +12,14 @@ export default defineConfig({
   // deploys stay at /.
   base: process.env.VITE_BASE || '/',
   plugins: [react()],
+  resolve: {
+    alias: {
+      // subtls (the browser TLS client) falls back to Node's `crypto` when no
+      // global crypto exists; browsers always have one, so this dead dynamic
+      // import is stubbed to keep the bundler from choking on the Node builtin.
+      crypto: fileURLToPath(new URL('./src/transport/cryptoStub.js', import.meta.url)),
+    },
+  },
   server: {
     port: 5173,
     open: false,
