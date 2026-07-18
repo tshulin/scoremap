@@ -1,7 +1,7 @@
-import type { Assignment } from '../../../domain/index.js';
-import { AssignmentSchema } from '../../../domain/index.js';
-import { toIsoDate } from '../../../extract/index.js';
-import { validate } from '../shared.js';
+import type { Assignment } from '../../../domain/index';
+import { AssignmentSchema } from '../../../domain/index';
+import { toIsoDate } from '../../../extract/index';
+import { validate } from '../shared';
 
 const NOT_FOR_GRADING_PREFIX = '(Not For Grading)';
 

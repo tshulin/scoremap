@@ -1,5 +1,5 @@
-import { ModuleUnavailableError } from '../portal/errors.js';
-import type { PageResult } from '../portal/http.js';
+import { ModuleUnavailableError } from '../portal/errors';
+import type { PageResult } from '../portal/http';
 
 export function assertNotBounced(
 	page: Pick<PageResult, 'redirected' | 'finalUrl'>,

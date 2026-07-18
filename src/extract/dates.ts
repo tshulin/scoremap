@@ -1,4 +1,4 @@
-import { ParseError } from '../portal/errors.js';
+import { ParseError } from '../portal/errors';
 
 const pad = (value: string): string => value.padStart(2, '0');
 

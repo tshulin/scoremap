@@ -25,8 +25,8 @@ function Login() {
   const [pending, setPending] = React.useState(false);
   const [error, setError] = React.useState('');
 
-  // Sign in through the Grademax backend (which logs in to StudentVUE
-  // server-side), then land on the dashboard.
+  // Sign in to StudentVUE from inside the browser (TLS terminates here, over a
+  // relay that only sees ciphertext), then land on the dashboard.
   const handleLogin = async () => {
     if (!agreed || pending) return;
     if (!username || !password || !domain) {
@@ -128,9 +128,10 @@ function Login() {
                   marginTop: 8,
                 }}
               >
-                Grademax signs in to StudentVUE for you to fetch your grades. Your password is
-                used only for that sign-in, is kept in memory just while your session is active,
-                and is never written to disk or logged.
+                Grademax signs in to StudentVUE from inside your browser: your password is
+                encrypted here and sent straight to StudentVUE, so our relay only ever passes
+                along data it can't read. Your password is never sent to our servers, stored, or
+                logged.
               </div>
             </div>
 

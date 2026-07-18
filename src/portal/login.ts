@@ -1,6 +1,6 @@
-import { portalBase } from './base.js';
-import { AuthError, InvalidDomainError, PortalShapeError } from './errors.js';
-import { CookieJar, fetchFollow, type FetchFollowOptions } from './http.js';
+import { portalBase } from './base';
+import { AuthError, InvalidDomainError, PortalShapeError } from './errors';
+import { CookieJar, fetchFollow, type FetchFollowOptions } from './http';
 
 // StudentVUE uses an ASP.NET WebForms postback for login.
 const LOGIN_PAGE = 'PXP2_Login_Student.aspx?regenerateSessionId=True';

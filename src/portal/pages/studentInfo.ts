@@ -1,9 +1,9 @@
-import { StudentInfoSchema, type StudentInfo } from '../../domain/index.js';
-import { bootstrapValue, parseLabeledFields } from '../../extract/index.js';
-import { ParseError } from '../errors.js';
-import { fetchFollowRaw, type FetchFollowOptions } from '../http.js';
-import type { PortalSession } from '../login.js';
-import { getPage, portalUrl, validate } from './shared.js';
+import { StudentInfoSchema, type StudentInfo } from '../../domain/index';
+import { bootstrapValue, parseLabeledFields } from '../../extract/index';
+import { ParseError } from '../errors';
+import { fetchFollowRaw, type FetchFollowOptions } from '../http';
+import type { PortalSession } from '../login';
+import { getPage, portalUrl, validate } from './shared';
 
 const PAGE = 'PXP2_Student.aspx?AGU=0';
 

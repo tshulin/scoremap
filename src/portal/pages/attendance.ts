@@ -3,18 +3,18 @@ import {
 	AttendanceSchema,
 	type Absence,
 	type Attendance
-} from '../../domain/index.js';
+} from '../../domain/index';
 import {
 	assertNotBounced,
 	bootstrapValue,
 	findDataSourceWithKeys,
 	stripTags,
 	toIsoDate
-} from '../../extract/index.js';
-import { ParseError } from '../errors.js';
-import type { FetchFollowOptions } from '../http.js';
-import type { PortalSession } from '../login.js';
-import { asString, getPage, validate } from './shared.js';
+} from '../../extract/index';
+import { ParseError } from '../errors';
+import type { FetchFollowOptions } from '../http';
+import type { PortalSession } from '../login';
+import { asString, getPage, validate } from './shared';
 
 const PAGE = 'PXP2_Attendance.aspx?AGU=0';
 

@@ -1,4 +1,4 @@
-export { fetchAttendance } from './attendance.js';
-export { downloadDocument, fetchDocuments } from './documents.js';
-export { fetchGradebook, rawAssignmentToDomain } from './gradebook/index.js';
-export { checkLogin, fetchStudentInfo } from './studentInfo.js';
+export { fetchAttendance } from './attendance';
+export { downloadDocument, fetchDocuments } from './documents';
+export { fetchGradebook, rawAssignmentToDomain } from './gradebook/index';
+export { checkLogin, fetchStudentInfo } from './studentInfo';

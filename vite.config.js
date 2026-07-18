@@ -23,14 +23,7 @@ export default defineConfig({
   server: {
     port: 5173,
     open: false,
-    // The app calls the Grademax backend at /api (src/data/api.js); in dev the
-    // backend runs on this machine at :3000. Proxying keeps requests
-    // same-origin, so no CORS and every response header is readable.
-    proxy: {
-      '/api': {
-        target: process.env.GRADEMAX_API || 'http://localhost:3000',
-        changeOrigin: true,
-      },
-    },
+    // No backend proxy: the app talks to the blind relay over a WebSocket
+    // (VITE_RELAY_URL, see src/data/api.js), not to an /api HTTP backend.
   },
 });

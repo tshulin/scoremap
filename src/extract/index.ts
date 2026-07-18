@@ -1,4 +1,4 @@
-export { countDataSources, extractJsonAfter, findDataSourceWithKeys } from './json.js';
-export { toIsoDate } from './dates.js';
-export { bootstrapValue, decodeEntities, parseLabeledFields, stripTags } from './html.js';
-export { assertNotBounced } from './module.js';
+export { countDataSources, extractJsonAfter, findDataSourceWithKeys } from './json';
+export { toIsoDate } from './dates';
+export { bootstrapValue, decodeEntities, parseLabeledFields, stripTags } from './html';
+export { assertNotBounced } from './module';

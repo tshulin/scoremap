@@ -1,9 +1,9 @@
 import type { ZodType } from 'zod';
-import { portalBase } from '../base.js';
-import { ParseError } from '../errors.js';
-import { fetchFollow, type FetchFollowOptions, type PageResult } from '../http.js';
-import type { PortalSession } from '../login.js';
-import { assertSessionAlive } from '../session.js';
+import { portalBase } from '../base';
+import { ParseError } from '../errors';
+import { fetchFollow, type FetchFollowOptions, type PageResult } from '../http';
+import type { PortalSession } from '../login';
+import { assertSessionAlive } from '../session';
 
 export const portalUrl = (session: PortalSession, path: string): string =>
 	`${portalBase(session.domain)}/${path}`;

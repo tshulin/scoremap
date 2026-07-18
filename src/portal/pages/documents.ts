@@ -1,14 +1,14 @@
-import { DocumentMetaSchema, type DocumentContent, type DocumentMeta } from '../../domain/index.js';
+import { DocumentMetaSchema, type DocumentContent, type DocumentMeta } from '../../domain/index';
 import {
 	assertNotBounced,
 	findDataSourceWithKeys,
 	stripTags,
 	toIsoDate
-} from '../../extract/index.js';
-import { ModuleUnavailableError } from '../errors.js';
-import { fetchFollowRaw, type FetchFollowOptions } from '../http.js';
-import type { PortalSession } from '../login.js';
-import { asString, getPage, portalUrl, validate } from './shared.js';
+} from '../../extract/index';
+import { ModuleUnavailableError } from '../errors';
+import { fetchFollowRaw, type FetchFollowOptions } from '../http';
+import type { PortalSession } from '../login';
+import { asString, getPage, portalUrl, validate } from './shared';
 
 const PAGE = 'PXP2_Documents.aspx?AGU=0';
 const DOWNLOAD_PAGE = 'PXP_ShowDocument.aspx?AGU=&docToken=';

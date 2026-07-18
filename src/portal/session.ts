@@ -1,5 +1,5 @@
-import { SessionExpiredError } from './errors.js';
-import type { PageResult } from './http.js';
+import { SessionExpiredError } from './errors';
+import type { PageResult } from './http';
 
 // The portal bounces expired sessions to the login page; every page fetch checks
 // this so a dead session surfaces as SessionExpiredError, not a parse failure.

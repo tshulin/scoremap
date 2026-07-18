@@ -1,4 +1,4 @@
-import { PortalHttpError } from './errors.js';
+import { PortalHttpError } from './errors';
 
 // StudentVUE sets session cookies on redirects and varies its HTML by user agent.
 const USER_AGENT =
