@@ -4,6 +4,11 @@
 //
 // Portable on purpose: uses only Uint8Array + platform globals (WebSocket,
 // crypto.subtle), so the exact same code runs in the browser and under Node tests.
+//
+// subtls is pinned to an exact version (it's a young, single-maintainer TLS 1.3
+// implementation). If it ever proves unreliable, the fallback is rustls compiled
+// to WASM — heavier but battle-tested. Both satisfy the same {read,write} contract
+// used below, so swapping is contained to this file.
 
 import { startTls, TrustedCert } from 'subtls';
 import { GODADDY_ROOT_G2_PEM } from './goDaddyRootG2.js';

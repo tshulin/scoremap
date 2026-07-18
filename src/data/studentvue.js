@@ -1,6 +1,6 @@
-// StudentVUE sync layer — pulls everything the app shows from the Grademax
-// backend (which scrapes the PXP2 portal server-side) and maps the backend's
-// domain shapes to the page shapes.
+// StudentVUE sync layer — pulls everything the app shows from the in-browser
+// portal client (src/data/api.js, which scrapes the PXP2 portal over the blind
+// relay) and maps its domain shapes to the page shapes.
 //
 // One sync = student info + gradebook + attendance + documents, in parallel.
 // A resource that fails does not sink the others: its section stays empty and
