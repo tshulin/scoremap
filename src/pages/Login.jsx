@@ -64,7 +64,7 @@ function Login() {
           display: 'flex',
           alignItems: 'flex-start',
           justifyContent: 'center',
-          padding: '96px 24px 64px',
+          padding: '64px 24px',
         }}
       >
         <div style={{ width: 420, maxWidth: '100%' }}>
