@@ -13,10 +13,10 @@
  * `window.Landing = Landing` line and add `export default Landing`.
  */
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   TopNav, HeroBand, BrowserMockup, Button, Badge,
-  FeatureCard, Footer,
+  FeatureCard,
 } from '../lib/ds.js';
 
 function Landing() {
@@ -80,7 +80,7 @@ function Landing() {
       />
 
       {/* 2×2 feature card grid — below the dashboard mockup preview */}
-      <div style={{ maxWidth: 'var(--container-max)', margin: '0 auto', padding: '0 32px 96px' }}>
+      <div style={{ maxWidth: 'var(--container-max)', margin: '0 auto', padding: '0 32px 48px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
           <FeatureCard title="Grade chart">
             See how your grade has changed over time — per-assignment impact, category breakdown, and new assignment tracking as scores post.
@@ -93,18 +93,23 @@ function Landing() {
           </FeatureCard>
           <FeatureCard title="Private login">
             Your device connects directly to StudentVUE. We never see your password or your grades.{' '}
-            <a href="#">Learn more ↗</a>
+            <Link to="/privacy">Learn more ↗</Link>
           </FeatureCard>
         </div>
       </div>
 
-      <Footer
-        columns={[
-          { title: 'Product', links: ['Dashboard', 'Calculator', 'Classes'] },
-          { title: 'Company', links: ['About', 'Contact'] },
-          { title: 'Legal', links: ['Privacy', 'Terms'] },
-        ]}
-      />
+      <div
+        style={{
+          borderTop: '1px solid var(--color-hairline)',
+          padding: '32px',
+          fontSize: 'var(--text-caption-size)',
+          color: 'var(--color-muted)',
+        }}
+      >
+        <div style={{ maxWidth: 'var(--container-max)', margin: '0 auto' }}>
+          © 2026 Grademax. Not affiliated with Edupoint or StudentVUE.
+        </div>
+      </div>
     </div>
   );
 }

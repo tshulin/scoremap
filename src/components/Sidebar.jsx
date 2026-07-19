@@ -138,20 +138,26 @@ function Sidebar() {
         <NavItem label="Mail" active={section === 'mail'} onClick={() => navigate('/mail')} />
       </nav>
 
-      <div
+      <button
+        type="button"
+        onClick={() => navigate('/privacy')}
         style={{
+          width: '100%',
           background: 'var(--color-surface-card)',
           border: '1px solid var(--color-hairline)',
           borderRadius: 'var(--radius-md)',
           padding: '12px 14px',
+          fontFamily: 'var(--font-sans)',
           fontSize: 13,
           lineHeight: 1.5,
           color: 'var(--color-muted)',
           margin: '16px 0',
+          textAlign: 'left',
+          cursor: 'pointer',
         }}
       >
-        Your password and grades are private.
-      </div>
+        Your password and grades are private and stored on-device.
+      </button>
 
       <NavItem label="Feedback" />
       <div style={{ position: 'relative', marginTop: 4 }}>
