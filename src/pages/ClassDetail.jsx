@@ -18,10 +18,13 @@ import {
   gradeSeries,
   hiddenPoints,
   isCalculable,
+  resolveLetter,
 } from '../calc/index';
+import { useGradeIndex } from '../data/gradeIndexStore.js';
 import AssignmentList from './class/AssignmentList.jsx';
 import BoundsDialog from './class/BoundsDialog.jsx';
 import GradeChart from './class/GradeChart.jsx';
+import GradeIndexTab from './class/GradeIndexTab.jsx';
 import OverviewTab from './class/OverviewTab.jsx';
 import TargetDialog from './class/TargetDialog.jsx';
 import { Check, PillButton, fmt2 } from './class/ui.jsx';
@@ -30,6 +33,7 @@ import { useScenario } from './class/useScenario.js';
 const TABS = [
   ['assignments', 'Assignments'],
   ['overview', 'Overview'],
+  ['index', 'Grade index'],
 ];
 
 function ClassDetail() {
@@ -44,6 +48,8 @@ function ClassDetail() {
   const baseRaws = React.useMemo(() => ASSIGNMENTS.filter((a) => a.raw).map((a) => a.raw), [ASSIGNMENTS]);
   const scenario = useScenario(baseRaws);
   const { hypothetical, effective } = scenario;
+  // Per-class letter scale: portal letters observed on sync, overridable.
+  const { scale } = useGradeIndex(classId);
 
   // Sub-tab state is local — no routing changes.
   const [tab, setTab] = React.useState('assignments');
@@ -83,7 +89,9 @@ function ClassDetail() {
             {hypothetical ? (
               <div style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                 <div style={{ fontSize: 'clamp(24px, 2.8vw, 36px)', fontWeight: 600, letterSpacing: '-0.5px', color: computedGrade != null ? bandColor(computedGrade) : 'var(--color-ink)' }}>
-                  {computedGrade != null ? `${fmt2(computedGrade)}%` : '—'}
+                  {computedGrade != null
+                    ? `${resolveLetter(computedGrade, scale)} ${fmt2(computedGrade)}%`
+                    : '—'}
                 </div>
                 <div style={{ fontSize: 13, color: 'var(--color-muted)' }}>
                   hypothetical · official: {GRADE || '—'}
@@ -158,11 +166,14 @@ function ClassDetail() {
             />
           )}
 
+          {tab === 'index' && <GradeIndexTab classId={classId} />}
+
           {targetOpen && (
             <TargetDialog
               onClose={() => setTargetOpen(false)}
               effective={effective}
               categories={categories}
+              scale={scale}
             />
           )}
 
@@ -173,6 +184,7 @@ function ClassDetail() {
               effective={effective}
               hypothetical={hypothetical}
               categories={categories}
+              scale={scale}
             />
           )}
         </div>
