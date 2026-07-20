@@ -77,6 +77,77 @@ export function ScoreInput({ value, placeholder, onChange, label, width = 64 }) 
   );
 }
 
+// Plain fixed-position overlay — no portal, no library (per the plan). The
+// backdrop click and the ✕ both close; content clicks stay inside.
+export function Dialog({ title, onClose, children, maxWidth = 720 }) {
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0, 0, 0, 0.65)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24,
+        zIndex: 50,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-label={title}
+        style={{
+          background: 'var(--color-surface-card)',
+          border: '1px solid var(--color-hairline-strong)',
+          borderRadius: 'var(--radius-xl)',
+          padding: '20px 24px 24px',
+          width: '100%',
+          maxWidth,
+          maxHeight: '85vh',
+          overflowY: 'auto',
+          boxSizing: 'border-box',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+          <div style={{ fontSize: 19, fontWeight: 600, color: 'var(--color-ink)' }}>{title}</div>
+          <button
+            onClick={onClose}
+            aria-label={`Close ${title}`}
+            style={{ border: 'none', background: 'transparent', color: 'var(--color-muted)', cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: 4 }}
+          >
+            ✕
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// Secondary pill button (dialog openers, small actions).
+export function PillButton({ onClick, children }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: '8px 16px',
+        borderRadius: 'var(--radius-md)',
+        border: '1px solid var(--color-hairline-strong)',
+        background: 'var(--color-surface-card)',
+        color: 'var(--color-ink)',
+        fontFamily: 'var(--font-sans)',
+        fontSize: 14,
+        fontWeight: 600,
+        cursor: 'pointer',
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
 export function TextInputSmall({ value, placeholder, onChange, label, width = 220 }) {
   return (
     <input

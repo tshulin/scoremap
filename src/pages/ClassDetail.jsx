@@ -22,7 +22,8 @@ import {
 import AssignmentList from './class/AssignmentList.jsx';
 import GradeChart from './class/GradeChart.jsx';
 import OverviewTab from './class/OverviewTab.jsx';
-import { Check, fmt2 } from './class/ui.jsx';
+import TargetDialog from './class/TargetDialog.jsx';
+import { Check, PillButton, fmt2 } from './class/ui.jsx';
 import { useScenario } from './class/useScenario.js';
 
 const TABS = [
@@ -45,6 +46,7 @@ function ClassDetail() {
 
   // Sub-tab state is local — no routing changes.
   const [tab, setTab] = React.useState('assignments');
+  const [targetOpen, setTargetOpen] = React.useState(false);
 
   const anyCalculable = effective.some(isCalculable);
   const computedGrade = anyCalculable ? courseGrade(effective, categories) : null;
@@ -121,9 +123,10 @@ function ClassDetail() {
                   and added hypotheticals visibly reshape the line */}
               <GradeChart series={series} />
 
-              {/* toggles (Pin chart deliberately omitted) */}
-              <div style={{ display: 'flex', gap: 40, flexWrap: 'wrap', marginBottom: 12 }}>
+              {/* toggles + calculators (Pin chart deliberately omitted) */}
+              <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 }}>
                 <Check label="Hypothetical mode" checked={hypothetical} onChange={scenario.toggleHypothetical} />
+                <PillButton onClick={() => setTargetOpen(true)}>🎯 Target calculator</PillButton>
               </div>
 
               {hypothetical && (
@@ -149,6 +152,14 @@ function ClassDetail() {
               categories={categories}
               hiddenRows={hiddenRows}
               hypothetical={hypothetical}
+            />
+          )}
+
+          {targetOpen && (
+            <TargetDialog
+              onClose={() => setTargetOpen(false)}
+              effective={effective}
+              categories={categories}
             />
           )}
         </div>
