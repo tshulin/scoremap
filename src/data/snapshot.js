@@ -7,7 +7,6 @@
 export const emptySnapshot = {
   classes: [],
   assignmentsByClass: {},
-  historyByClass: {},
   attendance: { schoolName: '', records: [], unreadableAbsences: 0 },
   documents: [],
   session: {

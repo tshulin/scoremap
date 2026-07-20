@@ -102,8 +102,3 @@ export function useAssignments(id) {
   const { assignmentsByClass } = useSync();
   return assignmentsByClass[id] || [];
 }
-
-export function useGradeHistory(id) {
-  const { historyByClass } = useSync();
-  return historyByClass[id] || { dates: [], values: [] };
-}
