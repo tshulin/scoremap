@@ -9,6 +9,7 @@
 import * as api from './api.js';
 import { DEMO, DEMO_STUDENT } from './demo.js';
 import { emptySnapshot } from './snapshot.js';
+import { harvestFromClasses } from './gradeIndexStore.js';
 import { SAMPLE_ATTENDANCE, SAMPLE_GRADEBOOK } from './placeholders.js';
 import { GradebookSchema } from '../domain/index';
 
@@ -172,7 +173,11 @@ const friendlyGradebookMessage = (error) =>
     : error.message;
 
 export async function sync(knownStudent) {
-  if (DEMO) return demoSnapshot();
+  if (DEMO) {
+    const snapshot = demoSnapshot();
+    harvestFromClasses(snapshot.classes);
+    return snapshot;
+  }
   const [student, gradebook, attendance, documents] = await Promise.allSettled([
     api.getStudent(),
     api.getGradebook(),
@@ -198,6 +203,9 @@ export async function sync(knownStudent) {
     data.classes = mapped.classes;
     data.assignmentsByClass = mapped.assignmentsByClass;
     data.session.semester = mapped.semester;
+    // Every sync teaches the per-class grade index a little more — the
+    // portal's letters are the only honest source of each teacher's scale.
+    harvestFromClasses(mapped.classes);
     data.meta.gradebook = {
       ok: true,
       placeholder: gradebook.value.placeholder,
