@@ -4,7 +4,7 @@
 // shows as assignments.
 import React from 'react';
 import { scoreBandColor as bandColor } from '../../lib/grades.js';
-import { Chip, ScoreInput, TextInputSmall, assessmentLike, fmt2, shortDate, signed } from './ui.jsx';
+import { Chip, ScoreInput, TextInputSmall, assessmentLike, fmt2, shortDate, signed, todayIso } from './ui.jsx';
 
 const rowCard = {
   background: 'var(--color-surface-card)',
@@ -45,7 +45,7 @@ function AddAssignmentForm({ categories, onAdd }) {
   const [earned, setEarned] = React.useState('');
   const [possible, setPossible] = React.useState('');
   const [extraCredit, setExtraCredit] = React.useState(false);
-  const [date, setDate] = React.useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = React.useState(todayIso());
 
   const weighted = !!(categories && categories.length > 0);
 

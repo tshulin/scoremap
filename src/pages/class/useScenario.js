@@ -3,8 +3,7 @@
 // Session-only on purpose — stale fake assignments mixed into freshly synced
 // real data is the worst failure mode here.
 import { useCallback, useMemo, useRef, useState } from 'react';
-
-const today = () => new Date().toISOString().slice(0, 10);
+import { todayIso } from './ui.jsx';
 
 export function useScenario(baseAssignments) {
   const [hypothetical, setHypothetical] = useState(false);
@@ -33,7 +32,7 @@ export function useScenario(baseAssignments) {
       name: name || 'Hypothetical assignment',
       extraCredit: !!extraCredit,
       notForGrade: false,
-      date: date || today(),
+      date: date || todayIso(),
     };
     const earned = parseFloat(pointsEarned);
     const possible = parseFloat(pointsPossible);

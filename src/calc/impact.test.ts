@@ -100,6 +100,21 @@ describe('assignmentImpacts — weighted', () => {
 
 		expect(total).toBeCloseTo(courseGrade(assignments, categories));
 	});
+
+	// The class page maps impacts by id over the effective list (real + added
+	// hypotheticals), so added "hypo-N" rows must come back with impacts too.
+	it('includes added hypothetical assignments in the impact map', () => {
+		const real = graded(80, 100, { id: 'SAMPLE-1', category: 'Tests', date: '2025-09-01' });
+		const hypo = graded(9, 10, { id: 'hypo-1', category: 'Homework', date: '2025-09-10' });
+
+		const byId = new Map(
+			assignmentImpacts([real, hypo], categories).map((i) => [i.assignment.id, i.gradeImpact])
+		);
+
+		// 80% on Tests alone, then Homework's 40% joins: 0.6·80 + 0.4·90 = 84.
+		expect(byId.get('hypo-1')).toBeCloseTo(4);
+		expect(byId.get('SAMPLE-1')).toBe(80);
+	});
 });
 
 describe('hiddenPoints', () => {

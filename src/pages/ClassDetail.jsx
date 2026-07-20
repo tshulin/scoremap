@@ -47,9 +47,13 @@ function ClassDetail() {
     [effective, categories],
   );
   const series = React.useMemo(() => gradeSeries(effective, categories), [effective, categories]);
+  // Hidden points are a property of the synced data (portal category totals
+  // vs. the assignments it listed) — computed from the real rows, never the
+  // scenario, or every edit/added hypothetical would masquerade as a
+  // portal discrepancy.
   const hiddenRows = React.useMemo(
-    () => (categories ? hiddenPoints(categories, effective) : []),
-    [categories, effective],
+    () => (categories ? hiddenPoints(categories, baseRaws) : []),
+    [categories, baseRaws],
   );
 
   return (
