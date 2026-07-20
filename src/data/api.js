@@ -18,6 +18,7 @@ import { fetchAttendance } from '../portal/pages/attendance';
 import { fetchGradebook } from '../portal/pages/gradebook/index';
 import { SessionExpiredError, NoActiveGradingPeriodError, ParseError } from '../portal/errors';
 import { SAMPLE_GRADEBOOK, SAMPLE_ATTENDANCE, PLACEHOLDER_DATA } from './placeholders';
+import { DEMO, DEMO_STUDENT } from './demo';
 
 // Set at build time (deploy workflow); wss:// in production, ws://localhost in dev.
 const RELAY_URL = import.meta.env.VITE_RELAY_URL || 'ws://localhost:8080';
@@ -64,6 +65,7 @@ export function clearToken() {
 }
 
 export function hasToken() {
+  if (DEMO) return true;
   if (session) return true;
   try {
     return !!sessionStorage.getItem(SESSION_KEY);
@@ -116,6 +118,7 @@ async function withSession(fn) {
 // ---- auth ----
 
 export async function login({ domain, username, password }) {
+  if (DEMO) return DEMO_STUDENT;
   try {
     session = await portalLogin({ domain, username, password }, options);
     persist(session);

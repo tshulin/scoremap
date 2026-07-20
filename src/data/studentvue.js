@@ -7,7 +7,9 @@
 // `meta.<resource>.message` says why. A 401 anywhere aborts the sync so the
 // provider can sign the user out.
 import * as api from './api.js';
+import { DEMO, DEMO_STUDENT } from './demo.js';
 import { emptySnapshot } from './snapshot.js';
+import { SAMPLE_ATTENDANCE, SAMPLE_GRADEBOOK } from './placeholders.js';
 import { GradebookSchema } from '../domain/index';
 
 const slug = (name) =>
@@ -130,6 +132,38 @@ function mapAbsence(a) {
   return { date: a.date, status, note: a.note || '', reason: a.reason || '', periods };
 }
 
+// ---- demo snapshot (VITE_DEMO) ----
+// Built through the exact same mappings real data takes, so every feature works
+// identically in demo — the only difference is where the Gradebook came from.
+
+function demoSnapshot() {
+  const mapped = mapGradebook(SAMPLE_GRADEBOOK);
+  return {
+    ...emptySnapshot,
+    classes: mapped.classes,
+    assignmentsByClass: mapped.assignmentsByClass,
+    attendance: {
+      schoolName: SAMPLE_ATTENDANCE.schoolName,
+      records: SAMPLE_ATTENDANCE.absences.map(mapAbsence),
+      unreadableAbsences: SAMPLE_ATTENDANCE.unreadableAbsences,
+    },
+    documents: [],
+    session: {
+      ...emptySnapshot.session,
+      studentName: DEMO_STUDENT.name,
+      grade: DEMO_STUDENT.grade,
+      semester: mapped.semester,
+      lastUpdated: new Date(),
+      demo: true,
+    },
+    meta: {
+      gradebook: { ok: true, placeholder: true, message: 'Demo mode — sample data.' },
+      attendance: { ok: true, placeholder: true, message: '' },
+      documents: { ok: true, message: '' },
+    },
+  };
+}
+
 // ---- the sync ----
 
 const friendlyGradebookMessage = (error) =>
@@ -138,6 +172,7 @@ const friendlyGradebookMessage = (error) =>
     : error.message;
 
 export async function sync(knownStudent) {
+  if (DEMO) return demoSnapshot();
   const [student, gradebook, attendance, documents] = await Promise.allSettled([
     api.getStudent(),
     api.getGradebook(),
