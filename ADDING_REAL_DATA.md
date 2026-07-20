@@ -17,16 +17,31 @@ schema, or grade-engine work remains for either; those are done.
 
 ## Previewing with sample data
 
-The Grades and Attendance screens show sample data (clearly banner-flagged) when you build
-or run with:
+Two dev flags, both off by default (production shows the honest "no grades yet" state,
+never invented numbers):
 
 ```bash
-VITE_PLACEHOLDER_DATA=true npm run dev
+VITE_DEMO=true npm run dev              # whole app signed-in on sample data — no relay, no login
+VITE_PLACEHOLDER_DATA=true npm run dev  # real login; sample gradebook/attendance only as fallback
 ```
 
-Off by default (production shows the honest "no grades yet" state, never invented numbers).
 Sample data lives in `src/data/placeholders.js` and is validated against the domain schemas
-at load. Once real data is available the sample is never served.
+at load; both paths are banner-flagged in the UI. Demo mode (`src/data/demo.js`) refuses to
+load in a production build. With the placeholder flag, real portal data always wins once it
+exists.
+
+## What lights up automatically
+
+Every grade feature — the grade-over-time chart, hypothetical edits/additions, impact
+chips, the category overview, the target and max/min calculators, and the grade index —
+consumes domain `Assignment`/`Category` shapes produced by `mapGradebook`
+(`src/data/studentvue.js`). When `parseGradebook` lands, real data flows into all of them
+with **zero feature work**. Two things to re-verify on first real data:
+
+- Real category names and letters can be messier than the samples; the grade-index harvest
+  already skips empty letters, and each sync tightens the inferred cutoffs automatically.
+- Real gradebooks may hide assignments (category totals exceed the listed rows) — the
+  hidden-points pseudo-rows and the overview's hidden flags cover that path.
 
 ## Gradebook — implement the parser
 
@@ -66,6 +81,7 @@ When a real absence exists:
 
 ## When both are done
 
-Delete `src/data/placeholders.js`, its imports in `src/data/api.js`
-(`SAMPLE_GRADEBOOK` / `SAMPLE_ATTENDANCE` fallbacks), the `meta.*.placeholder` banners in
-`src/components/SyncPill.jsx`, and this file.
+Remove the `SAMPLE_GRADEBOOK` / `SAMPLE_ATTENDANCE` fallbacks from `src/data/api.js` and
+the `meta.*.placeholder` banners in `src/components/SyncPill.jsx`, then delete this file.
+Keep `src/data/placeholders.js` — demo mode (`VITE_DEMO`) still builds its snapshot from
+it, and its consistency suite (`src/data/placeholders.test.ts`) keeps the sample honest.
