@@ -18,12 +18,17 @@ import {
   gradeSeries,
   hiddenPoints,
   isCalculable,
-  pointsByCategory,
 } from '../calc/index';
 import AssignmentList from './class/AssignmentList.jsx';
 import GradeChart from './class/GradeChart.jsx';
+import OverviewTab from './class/OverviewTab.jsx';
 import { Check, fmt2 } from './class/ui.jsx';
 import { useScenario } from './class/useScenario.js';
+
+const TABS = [
+  ['assignments', 'Assignments'],
+  ['overview', 'Overview'],
+];
 
 function ClassDetail() {
   const { classId } = useParams();
@@ -38,7 +43,8 @@ function ClassDetail() {
   const scenario = useScenario(baseRaws);
   const { hypothetical, effective } = scenario;
 
-  const [breakdown, setBreakdown] = React.useState(false);
+  // Sub-tab state is local — no routing changes.
+  const [tab, setTab] = React.useState('assignments');
 
   const anyCalculable = effective.some(isCalculable);
   const computedGrade = anyCalculable ? courseGrade(effective, categories) : null;
@@ -86,85 +92,65 @@ function ClassDetail() {
             )}
           </div>
 
-          {/* grade over time, derived from the effective assignments — edits
-              and added hypotheticals visibly reshape the line */}
-          <GradeChart series={series} />
-
-          {/* toggles (Pin chart deliberately omitted) */}
-          <div style={{ display: 'flex', gap: 40, flexWrap: 'wrap', marginBottom: 12 }}>
-            <Check label="Hypothetical mode" checked={hypothetical} onChange={scenario.toggleHypothetical} />
-            <Check label="Show category breakdown" checked={breakdown} onChange={setBreakdown} />
+          {/* sub-tabs (Grade index joins in a later phase) */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: 4, borderRadius: 'var(--radius-lg)', background: 'var(--color-surface-card)', border: '1px solid var(--color-hairline-strong)', marginBottom: 20 }}>
+            {TABS.map(([id, label]) => (
+              <button
+                key={id}
+                onClick={() => setTab(id)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: 'var(--radius-md)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: 15,
+                  fontWeight: 500,
+                  background: tab === id ? 'var(--color-surface-dark-elevated)' : 'transparent',
+                  color: tab === id ? 'var(--color-ink)' : 'var(--color-body)',
+                }}
+              >
+                {label}
+              </button>
+            ))}
           </div>
 
-          {hypothetical && (
-            <div style={{ fontSize: 14, color: 'var(--color-body)', marginBottom: 16 }}>
-              Edit any score or add assignments below — the grade recomputes instantly, right in
-              your browser. Nothing is saved or sent anywhere.
-            </div>
-          )}
+          {tab === 'assignments' && (
+            <>
+              {/* grade over time, derived from the effective assignments — edits
+                  and added hypotheticals visibly reshape the line */}
+              <GradeChart series={series} />
 
-          {/* category breakdown — computed by src/calc from the (possibly edited) scores */}
-          {breakdown && (
-            <div
-              style={{
-                marginBottom: 28,
-                background: 'var(--color-surface-card)',
-                border: '1px solid var(--color-hairline-strong)',
-                borderRadius: 'var(--radius-xl)',
-                padding: '16px 24px',
-                overflowX: 'auto',
-              }}
-            >
-              {categories ? (
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 15, color: 'var(--color-ink)' }}>
-                  <thead>
-                    <tr style={{ textAlign: 'left', color: 'var(--color-muted)', fontSize: 13 }}>
-                      <th style={{ padding: '6px 12px 10px 0', fontWeight: 600 }}>Category</th>
-                      <th style={{ padding: '6px 12px 10px 0', fontWeight: 600 }}>Weight</th>
-                      <th style={{ padding: '6px 12px 10px 0', fontWeight: 600 }}>Points</th>
-                      <th style={{ padding: '6px 0 10px 0', fontWeight: 600 }}>Grade</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {categories.map((cat) => {
-                      const pts = pointsByCategory(effective).get(cat.name);
-                      const hasPoints = pts && pts.pointsPossible > 0;
-                      return (
-                        <tr key={cat.name} style={{ borderTop: '1px solid var(--color-hairline)' }}>
-                          <td style={{ padding: '10px 12px 10px 0', fontWeight: 600 }}>{cat.name}</td>
-                          <td style={{ padding: '10px 12px 10px 0' }}>{fmt2(cat.weightPercentage)}%</td>
-                          <td style={{ padding: '10px 12px 10px 0' }}>
-                            {pts ? `${fmt2(pts.pointsEarned)}/${fmt2(pts.pointsPossible)}` : '—'}
-                          </td>
-                          <td style={{ padding: '10px 0' }}>
-                            {hasPoints ? (
-                              <span style={{ color: bandColor((pts.pointsEarned / pts.pointsPossible) * 100), fontWeight: 600 }}>
-                                {fmt2((pts.pointsEarned / pts.pointsPossible) * 100)}%
-                              </span>
-                            ) : (
-                              <span style={{ color: 'var(--color-muted)' }}>no graded work yet</span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              ) : (
-                <div style={{ fontSize: 14, color: 'var(--color-body)' }}>
-                  This class is graded on straight point totals — there are no weighted categories.
+              {/* toggles (Pin chart deliberately omitted) */}
+              <div style={{ display: 'flex', gap: 40, flexWrap: 'wrap', marginBottom: 12 }}>
+                <Check label="Hypothetical mode" checked={hypothetical} onChange={scenario.toggleHypothetical} />
+              </div>
+
+              {hypothetical && (
+                <div style={{ fontSize: 14, color: 'var(--color-body)', marginBottom: 16 }}>
+                  Edit any score or add assignments below — the grade recomputes instantly, right in
+                  your browser. Nothing is saved or sent anywhere.
                 </div>
               )}
-            </div>
+
+              <AssignmentList
+                assignments={ASSIGNMENTS}
+                categories={categories}
+                scenario={scenario}
+                impactById={impactById}
+                hiddenRows={hiddenRows}
+              />
+            </>
           )}
 
-          <AssignmentList
-            assignments={ASSIGNMENTS}
-            categories={categories}
-            scenario={scenario}
-            impactById={impactById}
-            hiddenRows={hiddenRows}
-          />
+          {tab === 'overview' && (
+            <OverviewTab
+              assignments={effective}
+              categories={categories}
+              hiddenRows={hiddenRows}
+              hypothetical={hypothetical}
+            />
+          )}
         </div>
       </main>
     </div>
