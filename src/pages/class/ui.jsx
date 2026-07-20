@@ -13,6 +13,14 @@ export const shortDate = (iso) => {
   return `${m}/${d}/${String(y).slice(2)}`;
 };
 
+// Local calendar date — toISOString() is UTC and flips to tomorrow in the
+// evening (US timezones), which would misplace added assignments on the chart.
+export const todayIso = () => {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+};
+
 export function Chip({ children, tone = 'neutral' }) {
   const tones = {
     neutral: { background: 'var(--color-surface-strong)', border: '1px solid var(--color-hairline)', color: 'var(--color-body)' },
