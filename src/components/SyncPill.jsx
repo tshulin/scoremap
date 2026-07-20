@@ -46,7 +46,21 @@ function SyncPill({ note }) {
           <span aria-hidden="true">↻</span> Refresh
         </a>
       </div>
-      {meta.gradebook.placeholder && (
+      {session.demo && (
+        <div
+          style={{
+            padding: '6px 14px',
+            borderRadius: 'var(--radius-pill)',
+            background: 'rgba(77, 168, 255, 0.14)',
+            color: 'var(--color-text-link)',
+            fontSize: 13,
+            fontWeight: 600,
+          }}
+        >
+          Demo mode — everything here is sample data.
+        </div>
+      )}
+      {!session.demo && meta.gradebook.placeholder && (
         <div
           style={{
             padding: '6px 14px',
@@ -60,7 +74,7 @@ function SyncPill({ note }) {
           Sample gradebook — real grades appear once the term starts.
         </div>
       )}
-      {meta.attendance.placeholder && (
+      {!session.demo && meta.attendance.placeholder && (
         <div
           style={{
             padding: '6px 14px',

@@ -34,8 +34,8 @@ const ALGEBRA = {
       letter: 'B',
       percentage: 85,
       categories: [
-        { name: 'Homework', weightPercentage: 30, pointsEarned: 52, pointsPossible: 60, weightedPercentage: 26, letter: 'B' },
-        { name: 'Tests', weightPercentage: 50, pointsEarned: 168, pointsPossible: 200, weightedPercentage: 42, letter: 'B' },
+        { name: 'Homework', weightPercentage: 30, pointsEarned: 65, pointsPossible: 75, weightedPercentage: 26, letter: 'B' },
+        { name: 'Tests', weightPercentage: 50, pointsEarned: 252, pointsPossible: 300, weightedPercentage: 42, letter: 'B' },
         { name: 'Finals', weightPercentage: 20, pointsEarned: 0, pointsPossible: 0, weightedPercentage: 0, letter: '' },
       ],
       assignments: [
@@ -46,7 +46,9 @@ const ALGEBRA = {
         // Extra credit carries pointsPossible; the extraCredit flag keeps it out of the denominator.
         { id: 'SAMPLE-1-4', name: 'Homework Bonus', pointsEarned: 4, pointsPossible: 4, extraCredit: true, notForGrade: false, category: 'Homework', date: '2026-09-22' },
         { id: 'SAMPLE-1-5', name: 'Unit 1 Test', pointsEarned: 88, pointsPossible: 100, extraCredit: false, notForGrade: false, category: 'Tests', date: '2026-09-25' },
+        { id: 'SAMPLE-1-9', name: 'Systems of Equations HW', pointsEarned: 13, pointsPossible: 15, extraCredit: false, notForGrade: false, category: 'Homework', date: '2026-10-02' },
         { id: 'SAMPLE-1-6', name: 'Unit 2 Test', pointsEarned: 80, pointsPossible: 100, extraCredit: false, notForGrade: false, category: 'Tests', date: '2026-10-09' },
+        { id: 'SAMPLE-1-10', name: 'Chapter 5 Quiz', pointsEarned: 84, pointsPossible: 100, extraCredit: false, notForGrade: false, category: 'Tests', date: '2026-10-16' },
         // Assigned, not graded.
         { id: 'SAMPLE-1-7', name: 'Unit 3 Test', pointsPossible: 100, extraCredit: false, notForGrade: false, category: 'Tests', date: '2026-10-23', dueDate: '2026-10-23' },
         { id: 'SAMPLE-1-8', name: 'Syllabus Acknowledgement', pointsEarned: 0, pointsPossible: 5, extraCredit: false, notForGrade: true, category: 'Homework', date: '2026-09-02', comments: '(Not For Grading)' },
@@ -73,8 +75,37 @@ const BIOLOGY = {
       assignments: [
         { id: 'SAMPLE-2-1', name: 'Cell Structure Lab', pointsEarned: 47, pointsPossible: 50, extraCredit: false, notForGrade: false, date: '2026-09-11' },
         { id: 'SAMPLE-2-2', name: 'Osmosis Quiz', pointsEarned: 18, pointsPossible: 20, extraCredit: false, notForGrade: false, date: '2026-09-19' },
+        { id: 'SAMPLE-2-5', name: 'Photosynthesis Quiz', pointsEarned: 23, pointsPossible: 25, extraCredit: false, notForGrade: false, date: '2026-09-26' },
         { id: 'SAMPLE-2-3', name: 'Genetics Problem Set', pointsEarned: 27, pointsPossible: 30, unscaledPoints: { pointsEarned: 22.5, pointsPossible: 25 }, extraCredit: false, notForGrade: false, date: '2026-10-02' },
+        { id: 'SAMPLE-2-6', name: 'Dissection Lab', pointsEarned: 46, pointsPossible: 50, extraCredit: false, notForGrade: false, date: '2026-10-09' },
         { id: 'SAMPLE-2-4', name: 'Ecology Essay', pointsPossible: 40, extraCredit: false, notForGrade: false, date: '2026-10-16', dueDate: '2026-10-20', resources: [{ name: 'Essay prompt.pdf', type: 'File' }] },
+      ],
+    },
+  ],
+};
+
+// Unweighted with a non-standard grade scale: the teacher's A starts at 84, and
+// the portal's letter proves it. Exercises grade-index inference (an observed
+// A at 84% must drag the inferred A cutoff below the default 93).
+const AP_BIOLOGY = {
+  courseId: 'SAMPLE-4',
+  name: 'AP Biology',
+  title: 'AP Biology',
+  period: '4',
+  room: 'S-204',
+  staff: teacher('M. Chen', 'mchen@example.edu'),
+  marks: [
+    {
+      name: 'Quarter 1',
+      shortName: 'Q1',
+      letter: 'A',
+      percentage: 84,
+      assignments: [
+        { id: 'SAMPLE-4-1', name: 'Biochemistry Problem Set', pointsEarned: 40, pointsPossible: 50, extraCredit: false, notForGrade: false, date: '2026-09-10' },
+        { id: 'SAMPLE-4-2', name: 'Enzyme Lab Quiz', pointsEarned: 17, pointsPossible: 20, extraCredit: false, notForGrade: false, date: '2026-09-17' },
+        { id: 'SAMPLE-4-3', name: 'Unit 1 Exam', pointsEarned: 84, pointsPossible: 100, extraCredit: false, notForGrade: false, date: '2026-09-24' },
+        { id: 'SAMPLE-4-4', name: 'Cell Respiration FRQ', pointsEarned: 20, pointsPossible: 25, extraCredit: false, notForGrade: false, date: '2026-10-08' },
+        { id: 'SAMPLE-4-5', name: 'Photosynthesis Lab Report', pointsEarned: 49, pointsPossible: 55, extraCredit: false, notForGrade: false, date: '2026-10-15' },
       ],
     },
   ],
@@ -99,7 +130,7 @@ export const SAMPLE_GRADEBOOK = GradebookSchema.parse({
     { index: 3, name: 'Quarter 4', startDate: '2027-03-15', endDate: '2027-05-28' },
   ],
   currentPeriodIndex: 0,
-  courses: [ALGEBRA, BIOLOGY, CERAMICS],
+  courses: [ALGEBRA, BIOLOGY, AP_BIOLOGY, CERAMICS],
 });
 
 // Sample absences to exercise the attendance UI's status classification (excused /
