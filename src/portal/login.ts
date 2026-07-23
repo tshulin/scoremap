@@ -1,4 +1,5 @@
 import { portalBase } from './base';
+import { isPortalDomain } from './domainInput';
 import { AuthError, InvalidDomainError, PortalShapeError } from './errors';
 import { CookieJar, fetchFollow, type FetchFollowOptions } from './http';
 
@@ -16,12 +17,12 @@ export interface PortalSession {
 	jar: CookieJar;
 }
 
-const HOSTNAME_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i;
-
+// A portal domain is a hostname plus an optional base path — some districts
+// share a server under a path ("studentvue.geneseeisd.org/wpa").
 export function validatePortalDomain(domain: string): string {
-	if (!HOSTNAME_RE.test(domain)) {
+	if (!isPortalDomain(domain)) {
 		throw new InvalidDomainError(
-			`Invalid portal domain ${JSON.stringify(domain)}. Enter a hostname such as "yourdistrict-psv.edupoint.com" without a scheme, path, or port.`
+			`Invalid portal domain ${JSON.stringify(domain)}. Enter a hostname such as "yourdistrict-psv.edupoint.com" (a base path like "host.org/district" is allowed) without a scheme, query, or port.`
 		);
 	}
 	return domain;
