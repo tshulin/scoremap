@@ -8,6 +8,24 @@ the workflow in `.github/workflows/`. Everything that touches your data runs
 **in your browser** — including signing in to StudentVUE. A tiny **blind relay**
 is the only server-side piece, and it can't read anything.
 
+# todo
+
+general:
+- logo
+- buy domain
+- font
+- overall fix aesthetics and add effects
+- light and dark mode, maybe change color scheme
+
+home page:
+- Fix the display hero (maybe add a demo functionality where users can click around the hero)
+- Write cleaner text
+- More detailed explaination of features
+
+login page:
+- Option to send a report for fix district domain or add district domain
+- Link to how to find portal link page
+
 ## What runs where
 
 - **In your browser (this app)** — all UI, the grade engine (`src/calc/`), and
