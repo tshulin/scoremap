@@ -5,6 +5,9 @@
 #   - Actions variable VITE_RELAY_URL pointing at your blind relay over wss,
 #     e.g. wss://relay.example.org - until it is set, the build bakes in the
 #     placeholder below and login will fail with a clear connection error.
+#   - Optional Actions variable VITE_BASE: the path the site is served from.
+#     Defaults to /grademax/ (the github.io project page); set it to / when
+#     the site moves to a custom domain.
 name: deploy-web
 
 on:
@@ -33,8 +36,8 @@ jobs:
       - run: npm ci
       - run: npm run build
         env:
-          # Project sites are served from /<repo>/.
-          VITE_BASE: /grademax/
+          # Project sites are served from /<repo>/; a custom domain serves from /.
+          VITE_BASE: ${{ vars.VITE_BASE || '/grademax/' }}
           VITE_RELAY_URL: ${{ vars.VITE_RELAY_URL || 'wss://REPLACE-WITH-YOUR-RELAY-DOMAIN' }}
       - uses: actions/upload-pages-artifact@v3
         with:
