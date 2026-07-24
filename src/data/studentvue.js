@@ -167,10 +167,13 @@ function demoSnapshot() {
 
 // ---- the sync ----
 
-const friendlyGradebookMessage = (error) =>
-  error.code === 'NO_ACTIVE_GRADING_PERIOD'
-    ? 'No active grading period — grades will appear when the term starts.'
-    : error.message;
+const friendlyGradebookMessage = (error) => {
+  if (error.code === 'NO_ACTIVE_GRADING_PERIOD')
+    return 'No active grading period — grades will appear when the term starts.';
+  if (error.code === 'PARSE_FAILED')
+    return 'Grades are not readable yet — live gradebook support is still being finished.';
+  return error.message;
+};
 
 export async function sync(knownStudent) {
   if (DEMO) {
