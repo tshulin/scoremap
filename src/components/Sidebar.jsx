@@ -134,10 +134,10 @@ function Sidebar() {
           <NavItem key={c.id} label={c.name} sub active={activeClassId === c.id} onClick={() => navigate(`/grades/${c.id}`)} />
         ))}
         <div style={{ height: 12 }} />
-        <NavItem label="GPA calculator" active={section === 'gpa-calculator'} onClick={() => navigate('/gpa-calculator')} />
         <NavItem label="Attendance" active={section === 'attendance'} onClick={() => navigate('/attendance')} />
         <NavItem label="Documents" active={section === 'documents'} onClick={() => navigate('/documents')} />
         <NavItem label="Mail" active={section === 'mail'} onClick={() => navigate('/mail')} />
+        <NavItem label="GPA calculator" active={section === 'gpa-calculator'} onClick={() => navigate('/gpa-calculator')} />
       </nav>
 
       <button
