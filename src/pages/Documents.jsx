@@ -2,14 +2,14 @@
  * Documents — the student's document center (route: /documents).
  *
  * The list comes from the backend's /api/documents via the sync layer; clicking
- * a document downloads it through /api/documents/:docToken (auth header
- * required, so it goes through fetch, not a plain link).
+ * a document fetches it through /api/documents/:docToken and opens it in the
+ * browser's built-in viewer (auth headers prevent using a plain link).
  *
  * A segmented filter (one tab per category present) narrows the list; the
  * category badge is shown only in "All" (redundant once a single category is
  * selected).
  */
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Sidebar from '../components/Sidebar.jsx';
 import SyncPill from '../components/SyncPill.jsx';
 import { downloadDocument } from '../data/api.js';
@@ -35,6 +35,14 @@ function Documents() {
   const [hovered, setHovered] = useState(null);
   const [downloading, setDownloading] = useState(null);
   const [downloadError, setDownloadError] = useState('');
+  const documentUrls = useRef(new Set());
+
+  useEffect(() => {
+    return () => {
+      documentUrls.current.forEach((url) => URL.revokeObjectURL(url));
+      documentUrls.current.clear();
+    };
+  }, []);
 
   const categories = useMemo(
     () => [...new Set(documents.map((d) => d.category))],
@@ -47,18 +55,38 @@ function Documents() {
 
   const openDoc = async (doc) => {
     if (downloading) return;
+
+    // Reserve the tab during the click so the browser does not block it after
+    // the asynchronous document request finishes.
+    const viewer = window.open('', '_blank');
+    if (!viewer) {
+      setDownloadError('Allow pop-ups for Grademax to open documents in a new tab.');
+      return;
+    }
+
+    viewer.document.title = 'Opening document…';
     setDownloading(doc.id);
     setDownloadError('');
+
     try {
       const { blob, fileName } = await downloadDocument(doc.docToken);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 30_000);
+      const viewableBlob =
+        blob.type === 'application/octet-stream' && fileName.toLowerCase().endsWith('.pdf')
+          ? blob.slice(0, blob.size, 'application/pdf')
+          : blob;
+      const url = URL.createObjectURL(viewableBlob);
+
+      if (viewer.closed) {
+        URL.revokeObjectURL(url);
+        return;
+      }
+
+      documentUrls.current.add(url);
+      viewer.opener = null;
+      viewer.location.replace(url);
     } catch (e) {
-      setDownloadError(e && e.message ? e.message : 'Download failed.');
+      if (!viewer.closed) viewer.close();
+      setDownloadError(e && e.message ? e.message : 'Document could not be opened.');
     } finally {
       setDownloading(null);
     }
