@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { gpaPoints, semesterGpa } from './gpa';
+import { gpaPoints, isWeightedCourseName, semesterGpa, toGpaGrade } from './gpa';
 
 describe('gpaPoints', () => {
 	it('uses the standard four-point scale for unweighted courses', () => {
@@ -48,5 +48,42 @@ describe('semesterGpa', () => {
 
 	it('returns null when there are no courses', () => {
 		expect(semesterGpa([])).toBeNull();
+	});
+});
+
+describe('toGpaGrade', () => {
+	it('drops +/- modifiers from portal letters', () => {
+		expect(toGpaGrade('A+')).toBe('A');
+		expect(toGpaGrade('A-')).toBe('A');
+		expect(toGpaGrade('B+')).toBe('B');
+		expect(toGpaGrade('C')).toBe('C');
+		expect(toGpaGrade('D-')).toBe('D');
+		expect(toGpaGrade('F')).toBe('F');
+	});
+
+	it('treats E as failing', () => {
+		expect(toGpaGrade('E')).toBe('F');
+	});
+
+	it('rejects ungraded and unrecognized marks', () => {
+		expect(toGpaGrade('—')).toBeNull();
+		expect(toGpaGrade('')).toBeNull();
+		expect(toGpaGrade('P')).toBeNull();
+		expect(toGpaGrade('N/A')).toBeNull();
+	});
+});
+
+describe('isWeightedCourseName', () => {
+	it('flags AP, IB, HN, and honors titles', () => {
+		expect(isWeightedCourseName('AP Biology')).toBe(true);
+		expect(isWeightedCourseName('IB Math SL')).toBe(true);
+		expect(isWeightedCourseName('English 10 HN')).toBe(true);
+		expect(isWeightedCourseName('Honors Chemistry')).toBe(true);
+	});
+
+	it('does not flag regular titles or embedded fragments', () => {
+		expect(isWeightedCourseName('Geometry')).toBe(false);
+		expect(isWeightedCourseName('Graphic Design')).toBe(false);
+		expect(isWeightedCourseName('Japanese 2')).toBe(false);
 	});
 });

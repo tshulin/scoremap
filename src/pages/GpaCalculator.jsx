@@ -3,11 +3,13 @@
  *
  * Every course is weighted equally. A weighted course adds one grade point to
  * passing grades for the weighted result; the unweighted result always uses
- * the standard four-point scale.
+ * the standard four-point scale. "Import current grades" seeds the table from
+ * the synced class list; edits stay local and never touch the portal data.
  */
 import React, { useEffect, useMemo, useState } from 'react';
-import { GPA_GRADES, gpaPoints, semesterGpa } from '../calc/index';
+import { GPA_GRADES, gpaPoints, isWeightedCourseName, semesterGpa, toGpaGrade } from '../calc/index';
 import Sidebar from '../components/Sidebar.jsx';
+import { useClasses } from '../data/SyncProvider.jsx';
 import './GpaCalculator.css';
 
 const STORAGE_KEY = 'grademax-gpa-calculator-v1';
@@ -46,6 +48,21 @@ const formatGpa = (value) => (value == null ? '—' : value.toFixed(2));
 
 function GpaCalculator() {
   const [courses, setCourses] = useState(loadCourses);
+  const classes = useClasses();
+
+  // Classes without a letter yet (ungraded, pass/fail) cannot enter the GPA.
+  const importableCourses = useMemo(
+    () =>
+      classes
+        .map((c) => ({ name: c.name, grade: toGpaGrade(c.grade || ''), weighted: isWeightedCourseName(c.name) }))
+        .filter((c) => c.grade !== null),
+    [classes],
+  );
+
+  const importCurrentGrades = () => {
+    if (importableCourses.length === 0) return;
+    setCourses(importableCourses.map((c) => ({ ...newCourse(), ...c })));
+  };
 
   useEffect(() => {
     try {
@@ -91,9 +108,24 @@ function GpaCalculator() {
                     weighted
                   </p>
                 </div>
-                <button type="button" className="gpa-add-button" onClick={() => setCourses((current) => [...current, newCourse()])}>
-                  Add course
-                </button>
+                <div className="gpa-heading-actions">
+                  <button type="button" className="gpa-add-button" onClick={() => setCourses((current) => [...current, newCourse()])}>
+                    Add course
+                  </button>
+                  <button
+                    type="button"
+                    className="gpa-add-button gpa-import-button"
+                    disabled={importableCourses.length === 0}
+                    title={
+                      importableCourses.length === 0
+                        ? 'No graded classes to import yet'
+                        : 'Replace the table with your synced classes and grades'
+                    }
+                    onClick={importCurrentGrades}
+                  >
+                    Import current grades
+                  </button>
+                </div>
               </div>
 
               <div className="gpa-table" role="table" aria-label="Semester courses">
