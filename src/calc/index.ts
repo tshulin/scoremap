@@ -36,3 +36,6 @@ export type { GradeBounds, GradeBoundsOptions, RemainingWork } from './bounds';
 
 export { DEFAULT_SCALE, LETTER_ORDER, inferScale, mergeObservations, resolveLetter } from './letters';
 export type { Letter, Observation, ScaleRow } from './letters';
+
+export { GPA_GRADES, gpaPoints, semesterGpa } from './gpa';
+export type { GpaCourse, GpaGrade, SemesterGpa } from './gpa';
