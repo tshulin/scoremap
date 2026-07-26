@@ -1,20 +1,27 @@
-// Grade overview, two boxes: the category table beside the category
-// multigraph (OverviewChart). The table doubles as the what-if editor — each
-// category's current grade is a typeable box (defaulting to the real value);
-// typing a different number replays the whole overview as if that grade
-// landed today: effective weights, contributions, the Final Grade row, and
-// the chart's dashed jumps all follow. The ↺ in the header restores reality.
-// Reads the effective assignment list, so hypothetical edits live-update too.
+// Grade overview: the category multigraph (OverviewChart) on top — same spot
+// and framing as the assignments-tab chart — with the category table below.
+// The table doubles as the what-if editor — each category's current grade is
+// a typeable box (defaulting to the real value); typing a different number
+// replays the whole overview as if that grade landed today: effective
+// weights, contributions, the Final Grade row, and the chart's dashed jumps
+// all follow. The ↺ in the header restores reality. Reads the effective
+// assignment list, so hypothetical edits live-update too.
 import React from 'react';
 import { scoreBandColor as bandColor } from '../../lib/grades.js';
 import { categoryOverview } from '../../calc/index';
 import { Chip, ScoreInput, fmt2 } from './ui.jsx';
 import OverviewChart from './OverviewChart.jsx';
 
-// Headers may wrap to two lines ("Effective weight") — that's what lets the
-// table sit compressed beside the chart without clipping its last column.
-const th = { padding: '6px 8px 8px 0', fontWeight: 600, lineHeight: 1.3, verticalAlign: 'bottom' };
-const td = { padding: '10px 8px 10px 0', verticalAlign: 'middle' };
+const th = { padding: '6px 12px 8px 0', fontWeight: 600, whiteSpace: 'nowrap' };
+const td = { padding: '10px 12px 10px 0', verticalAlign: 'middle' };
+
+function Bar({ pct, color }) {
+  return (
+    <div style={{ width: 96, maxWidth: '100%', height: 8, borderRadius: 'var(--radius-pill)', background: 'var(--color-surface-dark-elevated)', overflow: 'hidden' }}>
+      <div style={{ width: `${Math.max(0, Math.min(pct ?? 0, 100))}%`, height: '100%', background: color, borderRadius: 'var(--radius-pill)' }} />
+    </div>
+  );
+}
 
 const card = {
   background: 'var(--color-surface-card)',
@@ -95,8 +102,12 @@ function OverviewTab({ assignments, categories, hiddenRows = [], hypothetical })
           synced numbers.
         </div>
       )}
-      <div style={{ display: 'flex', gap: 16, alignItems: 'stretch', flexWrap: 'wrap' }}>
-        <div style={{ ...card, flex: '1.15 1 360px', minWidth: 0, overflowX: 'auto' }}>
+      {/* the multigraph sits where the assignments-tab chart does — top, full width */}
+      <div style={{ marginBottom: 20 }}>
+        <OverviewChart assignments={assignments} categories={categories} rows={baseRows} overrides={overrides} />
+      </div>
+
+      <div style={{ ...card, overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14, color: 'var(--color-ink)' }}>
             <thead>
               <tr style={{ textAlign: 'left', color: 'var(--color-muted)', fontSize: 13 }}>
@@ -149,7 +160,8 @@ function OverviewTab({ assignments, categories, hiddenRows = [], hypothetical })
                         : '—'}
                     </td>
                     <td style={{ ...td, whiteSpace: 'nowrap' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+                        <Bar pct={row.currentPct} color={row.currentPct != null ? bandColor(row.currentPct) : 'transparent'} />
                         <ScoreInput
                           width={60}
                           value={whatIf[row.name] ?? (row.currentPct != null ? fmt2(row.currentPct) : '')}
@@ -182,11 +194,6 @@ function OverviewTab({ assignments, categories, hiddenRows = [], hypothetical })
               </tr>
             </tbody>
           </table>
-        </div>
-
-        <div style={{ ...card, flex: '1.5 1 440px', minWidth: 0 }}>
-          <OverviewChart assignments={assignments} categories={categories} rows={baseRows} overrides={overrides} />
-        </div>
       </div>
     </>
   );
