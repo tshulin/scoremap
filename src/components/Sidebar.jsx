@@ -78,6 +78,7 @@ function Sidebar() {
   let activeClassId = null;
   if (pathname.startsWith('/attendance')) section = 'attendance';
   else if (pathname.startsWith('/documents')) section = 'documents';
+  else if (pathname.startsWith('/gpa-calculator')) section = 'gpa-calculator';
   else if (pathname.startsWith('/mail')) section = 'mail';
   else if (pathname.startsWith('/grades/')) activeClassId = decodeURIComponent(pathname.split('/')[2] || '');
 
@@ -136,6 +137,7 @@ function Sidebar() {
         <NavItem label="Attendance" active={section === 'attendance'} onClick={() => navigate('/attendance')} />
         <NavItem label="Documents" active={section === 'documents'} onClick={() => navigate('/documents')} />
         <NavItem label="Mail" active={section === 'mail'} onClick={() => navigate('/mail')} />
+        <NavItem label="GPA calculator" active={section === 'gpa-calculator'} onClick={() => navigate('/gpa-calculator')} />
       </nav>
 
       <button

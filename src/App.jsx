@@ -21,6 +21,7 @@ import Dashboard from './pages/Dashboard.jsx';
 import ClassDetail from './pages/ClassDetail.jsx';
 import Attendance from './pages/Attendance.jsx';
 import Documents from './pages/Documents.jsx';
+import GpaCalculator from './pages/GpaCalculator.jsx';
 import Mail from './pages/Mail.jsx';
 import MailDetail from './pages/MailDetail.jsx';
 
@@ -42,6 +43,7 @@ export default function App() {
       <Route path="/grades/:classId" element={<RequireAuth><ClassDetail /></RequireAuth>} />
       <Route path="/attendance" element={<RequireAuth><Attendance /></RequireAuth>} />
       <Route path="/documents" element={<RequireAuth><Documents /></RequireAuth>} />
+      <Route path="/gpa-calculator" element={<RequireAuth><GpaCalculator /></RequireAuth>} />
       <Route path="/mail" element={<RequireAuth><Mail /></RequireAuth>} />
       <Route path="/mail/:mailId" element={<RequireAuth><MailDetail /></RequireAuth>} />
       <Route path="*" element={<Navigate to="/" replace />} />
