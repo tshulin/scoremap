@@ -55,16 +55,6 @@ function Documents() {
 
   const openDoc = async (doc) => {
     if (downloading) return;
-
-    // Reserve the tab during the click so the browser does not block it after
-    // the asynchronous document request finishes.
-    const viewer = window.open('', '_blank');
-    if (!viewer) {
-      setDownloadError('Allow pop-ups for Grademax to open documents in a new tab.');
-      return;
-    }
-
-    viewer.document.title = 'Opening document…';
     setDownloading(doc.id);
     setDownloadError('');
 
@@ -75,17 +65,17 @@ function Documents() {
           ? blob.slice(0, blob.size, 'application/pdf')
           : blob;
       const url = URL.createObjectURL(viewableBlob);
+      const viewer = window.open(url, '_blank');
 
-      if (viewer.closed) {
-        URL.revokeObjectURL(url);
-        return;
+      if (viewer) {
+        documentUrls.current.add(url);
+        viewer.opener = null;
+      } else {
+        // An asynchronous open can be blocked by stricter popup settings.
+        // Falling back to the current tab still avoids downloading the file.
+        window.location.assign(url);
       }
-
-      documentUrls.current.add(url);
-      viewer.opener = null;
-      viewer.location.replace(url);
     } catch (e) {
-      if (!viewer.closed) viewer.close();
       setDownloadError(e && e.message ? e.message : 'Document could not be opened.');
     } finally {
       setDownloading(null);
@@ -213,6 +203,7 @@ function Documents() {
               return (
                 <div
                   key={doc.id}
+                  aria-busy={downloading === doc.id}
                   onClick={() => openDoc(doc)}
                   onMouseEnter={() => setHovered(doc.id)}
                   onMouseLeave={() => setHovered(null)}
@@ -222,7 +213,7 @@ function Documents() {
                     borderRadius: 'var(--radius-xl)',
                     padding: '20px 24px',
                     boxSizing: 'border-box',
-                    cursor: 'pointer',
+                    cursor: downloading === doc.id ? 'wait' : 'pointer',
                     boxShadow: hov ? 'var(--shadow-soft-drop)' : 'none',
                     transition: 'box-shadow 150ms ease',
                   }}
@@ -233,6 +224,7 @@ function Documents() {
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                     {filter === 'All' && <Chip tone={CATEGORY[doc.category]}>{doc.category}</Chip>}
                     <Chip>{fmtDate(doc.date)}</Chip>
+                    {downloading === doc.id && <Chip>Opening…</Chip>}
                   </div>
                 </div>
               );
