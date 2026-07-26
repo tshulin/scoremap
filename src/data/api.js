@@ -19,10 +19,12 @@ import { fetchGradebook } from '../portal/pages/gradebook/index';
 import { SessionExpiredError, NoActiveGradingPeriodError, ParseError } from '../portal/errors';
 import { SAMPLE_GRADEBOOK, SAMPLE_ATTENDANCE, PLACEHOLDER_DATA } from './placeholders';
 import { DEMO, DEMO_STUDENT } from './demo';
+import { isTestCredentials, TEST_STUDENT, testDocumentContent } from './testAccount';
 
 // Set at build time (deploy workflow); wss:// in production, ws://localhost in dev.
 const RELAY_URL = import.meta.env.VITE_RELAY_URL || 'ws://localhost:8080';
 const SESSION_KEY = 'grademax-session';
+const TEST_SESSION_KEY = 'grademax-test-session';
 
 export class ApiError extends Error {
   constructor(code, message, status) {
@@ -35,6 +37,19 @@ export class ApiError extends Error {
 
 const options = { fetchImpl: createRelayFetch({ relayUrl: RELAY_URL }) };
 let session = null; // in-memory { domain, jar: CookieJar }
+let testSession = false; // signed in as the built-in test account (no portal session)
+
+// The test account has no cookie jar; a sessionStorage marker lets a reload
+// resume it the same way the mirrored jar resumes a real session.
+export function isTestSession() {
+  if (testSession) return true;
+  try {
+    testSession = sessionStorage.getItem(TEST_SESSION_KEY) === 'true';
+  } catch {
+    /* storage unavailable */
+  }
+  return testSession;
+}
 
 function persist(s) {
   try {
@@ -57,8 +72,10 @@ function restore() {
 
 export function clearToken() {
   session = null;
+  testSession = false;
   try {
     sessionStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(TEST_SESSION_KEY);
   } catch {
     /* ignore */
   }
@@ -66,6 +83,7 @@ export function clearToken() {
 
 export function hasToken() {
   if (DEMO) return true;
+  if (isTestSession()) return true;
   if (session) return true;
   try {
     return !!sessionStorage.getItem(SESSION_KEY);
@@ -119,6 +137,15 @@ async function withSession(fn) {
 
 export async function login({ domain, username, password }) {
   if (DEMO) return DEMO_STUDENT;
+  if (isTestCredentials({ domain, username, password })) {
+    testSession = true;
+    try {
+      sessionStorage.setItem(TEST_SESSION_KEY, 'true');
+    } catch {
+      /* storage unavailable — the session just won't survive a reload */
+    }
+    return TEST_STUDENT;
+  }
   try {
     session = await portalLogin({ domain, username, password }, options);
     persist(session);
@@ -177,6 +204,10 @@ export async function getGradebook() {
 }
 
 export async function downloadDocument(docToken) {
+  if (isTestSession()) {
+    const { bytes, mimeType, fileName } = testDocumentContent(docToken);
+    return { blob: new Blob([bytes], { type: mimeType }), fileName };
+  }
   return withSession(async (s) => {
     const { bytes, mimeType, fileName } = await portalDownloadDocument(s, docToken, options);
     return { blob: new Blob([bytes], { type: mimeType }), fileName };

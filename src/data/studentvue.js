@@ -11,6 +11,7 @@ import { DEMO, DEMO_STUDENT } from './demo.js';
 import { emptySnapshot } from './snapshot.js';
 import { harvestFromClasses } from './gradeIndexStore.js';
 import { SAMPLE_ATTENDANCE, SAMPLE_GRADEBOOK } from './placeholders.js';
+import { TEST_STUDENT, TEST_GRADEBOOK, TEST_ATTENDANCE, TEST_DOCUMENTS } from './testAccount.js';
 import { GradebookSchema } from '../domain/index';
 
 const slug = (name) =>
@@ -165,6 +166,46 @@ function demoSnapshot() {
   };
 }
 
+// ---- test-account snapshot (username "test" / password "test") ----
+// Same idea as the demo snapshot, but triggered by credentials at runtime —
+// including production builds — so features can be exercised on the deployed
+// site without a real StudentVUE account. Data flows through the exact same
+// mappings real data takes.
+
+function testSnapshot() {
+  const mapped = mapGradebook(TEST_GRADEBOOK);
+  return {
+    ...emptySnapshot,
+    classes: mapped.classes,
+    assignmentsByClass: mapped.assignmentsByClass,
+    attendance: {
+      schoolName: TEST_ATTENDANCE.schoolName,
+      records: TEST_ATTENDANCE.absences.map(mapAbsence),
+      unreadableAbsences: TEST_ATTENDANCE.unreadableAbsences,
+    },
+    documents: TEST_DOCUMENTS.map((d) => ({
+      id: d.docToken,
+      docToken: d.docToken,
+      title: d.title,
+      category: d.category,
+      date: d.uploadDate,
+    })),
+    session: {
+      ...emptySnapshot.session,
+      studentName: TEST_STUDENT.name,
+      grade: TEST_STUDENT.grade,
+      semester: mapped.semester,
+      lastUpdated: new Date(),
+      demo: true,
+    },
+    meta: {
+      gradebook: { ok: true, placeholder: true, message: 'Test account — sample data.' },
+      attendance: { ok: true, placeholder: true, message: '' },
+      documents: { ok: true, message: '' },
+    },
+  };
+}
+
 // ---- the sync ----
 
 const friendlyGradebookMessage = (error) => {
@@ -178,6 +219,11 @@ const friendlyGradebookMessage = (error) => {
 export async function sync(knownStudent) {
   if (DEMO) {
     const snapshot = demoSnapshot();
+    harvestFromClasses(snapshot.classes);
+    return snapshot;
+  }
+  if (api.isTestSession()) {
+    const snapshot = testSnapshot();
     harvestFromClasses(snapshot.classes);
     return snapshot;
   }

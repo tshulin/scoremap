@@ -16,15 +16,19 @@ import { TextInput, Button } from '../lib/ds.js';
 import { useSignIn } from '../data/SyncProvider.jsx';
 import { extractPortalDomain } from '../portal/domainInput';
 import { DISTRICTS } from '../data/districts.js';
+import { TEST_DISTRICT } from '../data/testAccount.js';
 
 // DISTRICTS is sorted by state, then name — group sequentially for <optgroup>.
-const DISTRICT_GROUPS = DISTRICTS.reduce((groups, d) => {
+// The built-in test district (test/test account) rides along at the end, in
+// its own group, so it never gets lost when the real list is regenerated.
+const ALL_DISTRICTS = [...DISTRICTS, TEST_DISTRICT];
+const DISTRICT_GROUPS = ALL_DISTRICTS.reduce((groups, d) => {
   const last = groups[groups.length - 1];
   if (last && last.state === d.state) last.districts.push(d);
   else groups.push({ state: d.state, districts: [d] });
   return groups;
 }, []);
-const DISTRICT_DOMAINS = new Set(DISTRICTS.map((d) => d.domain));
+const DISTRICT_DOMAINS = new Set(ALL_DISTRICTS.map((d) => d.domain));
 
 // District dropdown, styled to match the DS TextInput (44px, hairline border
 // thickening to 2px ink on focus) — the DS has no Select component yet.
