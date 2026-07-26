@@ -3,7 +3,7 @@
 // score changes the "past" — inherent to a derived series, and how
 // GradeCompass behaved too. Renders only with 2+ points.
 import React from 'react';
-import { fmt2, shortDate } from './ui.jsx';
+import { fmt2, shortDate, signed, weekdayDate } from './ui.jsx';
 
 const W = 1000;
 const H = 260;
@@ -63,6 +63,8 @@ function GradeChart({ series }) {
   const areaPath = `${linePath} L ${xAt(series.length - 1).toFixed(1)} ${H - padB} L ${xAt(0).toFixed(1)} ${H - padB} Z`;
 
   const hovered = hover != null ? series[hover] : null;
+  // How much this date moved the grade vs. the previous point (none for the first).
+  const hoverDelta = hover != null && hover > 0 ? series[hover].grade - series[hover - 1].grade : null;
 
   return (
     <div style={{ position: 'relative', marginBottom: 20 }}>
@@ -125,8 +127,22 @@ function GradeChart({ series }) {
             zIndex: 5,
           }}
         >
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-ink)', marginBottom: 2 }}>
-            {shortDate(hovered.date)} · {fmt2(hovered.grade)}%
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-ink)' }}>
+            {weekdayDate(hovered.date)}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 2 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-ink)' }}>{fmt2(hovered.grade)}%</span>
+            {hoverDelta != null && (
+              <span
+                style={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: hoverDelta >= 0 ? 'var(--color-grade-good)' : 'var(--color-grade-bad)',
+                }}
+              >
+                {signed(hoverDelta)}
+              </span>
+            )}
           </div>
           {hovered.assignments.map((a) => (
             <div key={a.id} style={{ fontSize: 12, color: 'var(--color-body)' }}>

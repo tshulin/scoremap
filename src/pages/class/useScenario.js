@@ -1,15 +1,18 @@
 // The single scenario state every grade feature reads: real assignments plus
-// score edits plus added hypotheticals, exposed as one `effective` list.
-// Session-only on purpose — stale fake assignments mixed into freshly synced
-// real data is the worst failure mode here.
+// per-assignment edits plus added hypotheticals, exposed as one `effective`
+// list. Session-only on purpose — stale fake assignments mixed into freshly
+// synced real data is the worst failure mode here.
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { todayIso } from './ui.jsx';
 
 export function useScenario(baseAssignments) {
   const [hypothetical, setHypothetical] = useState(false);
-  // { [assignmentId]: { earned, possible } } as input strings.
+  // { [assignmentId]: { earned, possible, category, date } } — score fields as
+  // input strings; category/date as committed values. Applies to real AND
+  // added rows, so every assignment is editable the same way.
   const [edits, setEdits] = useState({});
-  // Full domain Assignments with ids "hypo-1", "hypo-2", …
+  // Added hypotheticals, ids "hypo-1", "hypo-2", … Born blank: no score, no
+  // category — the row itself is the editor, there is nothing to decide first.
   const [added, setAdded] = useState([]);
   const seq = useRef(1);
 
@@ -25,22 +28,21 @@ export function useScenario(baseAssignments) {
     }
   }, []);
 
-  const addAssignment = useCallback(({ name, category, pointsEarned, pointsPossible, extraCredit, date }) => {
+  // Clear every edit and added row but stay in hypothetical mode.
+  const reset = useCallback(() => {
+    setEdits({});
+    setAdded([]);
+  }, []);
+
+  const addAssignment = useCallback(() => {
     const id = `hypo-${seq.current++}`;
-    const a = {
-      id,
-      name: name || 'Hypothetical assignment',
-      extraCredit: !!extraCredit,
-      notForGrade: false,
-      date: date || todayIso(),
-    };
-    const earned = parseFloat(pointsEarned);
-    const possible = parseFloat(pointsPossible);
-    if (Number.isFinite(earned)) a.pointsEarned = earned;
-    if (Number.isFinite(possible)) a.pointsPossible = possible;
-    if (category) a.category = category;
-    setAdded((prev) => [...prev, a]);
+    setAdded((prev) => [...prev, { id, name: '', extraCredit: false, notForGrade: false, date: todayIso() }]);
     return id;
+  }, []);
+
+  // Patch fields that live on the added row itself (name, extraCredit).
+  const updateAssignment = useCallback((id, patch) => {
+    setAdded((prev) => prev.map((a) => (a.id === id ? { ...a, ...patch } : a)));
   }, []);
 
   const removeAssignment = useCallback((id) => {
@@ -67,18 +69,27 @@ export function useScenario(baseAssignments) {
       if (e.possible !== undefined && e.possible !== '' && Number.isFinite(possible)) {
         out.pointsPossible = possible;
       }
+      // '' means "no category" (back to uncategorized); an absent key means untouched.
+      if (e.category !== undefined) out.category = e.category || undefined;
+      if (e.date !== undefined && e.date !== '') out.date = e.date;
       return out;
     };
-    return [...baseAssignments, ...added].map(apply);
+    return [
+      ...baseAssignments,
+      // A nameless blank still needs a label in the chart tooltip and calculators.
+      ...added.map((a) => (a.name ? a : { ...a, name: 'Hypothetical assignment' })),
+    ].map(apply);
   }, [hypothetical, baseAssignments, added, edits]);
 
   return {
     hypothetical,
     toggleHypothetical,
+    reset,
     edits,
     setEdit,
     added,
     addAssignment,
+    updateAssignment,
     removeAssignment,
     effective,
   };
