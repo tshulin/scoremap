@@ -8,7 +8,6 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import Sidebar from '../components/Sidebar.jsx';
 import SyncPill from '../components/SyncPill.jsx';
-import { scoreBandColor as bandColor } from '../lib/grades.js';
 import { useAssignments, useClass } from '../data/SyncProvider.jsx';
 // The grade engine runs right here in the browser — the server only supplies
 // the assignment data.
@@ -112,7 +111,7 @@ function ClassDetail() {
             </h1>
             {hypothetical ? (
               <div style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                <div style={{ fontSize: 'clamp(24px, 2.8vw, 36px)', fontWeight: 600, letterSpacing: '-0.5px', color: computedGrade != null ? bandColor(computedGrade) : 'var(--color-ink)' }}>
+                <div style={{ fontSize: 'clamp(24px, 2.8vw, 36px)', fontWeight: 600, letterSpacing: '-0.5px', color: 'var(--color-ink)' }}>
                   {computedGrade != null
                     ? `${resolveLetter(computedGrade, scale)} ${fmt2(computedGrade)}%`
                     : '—'}
@@ -168,14 +167,6 @@ function ClassDetail() {
                 <PillButton onClick={() => setTargetOpen(true)}>🎯 Target calculator</PillButton>
                 <PillButton onClick={() => setBoundsOpen(true)}>📐 Max / min grade</PillButton>
               </div>
-
-              {hypothetical && (
-                <div style={{ fontSize: 14, color: 'var(--color-body)', marginBottom: 16 }}>
-                  Every assignment below is editable — score, category, date — and “+ New assignment”
-                  drops in a blank one. The grade recomputes instantly, right in your browser; Reset
-                  clears your changes. Nothing is saved or sent anywhere.
-                </div>
-              )}
 
               <AssignmentList
                 assignments={ASSIGNMENTS}
