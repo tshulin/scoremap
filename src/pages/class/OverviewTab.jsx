@@ -31,7 +31,7 @@ const card = {
   boxSizing: 'border-box',
 };
 
-function OverviewTab({ assignments, categories, hiddenRows = [], hypothetical }) {
+function OverviewTab({ assignments, categories, hiddenRows = [] }) {
   const baseRows = React.useMemo(
     () => categoryOverview(assignments, categories),
     [assignments, categories],
@@ -96,12 +96,6 @@ function OverviewTab({ assignments, categories, hiddenRows = [], hypothetical })
 
   return (
     <>
-      {hypothetical && (
-        <div style={{ fontSize: 13, color: 'var(--color-muted)', marginBottom: 12 }}>
-          Reflecting your hypothetical scenario — toggle it off on the Assignments tab to see the
-          synced numbers.
-        </div>
-      )}
       {/* the multigraph sits where the assignments-tab chart does — top, full width */}
       <div style={{ marginBottom: 20 }}>
         <OverviewChart assignments={assignments} categories={categories} rows={baseRows} overrides={overrides} />

@@ -59,6 +59,17 @@ function ClassDetail() {
   const [filter, setFilter] = React.useState('All');
   React.useEffect(() => setFilter('All'), [classId]);
 
+  // Hypothetical mode is scoped to the Assignments tab of one class: leaving
+  // the tab (or the class) turns it off and discards the scenario, so
+  // Overview/Grade index always show reality and a return lands clean.
+  const { toggleHypothetical } = scenario;
+  React.useEffect(() => {
+    if (tab !== 'assignments') toggleHypothetical(false);
+  }, [tab, toggleHypothetical]);
+  React.useEffect(() => {
+    toggleHypothetical(false);
+  }, [classId, toggleHypothetical]);
+
   const anyCalculable = effective.some(isCalculable);
   const computedGrade = anyCalculable ? courseGrade(effective, categories) : null;
   const impactById = React.useMemo(
@@ -183,7 +194,6 @@ function ClassDetail() {
               assignments={effective}
               categories={categories}
               hiddenRows={hiddenRows}
-              hypothetical={hypothetical}
             />
           )}
 
