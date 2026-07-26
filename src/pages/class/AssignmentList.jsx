@@ -34,7 +34,7 @@ const editControl = {
 const metricRow = {
   display: 'grid',
   gridTemplateColumns: 'max-content max-content max-content',
-  columnGap: 20,
+  columnGap: 16,
   alignItems: 'center',
   justifyContent: 'end',
   whiteSpace: 'nowrap',
