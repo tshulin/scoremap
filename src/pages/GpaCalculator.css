@@ -84,6 +84,13 @@
   font-size: 13px;
 }
 
+.gpa-heading-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+}
+
 .gpa-add-button {
   flex: 0 0 auto;
   padding: 8px 16px;
@@ -98,9 +105,14 @@
   transition: background 150ms ease, border-color 150ms ease;
 }
 
-.gpa-add-button:hover {
+.gpa-add-button:hover:not(:disabled) {
   border-color: var(--color-muted);
   background: var(--color-surface-dark-elevated);
+}
+
+.gpa-add-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .gpa-table {
@@ -301,6 +313,11 @@
 
   .gpa-card-heading .gpa-add-button {
     display: none;
+  }
+
+  /* Import has no bottom twin, so it stays in the heading on small screens. */
+  .gpa-card-heading .gpa-import-button {
+    display: inline-flex;
   }
 
   .gpa-table {

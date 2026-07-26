@@ -25,6 +25,20 @@ export function gpaPoints(grade: GpaGrade, weighted = false): number {
 	return base + (weighted && base > 0 ? 1 : 0);
 }
 
+// Portal letters carry +/- modifiers the four-point scale ignores; ungraded
+// classes show '—'. Some districts use E as the failing letter.
+export function toGpaGrade(letter: string): GpaGrade | null {
+	const base = letter.trim().charAt(0).toUpperCase();
+	if (base === 'E') return 'F';
+	return (GPA_GRADES as readonly string[]).includes(base) ? (base as GpaGrade) : null;
+}
+
+// The portal does not say which courses a district weights, so imports guess
+// from the course title; the student can correct the type per row.
+export function isWeightedCourseName(name: string): boolean {
+	return /\b(ap|ib|hn)\b/i.test(name) || /honors|advanced placement/i.test(name);
+}
+
 export function semesterGpa(courses: GpaCourse[]): SemesterGpa | null {
 	if (courses.length === 0) return null;
 
