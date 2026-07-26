@@ -171,11 +171,6 @@ function GpaCalculator() {
             </section>
 
             <aside className="gpa-summary-card" aria-live="polite">
-              <div className="gpa-summary-heading">
-                <p>Semester results</p>
-                <span>Updates as you edit</span>
-              </div>
-
               <div className="gpa-result">
                 <span>Unweighted GPA</span>
                 <strong>{formatGpa(results?.unweighted)}</strong>
@@ -187,10 +182,6 @@ function GpaCalculator() {
                 <strong>{formatGpa(results?.weighted)}</strong>
                 <small>5.00 scale</small>
               </div>
-
-              <p className="gpa-summary-note">
-                Every course counts equally. Weighted courses add one point to passing grades.
-              </p>
             </aside>
           </div>
         </div>

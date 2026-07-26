@@ -59,8 +59,7 @@
   padding: 24px;
 }
 
-.gpa-card-heading,
-.gpa-summary-heading {
+.gpa-card-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -220,26 +219,13 @@
   padding: 22px;
 }
 
-.gpa-summary-heading {
-  padding-bottom: 18px;
-  border-bottom: 1px solid var(--color-hairline);
-}
-
-.gpa-summary-heading p {
-  margin: 0;
-  color: var(--color-ink);
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.gpa-summary-heading span {
-  color: var(--color-muted);
-  font-size: 11px;
-}
-
 .gpa-result {
   padding: 22px 0;
   border-bottom: 1px solid var(--color-hairline);
+}
+
+.gpa-result:first-child {
+  border-top: 1px solid var(--color-hairline);
 }
 
 .gpa-result > span {
@@ -264,13 +250,6 @@
   font-size: 12px;
 }
 
-.gpa-summary-note {
-  margin: 18px 0 0;
-  color: var(--color-muted);
-  font-size: 12px;
-  line-height: 1.55;
-}
-
 @media (max-width: 1050px) {
   .gpa-layout {
     grid-template-columns: 1fr;
@@ -283,9 +262,8 @@
     gap: 0 24px;
   }
 
-  .gpa-summary-heading,
-  .gpa-summary-note {
-    grid-column: 1 / -1;
+  .gpa-result {
+    border-top: 1px solid var(--color-hairline);
   }
 }
 
@@ -347,8 +325,4 @@
     grid-template-columns: 1fr;
   }
 
-  .gpa-summary-heading,
-  .gpa-summary-note {
-    grid-column: 1;
-  }
 }
