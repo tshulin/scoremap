@@ -1,12 +1,12 @@
 // Overview multigraph: one running-percentage line per category (just that
 // category's assignments, replayed in date order) overlaid with the cumulative
-// course grade. Legend checkboxes toggle lines (all on by default); in
-// weighted classes each category also takes a "what-if" grade — the line jumps
-// there today, dashed, as if the assignments landed now, and the cumulative
-// line follows.
+// course grade. Legend checkboxes toggle lines (all on by default). What-if
+// grades come from the overview table (the `overrides` prop): an overridden
+// line jumps there today, dashed, as if the assignments landed now, and the
+// cumulative line follows.
 import React from 'react';
 import { gradeSeries } from '../../calc/index';
-import { ScoreInput, fmt2, shortDate, todayIso, weekdayDate } from './ui.jsx';
+import { fmt2, shortDate, todayIso, weekdayDate } from './ui.jsx';
 
 // Categorical palette, validated (dataviz six-checks) against the dark card
 // surface: lightness band, chroma, CVD ΔE ≥ 8 on adjacent pairs, contrast.
@@ -22,21 +22,12 @@ const padR = 16;
 const padT = 14;
 const padB = 34;
 
-function OverviewChart({ assignments, categories, rows }) {
+const NO_OVERRIDES = new Map();
+
+function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES }) {
   const weighted = !!(categories && categories.length > 0);
   const [hidden, setHidden] = React.useState(() => new Set());
-  const [whatIf, setWhatIf] = React.useState({});
   const [hover, setHover] = React.useState(null);
-
-  const overrides = React.useMemo(() => {
-    const out = new Map();
-    if (!weighted) return out;
-    for (const r of rows) {
-      const v = parseFloat(whatIf[r.name]);
-      if (Number.isFinite(v)) out.set(r.name, v);
-    }
-    return out;
-  }, [weighted, rows, whatIf]);
 
   const lines = React.useMemo(() => {
     const built = [];
@@ -86,16 +77,17 @@ function OverviewChart({ assignments, categories, rows }) {
       for (const line of built) {
         if (overrides.has(line.key)) jumpTo(line, overrides.get(line.key));
       }
-      // Cumulative under the what-ifs: declared weights over every category
-      // that has (or is given) a grade — an empty category with a what-if
-      // joins the gradebook at its full weight.
+      // Cumulative under the what-ifs: declared weights (or, unweighted, the
+      // point-share weights) over every category that has — or is given — a
+      // grade; an empty weighted category with a what-if joins at full weight.
       let wSum = 0;
       let total = 0;
       for (const r of rows) {
         const p = overrides.has(r.name) ? overrides.get(r.name) : r.currentPct;
-        if (p == null || r.nominalWeightPct == null) continue;
-        wSum += r.nominalWeightPct;
-        total += r.nominalWeightPct * p;
+        const w = r.nominalWeightPct ?? r.effectiveWeightPct;
+        if (p == null || !w) continue;
+        wSum += w;
+        total += w * p;
       }
       if (wSum > 0) jumpTo(cum, total / wSum);
     }
@@ -259,58 +251,24 @@ function OverviewChart({ assignments, categories, rows }) {
         )}
       </div>
 
-      {/* legend = the controls: toggle lines, and (weighted) set what-if grades */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px 20px', marginTop: 14, alignItems: 'center' }}>
+      {/* legend = the line toggles, kept to one slim row */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px', marginTop: 8, alignItems: 'center' }}>
         {lines.map((l) => (
-          <span key={l.key} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-            <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, color: 'var(--color-ink)' }}>
-              <input
-                type="checkbox"
-                checked={!hidden.has(l.key)}
-                onChange={() => toggle(l.key)}
-                style={{ width: 15, height: 15, accentColor: 'var(--color-primary)', cursor: 'pointer' }}
-              />
-              <span style={{ width: 10, height: 10, borderRadius: 2, background: l.color }} />
-              {l.label}
-            </label>
-            {weighted && l.key !== CUMULATIVE && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 13, color: 'var(--color-muted)' }}>
-                <ScoreInput
-                  width={56}
-                  value={whatIf[l.key] ?? ''}
-                  placeholder="what if"
-                  label={`${l.label} what-if grade`}
-                  onChange={(v) => setWhatIf((prev) => ({ ...prev, [l.key]: v }))}
-                />
-                %
-              </span>
-            )}
-          </span>
-        ))}
-        {overrides.size > 0 && (
-          <button
-            onClick={() => setWhatIf({})}
-            style={{
-              border: '1px solid var(--color-hairline-strong)',
-              background: 'transparent',
-              color: 'var(--color-body)',
-              borderRadius: 'var(--radius-sm)',
-              padding: '4px 10px',
-              fontFamily: 'var(--font-sans)',
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
+          <label
+            key={l.key}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600, color: 'var(--color-ink)', lineHeight: 1.2 }}
           >
-            clear what-ifs
-          </button>
-        )}
+            <input
+              type="checkbox"
+              checked={!hidden.has(l.key)}
+              onChange={() => toggle(l.key)}
+              style={{ width: 13, height: 13, accentColor: 'var(--color-primary)', cursor: 'pointer' }}
+            />
+            <span style={{ width: 9, height: 9, borderRadius: 2, background: l.color }} />
+            {l.label}
+          </label>
+        ))}
       </div>
-      {weighted && (
-        <div style={{ fontSize: 13, color: 'var(--color-muted)', marginTop: 8 }}>
-          Type a category grade to see it take effect today — dashed where the what-if takes over.
-        </div>
-      )}
     </div>
   );
 }
