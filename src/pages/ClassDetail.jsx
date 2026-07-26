@@ -136,14 +136,16 @@ function ClassDetail() {
               {/* toggles + calculators (Pin chart deliberately omitted) */}
               <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 }}>
                 <Check label="Hypothetical mode" checked={hypothetical} onChange={scenario.toggleHypothetical} />
+                {hypothetical && <PillButton onClick={scenario.reset}>↺ Reset</PillButton>}
                 <PillButton onClick={() => setTargetOpen(true)}>🎯 Target calculator</PillButton>
                 <PillButton onClick={() => setBoundsOpen(true)}>📐 Max / min grade</PillButton>
               </div>
 
               {hypothetical && (
                 <div style={{ fontSize: 14, color: 'var(--color-body)', marginBottom: 16 }}>
-                  Edit any score or add assignments below — the grade recomputes instantly, right in
-                  your browser. Nothing is saved or sent anywhere.
+                  Every assignment below is editable — score, category, date — and “+ New assignment”
+                  drops in a blank one. The grade recomputes instantly, right in your browser; Reset
+                  clears your changes. Nothing is saved or sent anywhere.
                 </div>
               )}
 

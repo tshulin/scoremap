@@ -13,6 +13,14 @@ export const shortDate = (iso) => {
   return `${m}/${d}/${String(y).slice(2)}`;
 };
 
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+// "Wednesday, 3/4/2026" — chart tooltip format.
+export const weekdayDate = (iso) => {
+  const [y, m, d] = iso.split('-').map(Number);
+  return `${WEEKDAYS[new Date(y, m - 1, d).getDay()]}, ${m}/${d}/${y}`;
+};
+
 // Local calendar date — toISOString() is UTC and flips to tomorrow in the
 // evening (US timezones), which would misplace added assignments on the chart.
 export const todayIso = () => {

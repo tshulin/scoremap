@@ -1,10 +1,11 @@
-// The assignment list: category filter, per-assignment impact chips, inline
-// score editing and added hypothetical rows (hypothetical mode), and the
-// hidden-points pseudo-rows when the portal's category totals exceed what it
-// shows as assignments.
+// The assignment list: category filter, per-assignment impact chips, the
+// hidden-points pseudo-rows, and — in hypothetical mode — fully inline
+// editing. Every row's score, category, and date are edited in place, and
+// "+ New assignment" drops in a blank row that looks like every other
+// assignment; there is no form to fill in first.
 import React from 'react';
 import { scoreBandColor as bandColor } from '../../lib/grades.js';
-import { Chip, ScoreInput, TextInputSmall, assessmentLike, fmt2, shortDate, signed, todayIso } from './ui.jsx';
+import { Chip, ScoreInput, TextInputSmall, assessmentLike, fmt2, signed } from './ui.jsx';
 
 const rowCard = {
   background: 'var(--color-surface-card)',
@@ -17,6 +18,17 @@ const rowCard = {
   alignItems: 'center',
   gap: 24,
   flexWrap: 'wrap',
+};
+
+const editControl = {
+  padding: '5px 8px',
+  borderRadius: 'var(--radius-sm)',
+  border: '1px solid var(--color-hairline-strong)',
+  background: 'var(--color-surface-strong)',
+  color: 'var(--color-ink)',
+  fontFamily: 'var(--font-sans)',
+  fontSize: 13,
+  fontWeight: 600,
 };
 
 function ImpactChip({ impact }) {
@@ -39,129 +51,61 @@ function ScoreBar({ pct }) {
   );
 }
 
-function AddAssignmentForm({ categories, onAdd }) {
-  const [name, setName] = React.useState('');
-  const [category, setCategory] = React.useState('');
-  const [earned, setEarned] = React.useState('');
-  const [possible, setPossible] = React.useState('');
-  const [extraCredit, setExtraCredit] = React.useState(false);
-  const [date, setDate] = React.useState(todayIso());
-
-  const weighted = !!(categories && categories.length > 0);
-
-  const add = () => {
-    onAdd({ name, category, pointsEarned: earned, pointsPossible: possible, extraCredit, date });
-    setName('');
-    setEarned('');
-    setPossible('');
-    setExtraCredit(false);
-  };
-
+function CategorySelect({ value, options, onChange, label }) {
   return (
-    <div style={{ ...rowCard, border: '1px dashed var(--color-hairline-strong)', alignItems: 'flex-end' }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end', flex: '1 1 auto' }}>
-        <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, color: 'var(--color-body)' }}>
-          Name
-          <TextInputSmall value={name} placeholder="Hypothetical assignment" label="New assignment name" onChange={setName} />
-        </label>
-        <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, color: 'var(--color-body)' }}>
-          Category
-          {weighted ? (
-            <select
-              value={category}
-              aria-label="New assignment category"
-              onChange={(e) => setCategory(e.target.value)}
-              style={{
-                padding: '7px 10px',
-                borderRadius: 'var(--radius-sm)',
-                border: '1px solid var(--color-hairline-strong)',
-                background: 'var(--color-surface-strong)',
-                color: 'var(--color-ink)',
-                fontFamily: 'var(--font-sans)',
-                fontSize: 15,
-              }}
-            >
-              <option value="">— pick a category —</option>
-              {categories.map((c) => (
-                <option key={c.name} value={c.name}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <TextInputSmall value={category} placeholder="(optional)" label="New assignment category" onChange={setCategory} width={140} />
-          )}
-        </label>
-        <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, color: 'var(--color-body)' }}>
-          Score
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-            <ScoreInput value={earned} placeholder="—" label="New assignment points earned" onChange={setEarned} />
-            {!extraCredit && (
-              <>
-                <span style={{ color: 'var(--color-muted)', fontSize: 16 }}>/</span>
-                <ScoreInput value={possible} placeholder="—" label="New assignment points possible" onChange={setPossible} />
-              </>
-            )}
-          </span>
-        </label>
-        <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, color: 'var(--color-body)' }}>
-          Date
-          <input
-            type="date"
-            value={date}
-            aria-label="New assignment date"
-            onChange={(e) => setDate(e.target.value)}
-            style={{
-              padding: '6px 10px',
-              borderRadius: 'var(--radius-sm)',
-              border: '1px solid var(--color-hairline-strong)',
-              background: 'var(--color-surface-strong)',
-              color: 'var(--color-ink)',
-              fontFamily: 'var(--font-sans)',
-              fontSize: 14,
-            }}
-          />
-        </label>
-        <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 14, color: 'var(--color-ink)', paddingBottom: 8 }}>
-          <input
-            type="checkbox"
-            checked={extraCredit}
-            onChange={(e) => setExtraCredit(e.target.checked)}
-            style={{ width: 16, height: 16, accentColor: 'var(--color-primary)' }}
-          />
-          Extra credit
-        </label>
-      </div>
-      <button
-        onClick={add}
-        style={{
-          padding: '9px 18px',
-          borderRadius: 'var(--radius-md)',
-          border: 'none',
-          background: 'var(--color-primary)',
-          color: 'var(--color-on-primary)',
-          fontFamily: 'var(--font-sans)',
-          fontSize: 15,
-          fontWeight: 600,
-          cursor: 'pointer',
-        }}
-      >
-        + Add assignment
-      </button>
-    </div>
+    <select value={value} aria-label={label} onChange={(e) => onChange(e.target.value)} style={{ ...editControl, cursor: 'pointer' }}>
+      <option value="">select category</option>
+      {options.map((name) => (
+        <option key={name} value={name}>
+          {name}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+function DateInput({ value, onChange, label }) {
+  return (
+    <input
+      type="date"
+      value={value}
+      aria-label={label}
+      onChange={(e) => onChange(e.target.value)}
+      style={editControl}
+    />
   );
 }
 
 function AssignmentList({ assignments, categories, scenario, impactById, hiddenRows = [] }) {
   const [filter, setFilter] = React.useState('All');
-  const { hypothetical, edits, setEdit, added, addAssignment, removeAssignment, effective } = scenario;
+  const { hypothetical, edits, setEdit, added, addAssignment, updateAssignment, removeAssignment, effective } = scenario;
 
   const effById = React.useMemo(() => new Map(effective.map((a) => [a.id, a])), [effective]);
   const weighted = !!(categories && categories.length > 0);
 
-  const types = [...new Set([...assignments.map((a) => a.type), ...added.map((a) => a.category || 'Uncategorized')])];
-  const visible = assignments.filter((a) => filter === 'All' || a.type === filter);
-  const visibleAdded = added.filter((a) => filter === 'All' || (a.category || 'Uncategorized') === filter);
+  // Dropdown options: the class's weight categories, or whatever categories the
+  // portal data actually uses. A class with none gets no dropdown — there is
+  // nothing to pick from.
+  const categoryOptions = React.useMemo(
+    () =>
+      weighted
+        ? categories.map((c) => c.name)
+        : [...new Set(assignments.map((a) => a.type).filter((t) => t !== 'Uncategorized'))],
+    [weighted, categories, assignments],
+  );
+
+  // Tabs and filtering follow the EFFECTIVE category, so recategorizing a row
+  // in hypothetical mode moves it between tabs too.
+  const effType = (id, fallback) => {
+    const eff = effById.get(id);
+    return eff ? (eff.category || 'Uncategorized') : fallback;
+  };
+  const typeOfReal = (a) => (a.raw ? effType(a.raw.id, a.type) : a.type);
+  const typeOfAdded = (a) => effType(a.id, 'Uncategorized');
+
+  const types = [...new Set([...assignments.map(typeOfReal), ...added.map(typeOfAdded)])];
+  const visible = assignments.filter((a) => filter === 'All' || typeOfReal(a) === filter);
+  const visibleAdded = added.filter((a) => filter === 'All' || typeOfAdded(a) === filter);
 
   const rowPct = (eff) =>
     eff && eff.pointsEarned !== undefined && eff.pointsPossible
@@ -238,24 +182,65 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        {hypothetical && <AddAssignmentForm categories={categories} onAdd={addAssignment} />}
+        {/* one click, one blank row — edited in place like everything else */}
+        {hypothetical && (
+          <button
+            onClick={() => addAssignment()}
+            style={{
+              ...rowCard,
+              border: '1px dashed var(--color-hairline-strong)',
+              justifyContent: 'center',
+              padding: '16px 24px',
+              cursor: 'pointer',
+              color: 'var(--color-body)',
+              fontFamily: 'var(--font-sans)',
+              fontSize: 15,
+              fontWeight: 600,
+              width: '100%',
+            }}
+          >
+            + New assignment
+          </button>
+        )}
 
-        {/* added hypothetical rows */}
+        {/* added hypothetical rows — same block as real assignments */}
         {visibleAdded.map((a) => {
           const eff = effById.get(a.id) ?? a;
           const impact = impactById.get(a.id);
           const pct = rowPct(eff);
           const edit = edits[a.id] || {};
-          const uncounted = weighted && !a.category;
+          const uncounted = weighted && !eff.category;
           return (
-            <div key={a.id} style={{ ...rowCard, border: '1px dashed var(--color-hairline-strong)' }}>
+            <div key={a.id} style={rowCard}>
               <div style={{ minWidth: 0, flex: '1 1 240px' }}>
-                <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)', marginBottom: 10 }}>{a.name}</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                <div style={{ marginBottom: 10 }}>
+                  <TextInputSmall
+                    value={a.name}
+                    placeholder="Hypothetical assignment"
+                    label="Hypothetical assignment name"
+                    onChange={(v) => updateAssignment(a.id, { name: v })}
+                  />
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
                   <Chip tone="info">Hypothetical</Chip>
-                  {a.category && <Chip tone={assessmentLike(a.category) ? 'assessment' : 'assignment'}>{a.category}</Chip>}
-                  {a.extraCredit && <Chip>Extra credit</Chip>}
-                  <Chip>{shortDate(a.date)}</Chip>
+                  {categoryOptions.length > 0 && (
+                    <CategorySelect
+                      value={eff.category || ''}
+                      options={categoryOptions}
+                      label={`${eff.name} category`}
+                      onChange={(v) => setEdit(a.id, 'category', v)}
+                    />
+                  )}
+                  <DateInput value={eff.date} label={`${eff.name} date`} onChange={(v) => setEdit(a.id, 'date', v)} />
+                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--color-body)' }}>
+                    <input
+                      type="checkbox"
+                      checked={a.extraCredit}
+                      onChange={(e) => updateAssignment(a.id, { extraCredit: e.target.checked })}
+                      style={{ width: 15, height: 15, accentColor: 'var(--color-primary)' }}
+                    />
+                    Extra credit
+                  </label>
                   {uncounted && <Chip tone="warn">pick a category to include this</Chip>}
                 </div>
               </div>
@@ -266,7 +251,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
                     <ScoreInput
                       value={edit.earned ?? (a.pointsEarned !== undefined ? String(a.pointsEarned) : '')}
                       placeholder="—"
-                      label={`${a.name} points earned`}
+                      label={`${eff.name} points earned`}
                       onChange={(v) => setEdit(a.id, 'earned', v)}
                     />
                     {!a.extraCredit && (
@@ -275,7 +260,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
                         <ScoreInput
                           value={edit.possible ?? (a.pointsPossible !== undefined ? String(a.pointsPossible) : '')}
                           placeholder="—"
-                          label={`${a.name} points possible`}
+                          label={`${eff.name} points possible`}
                           onChange={(v) => setEdit(a.id, 'possible', v)}
                         />
                       </>
@@ -286,7 +271,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
                   </span>
                   <button
                     onClick={() => removeAssignment(a.id)}
-                    aria-label={`Remove ${a.name}`}
+                    aria-label={`Remove ${eff.name}`}
                     style={{
                       border: 'none',
                       background: 'transparent',
@@ -319,16 +304,30 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
           const impact = raw ? impactById.get(raw.id) : undefined;
           const pct = hypothetical ? rowPct(eff) : a.pct;
           const editable = hypothetical && raw && !a.notForGrade;
+          const type = typeOfReal(a);
           return (
             <div key={`${a.title}-${i}`} style={rowCard}>
               <div style={{ minWidth: 0, flex: '1 1 240px' }}>
                 <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)', marginBottom: 10 }}>{a.title}</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  <Chip tone={assessmentLike(a.type) ? 'assessment' : 'assignment'}>{a.type}</Chip>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                  {editable && categoryOptions.length > 0 ? (
+                    <CategorySelect
+                      value={(eff && eff.category) || ''}
+                      options={categoryOptions}
+                      label={`${a.title} category`}
+                      onChange={(v) => setEdit(raw.id, 'category', v)}
+                    />
+                  ) : (
+                    <Chip tone={assessmentLike(type) ? 'assessment' : 'assignment'}>{type}</Chip>
+                  )}
                   {a.scaled && <Chip>Scaled</Chip>}
                   {a.extraCredit && <Chip>Extra credit</Chip>}
                   {a.notForGrade && <Chip>Not for grade</Chip>}
-                  <Chip>{a.date}</Chip>
+                  {editable ? (
+                    <DateInput value={eff.date} label={`${a.title} date`} onChange={(v) => setEdit(raw.id, 'date', v)} />
+                  ) : (
+                    <Chip>{a.date}</Chip>
+                  )}
                 </div>
               </div>
               <div style={{ flex: '1 1 420px', maxWidth: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>
