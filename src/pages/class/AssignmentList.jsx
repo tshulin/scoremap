@@ -33,11 +33,12 @@ const editControl = {
 
 const metricRow = {
   display: 'grid',
-  gridTemplateColumns: '60px 72px 48px',
+  gridTemplateColumns: '60px 72px 72px',
   columnGap: 8,
   alignItems: 'center',
   justifyContent: 'end',
   whiteSpace: 'nowrap',
+  fontVariantNumeric: 'tabular-nums',
 };
 
 function ImpactChip({ impact }) {
@@ -260,7 +261,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
           </div>
         </div>
         <div style={{ flex: '1 1 420px', maxWidth: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>
-          <div style={{ ...metricRow, gridTemplateColumns: '60px max-content 48px max-content' }}>
+          <div style={{ ...metricRow, gridTemplateColumns: '60px max-content 72px max-content' }}>
             <span style={{ justifySelf: 'end' }}><ImpactChip impact={impact} /></span>
             <span style={{ display: 'inline-flex', alignItems: 'center', justifySelf: 'end', gap: 6 }}>
               <ScoreInput
@@ -352,7 +353,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
           </div>
         </div>
         <div style={{ flex: '1 1 420px', maxWidth: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>
-          <div style={editable ? { ...metricRow, gridTemplateColumns: '60px max-content 48px' } : metricRow}>
+          <div style={editable ? { ...metricRow, gridTemplateColumns: '60px max-content 72px' } : metricRow}>
             <span style={{ justifySelf: 'end' }}><ImpactChip impact={impact} /></span>
             <span style={{ display: 'inline-flex', alignItems: 'center', justifySelf: 'end', gap: 10 }}>
               {!editable && a.scaledScore && <span style={{ fontSize: 15, color: 'var(--color-muted)' }}>{a.scaledScore}</span>}
