@@ -169,14 +169,6 @@ function ClassDetail() {
                 <PillButton onClick={() => setBoundsOpen(true)}>📐 Max / min grade</PillButton>
               </div>
 
-              {hypothetical && (
-                <div style={{ fontSize: 14, color: 'var(--color-body)', marginBottom: 16 }}>
-                  Every assignment below is editable — score, category, date — and “+ New assignment”
-                  drops in a blank one. The grade recomputes instantly, right in your browser; Reset
-                  clears your changes. Nothing is saved or sent anywhere.
-                </div>
-              )}
-
               <AssignmentList
                 assignments={ASSIGNMENTS}
                 categories={categories}
