@@ -8,7 +8,7 @@ import { fmt2, shortDate, signed, weekdayDate } from './ui.jsx';
 const W = 1000;
 const H = 260;
 const padL = 46;
-const padR = 16;
+const padR = 46;
 const padT = 14;
 const padB = 34;
 
