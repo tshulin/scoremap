@@ -32,9 +32,8 @@ const editControl = {
 };
 
 const metricRow = {
-  display: 'grid',
-  gridTemplateColumns: '60px 72px 72px',
-  columnGap: 8,
+  display: 'flex',
+  gap: 14,
   alignItems: 'center',
   justifyContent: 'end',
   whiteSpace: 'nowrap',
@@ -261,9 +260,9 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
           </div>
         </div>
         <div style={{ flex: '1 1 420px', maxWidth: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>
-          <div style={{ ...metricRow, gridTemplateColumns: '60px max-content 72px max-content' }}>
-            <span style={{ justifySelf: 'end' }}><ImpactChip impact={impact} /></span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', justifySelf: 'end', gap: 6 }}>
+          <div style={metricRow}>
+            <ImpactChip impact={impact} />
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, textAlign: 'right' }}>
               <ScoreInput
                 value={edit.earned ?? (a.pointsEarned !== undefined ? String(a.pointsEarned) : '')}
                 placeholder="—"
@@ -282,7 +281,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
                 </>
               )}
             </span>
-            <span style={{ justifySelf: 'end', fontSize: 18, fontWeight: 600, color: 'var(--color-ink)' }}>
+            <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)', textAlign: 'right' }}>
               {pct != null ? `${pct}%` : '—'}
             </span>
             <button
@@ -353,13 +352,13 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
           </div>
         </div>
         <div style={{ flex: '1 1 420px', maxWidth: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>
-          <div style={editable ? { ...metricRow, gridTemplateColumns: '60px max-content 72px' } : metricRow}>
-            <span style={{ justifySelf: 'end' }}><ImpactChip impact={impact} /></span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', justifySelf: 'end', gap: 10 }}>
+          <div style={metricRow}>
+            <ImpactChip impact={impact} />
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textAlign: 'right' }}>
               {!editable && a.scaledScore && <span style={{ fontSize: 15, color: 'var(--color-muted)' }}>{a.scaledScore}</span>}
               {scoreCell(raw, a)}
             </span>
-            <span style={{ justifySelf: 'end', fontSize: 18, fontWeight: 600, color: 'var(--color-ink)' }}>
+            <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)', textAlign: 'right' }}>
               {pct != null ? `${pct}%` : '—'}
             </span>
           </div>
