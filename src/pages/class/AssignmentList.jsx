@@ -31,6 +31,15 @@ const editControl = {
   fontWeight: 600,
 };
 
+const metricRow = {
+  display: 'grid',
+  gridTemplateColumns: 'max-content max-content max-content',
+  columnGap: 20,
+  alignItems: 'center',
+  justifyContent: 'end',
+  whiteSpace: 'nowrap',
+};
+
 function ImpactChip({ impact }) {
   if (impact === undefined) return null;
   return (
@@ -251,7 +260,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
           </div>
         </div>
         <div style={{ flex: '1 1 420px', maxWidth: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 14, whiteSpace: 'nowrap' }}>
+          <div style={{ ...metricRow, gridTemplateColumns: 'max-content max-content max-content max-content' }}>
             <ImpactChip impact={impact} />
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               <ScoreInput
@@ -272,7 +281,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
                 </>
               )}
             </span>
-            <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)', minWidth: 64, textAlign: 'right' }}>
+            <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)' }}>
               {pct != null ? `${pct}%` : '—'}
             </span>
             <button
@@ -343,11 +352,13 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
           </div>
         </div>
         <div style={{ flex: '1 1 420px', maxWidth: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 14, whiteSpace: 'nowrap' }}>
+          <div style={metricRow}>
             <ImpactChip impact={impact} />
-            {!editable && a.scaledScore && <span style={{ fontSize: 15, color: 'var(--color-muted)' }}>{a.scaledScore}</span>}
-            {scoreCell(raw, a)}
-            <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)', minWidth: 64, textAlign: 'right' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+              {!editable && a.scaledScore && <span style={{ fontSize: 15, color: 'var(--color-muted)' }}>{a.scaledScore}</span>}
+              {scoreCell(raw, a)}
+            </span>
+            <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)' }}>
               {pct != null ? `${pct}%` : '—'}
             </span>
           </div>
