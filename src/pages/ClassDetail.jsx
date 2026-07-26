@@ -55,6 +55,9 @@ function ClassDetail() {
   const [tab, setTab] = React.useState('assignments');
   const [targetOpen, setTargetOpen] = React.useState(false);
   const [boundsOpen, setBoundsOpen] = React.useState(false);
+  // Category filter lives here so the chart can follow it too.
+  const [filter, setFilter] = React.useState('All');
+  React.useEffect(() => setFilter('All'), [classId]);
 
   const anyCalculable = effective.some(isCalculable);
   const computedGrade = anyCalculable ? courseGrade(effective, categories) : null;
@@ -63,6 +66,16 @@ function ClassDetail() {
     [effective, categories],
   );
   const series = React.useMemo(() => gradeSeries(effective, categories), [effective, categories]);
+  // Dates that have work in the filtered category — the chart keeps its line
+  // but only these dates keep their dots.
+  const activeDates = React.useMemo(() => {
+    if (filter === 'All') return null;
+    return new Set(
+      effective
+        .filter((a) => isCalculable(a) && (a.category || 'Uncategorized') === filter)
+        .map((a) => a.date),
+    );
+  }, [filter, effective]);
   // Hidden points are a property of the synced data (portal category totals
   // vs. the assignments it listed) — computed from the real rows, never the
   // scenario, or every edit/added hypothetical would masquerade as a
@@ -131,7 +144,11 @@ function ClassDetail() {
             <>
               {/* grade over time, derived from the effective assignments — edits
                   and added hypotheticals visibly reshape the line */}
-              <GradeChart series={series} />
+              <GradeChart
+                series={series}
+                activeDates={activeDates}
+                activeType={filter === 'All' ? null : filter}
+              />
 
               {/* toggles + calculators (Pin chart deliberately omitted) */}
               <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 }}>
@@ -155,6 +172,8 @@ function ClassDetail() {
                 scenario={scenario}
                 impactById={impactById}
                 hiddenRows={hiddenRows}
+                filter={filter}
+                onFilter={setFilter}
               />
             </>
           )}

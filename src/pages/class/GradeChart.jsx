@@ -12,9 +12,15 @@ const padR = 16;
 const padT = 14;
 const padB = 34;
 
-function GradeChart({ series }) {
+// `activeDates`/`activeType` mirror the assignment list's category filter: the
+// line keeps its shape (the grade history doesn't change), but only dates with
+// work in the selected category keep their dots and hover.
+function GradeChart({ series, activeDates = null, activeType = null }) {
   const [hover, setHover] = React.useState(null);
+  React.useEffect(() => setHover(null), [activeDates]);
   if (series.length < 2) return null;
+
+  const hoverable = (i) => !activeDates || activeDates.has(series[i].date);
 
   const grades = series.map((p) => p.grade);
   const lo = Math.min(...grades);
@@ -45,9 +51,10 @@ function GradeChart({ series }) {
   const pickNearest = (evt) => {
     const rect = evt.currentTarget.getBoundingClientRect();
     const x = ((evt.clientX - rect.left) / rect.width) * W;
-    let best = 0;
+    let best = null;
     let bestDist = Infinity;
     for (let i = 0; i < series.length; i++) {
+      if (!hoverable(i)) continue;
       const d = Math.abs(xAt(i) - x);
       if (d < bestDist) {
         bestDist = d;
@@ -91,15 +98,18 @@ function GradeChart({ series }) {
         ))}
         <path d={areaPath} fill="url(#gradeFill)" />
         <path d={linePath} fill="none" stroke="var(--color-ink)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-        {series.map((p, i) => (
-          <circle
-            key={p.date}
-            cx={xAt(i)}
-            cy={yAt(p.grade)}
-            r={hover === i ? 4.5 : 2.6}
-            fill="var(--color-ink)"
-          />
-        ))}
+        {series.map(
+          (p, i) =>
+            hoverable(i) && (
+              <circle
+                key={p.date}
+                cx={xAt(i)}
+                cy={yAt(p.grade)}
+                r={hover === i ? 4.5 : 2.6}
+                fill="var(--color-ink)"
+              />
+            ),
+        )}
         {series.map(
           (p, i) =>
             labeled.has(i) && (
@@ -144,11 +154,13 @@ function GradeChart({ series }) {
               </span>
             )}
           </div>
-          {hovered.assignments.map((a) => (
-            <div key={a.id} style={{ fontSize: 12, color: 'var(--color-body)' }}>
-              {a.name}
-            </div>
-          ))}
+          {hovered.assignments
+            .filter((a) => !activeType || (a.category || 'Uncategorized') === activeType)
+            .map((a) => (
+              <div key={a.id} style={{ fontSize: 12, color: 'var(--color-body)' }}>
+                {a.name}
+              </div>
+            ))}
         </div>
       )}
     </div>
