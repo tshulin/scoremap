@@ -145,6 +145,23 @@
   min-width: 0;
 }
 
+.gpa-select-field {
+  position: relative;
+}
+
+.gpa-select-field::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 17px;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--color-body);
+  border-bottom: 2px solid var(--color-body);
+  pointer-events: none;
+  transform: translateY(-70%) rotate(45deg);
+}
+
 .gpa-field > span {
   display: none;
 }
@@ -173,6 +190,11 @@
 .gpa-field input:focus,
 .gpa-field select:focus {
   border-color: var(--color-muted-soft);
+}
+
+.gpa-field select {
+  appearance: none;
+  padding-right: 42px;
 }
 
 .gpa-course-points {

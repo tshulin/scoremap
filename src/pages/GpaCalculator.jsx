@@ -120,7 +120,7 @@ function GpaCalculator() {
                         />
                       </label>
 
-                      <label className="gpa-field">
+                      <label className="gpa-field gpa-select-field">
                         <span>Grade</span>
                         <select
                           value={course.grade}
@@ -135,7 +135,7 @@ function GpaCalculator() {
                         </select>
                       </label>
 
-                      <label className="gpa-field">
+                      <label className="gpa-field gpa-select-field">
                         <span>Type</span>
                         <select
                           value={course.weighted ? 'weighted' : 'unweighted'}
