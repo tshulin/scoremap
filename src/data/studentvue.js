@@ -275,8 +275,14 @@ export async function sync(knownStudent) {
     session: { ...emptySnapshot.session, lastUpdated: new Date() },
   };
 
-  const info = student.status === 'fulfilled' ? student.value : knownStudent;
-  if (info) data.session = { ...data.session, studentName: info.name, grade: info.grade };
+  // A sync that loses only the student-info request must not blank the name out
+  // of the chrome — the app already knows who is signed in, and after a reload
+  // there is no caller to pass it back in.
+  const info = student.status === 'fulfilled' ? student.value : knownStudent || api.recallStudent();
+  if (info) {
+    data.session = { ...data.session, studentName: info.name, grade: info.grade };
+    api.rememberStudent(info);
+  }
 
   if (gradebook.status === 'fulfilled') {
     const mapped = mapGradebook(gradebook.value.gradebook);

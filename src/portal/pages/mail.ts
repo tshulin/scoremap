@@ -27,9 +27,10 @@ const ATTACHMENT_DB_ID = 3;
 
 // One list call is cheap; each body is its own request. Bodies for the messages
 // visible without scrolling are prefetched so the list can show previews, and
-// the rest load when opened (fetchMailMessage). In the browser every request is
-// its own TLS connection through the relay, so this is deliberately small and
-// rate-limited — raising either number multiplies handshakes per sync.
+// the rest load when opened (fetchMailMessage). The relay transport pools and
+// reuses connections, so these requests share the sync's handful of sockets
+// rather than opening one each — but they are still round trips, so the list
+// stays partial by design instead of loading fifty bodies up front.
 const BODY_PREFETCH = 8;
 const BODY_PREFETCH_CONCURRENCY = 4;
 const PAGE_SIZE = 50;
