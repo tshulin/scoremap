@@ -138,6 +138,10 @@ async function withSession(fn) {
 
 export async function login({ domain, username, password }) {
   if (DEMO) return DEMO_STUDENT;
+  // A fresh sign-in never inherits the previous session — in particular, a real
+  // login must drop a lingering test-session marker, or the sync layer keeps
+  // serving the sample snapshot to a genuinely signed-in student.
+  clearToken();
   if (isTestCredentials({ domain, username, password })) {
     testSession = true;
     try {
