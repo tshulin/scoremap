@@ -14,7 +14,6 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar.jsx';
 import SyncPill from '../components/SyncPill.jsx';
 import { useMail, useSyncMeta } from '../data/SyncProvider.jsx';
-import { PersonIcon, LinkIcon, PaperclipIcon } from '../lib/icons.jsx';
 
 const fmtDate = (iso) => {
   const [y, m, d] = iso.split('-').map(Number);
@@ -24,9 +23,9 @@ const fmtDate = (iso) => {
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
 const TONES = {
-  neutral: { background: 'var(--color-surface-strong)', color: 'var(--color-body)', border: '1px solid var(--color-hairline)' },
-  link: { background: 'rgba(0, 201, 80, 0.14)', color: 'var(--color-grade-good)', border: '1px solid transparent' },
-  attachment: { background: 'rgba(168, 85, 247, 0.14)', color: 'var(--color-preview)', border: '1px solid transparent' },
+  neutral: { background: 'var(--color-surface-strong)', color: 'var(--color-body)', border: '1px solid var(--color-hairline)', fontWeight: 500 },
+  link: { background: 'rgba(0, 201, 80, 0.22)', color: 'var(--color-grade-good)', border: '1px solid transparent', fontWeight: 600 },
+  attachment: { background: 'rgba(168, 85, 247, 0.22)', color: 'var(--color-preview)', border: '1px solid transparent', fontWeight: 600 },
 };
 
 function Chip({ icon, tone = 'neutral', children }) {
@@ -35,12 +34,11 @@ function Chip({ icon, tone = 'neutral', children }) {
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        gap: 6,
-        padding: '4px 10px',
-        borderRadius: 'var(--radius-sm)',
+        gap: 8,
+        padding: '5px 12px',
+        borderRadius: 'var(--radius-md)',
         fontSize: 13,
-        fontWeight: 600,
-        lineHeight: 1.2,
+        lineHeight: 1.3,
         whiteSpace: 'nowrap',
         ...TONES[tone],
       }}
@@ -50,6 +48,23 @@ function Chip({ icon, tone = 'neutral', children }) {
     </span>
   );
 }
+
+const Dot = () => (
+  <span
+    style={{
+      width: 6,
+      height: 6,
+      borderRadius: '50%',
+      background: 'var(--color-muted)',
+      display: 'inline-block',
+      flexShrink: 0,
+    }}
+  />
+);
+
+// The whole title line is one non-wrapping run that dissolves at the card's
+// right edge (Gmail-style), so a long subject or preview never wraps or clips.
+const TITLE_FADE = 'linear-gradient(to right, black 78%, transparent 98%)';
 
 function Mail() {
   const navigate = useNavigate();
@@ -129,6 +144,7 @@ function Mail() {
             )}
             {messages.map((m) => {
               const hov = hovered === m.id;
+              const preview = m.body.join(' ').replace(/\s+/g, ' ').trim();
               return (
                 <div
                   key={m.id}
@@ -139,31 +155,41 @@ function Mail() {
                     background: 'var(--color-surface-card)',
                     border: '1px solid var(--color-hairline-strong)',
                     borderRadius: 'var(--radius-xl)',
-                    padding: '20px 24px',
+                    padding: '24px 28px',
                     boxSizing: 'border-box',
                     cursor: 'pointer',
                     boxShadow: hov ? 'var(--shadow-soft-drop)' : 'none',
                     transition: 'box-shadow 150ms ease',
                   }}
                 >
-                  <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)', marginBottom: 10, letterSpacing: '-0.2px' }}>
-                    {m.subject}
+                  {/* subject + inline body preview, one line, fading out to the right */}
+                  <div
+                    style={{
+                      overflow: 'hidden',
+                      whiteSpace: 'nowrap',
+                      marginBottom: 14,
+                      WebkitMaskImage: TITLE_FADE,
+                      maskImage: TITLE_FADE,
+                    }}
+                  >
+                    <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)', letterSpacing: '-0.2px' }}>
+                      {m.subject}
+                    </span>
+                    <span style={{ fontSize: 15, color: 'var(--color-muted)', marginLeft: 10 }}>
+                      {preview}
+                    </span>
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    <Chip icon={<PersonIcon />}>
+                    <Chip icon={<Dot />}>
                       {m.sender}
                       {m.role ? ` (${m.role})` : ''}
                     </Chip>
                     <Chip>{fmtDate(m.date)}</Chip>
                     {m.links.length > 0 && (
-                      <Chip tone="link" icon={<LinkIcon />}>
-                        {plural(m.links.length, 'Link')}
-                      </Chip>
+                      <Chip tone="link">{plural(m.links.length, 'Link')}</Chip>
                     )}
                     {m.attachments.length > 0 && (
-                      <Chip tone="attachment" icon={<PaperclipIcon />}>
-                        {plural(m.attachments.length, 'Attachment')}
-                      </Chip>
+                      <Chip tone="attachment">{plural(m.attachments.length, 'Attachment')}</Chip>
                     )}
                   </div>
                 </div>
