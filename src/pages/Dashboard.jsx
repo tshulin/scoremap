@@ -80,7 +80,7 @@ function DashboardPage() {
       <main style={{ flex: 1, padding: '32px 40px 48px', boxSizing: 'border-box' }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           {/* sync status */}
-          <SyncPill />
+          <SyncPill scope="gradebook" />
 
           {/* semester selector */}
           {session.semester && (

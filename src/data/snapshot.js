@@ -12,6 +12,7 @@ export const emptySnapshot = {
   mail: { messages: [], unreadableMessages: 0 },
   session: {
     studentName: '',
+    grade: '',
     username: '',
     domain: '',
     semester: '',

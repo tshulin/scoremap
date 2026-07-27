@@ -4,6 +4,10 @@
 // token (page reload) triggers a background sync; a 401 from any resource
 // clears the token and drops back to signedOut. Pages read data through the
 // hooks below; RequireAuth (App.jsx) redirects to /login when signed out.
+//
+// refresh(scope) syncs only the named resources and merges them over the current
+// snapshot, so the Refresh button on a page costs one request for what that page
+// shows instead of a full re-sync of everything (see studentvue.js).
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import * as api from './api.js';
 import { emptySnapshot } from './snapshot.js';
@@ -23,20 +27,29 @@ export function SyncProvider({ children }) {
     return () => { alive.current = false; };
   }, []);
 
-  const runSync = useCallback(async (knownStudent) => {
+  // A scoped sync merges over what the app already holds, and runSync is a
+  // stable callback — so it reads the current snapshot from a ref rather than
+  // closing over a stale `data`.
+  const latest = useRef(emptySnapshot);
+  const store = useCallback((snapshot) => {
+    latest.current = snapshot;
+    setData(snapshot);
+  }, []);
+
+  const runSync = useCallback(async (knownStudent, scope) => {
     setStatus('syncing');
     setError(null);
     try {
-      const fresh = await syncStudentVue(knownStudent);
+      const fresh = await syncStudentVue(knownStudent, { scope, previous: latest.current });
       if (!alive.current) return fresh;
-      setData(fresh);
+      store(fresh);
       setStatus('ready');
       return fresh;
     } catch (e) {
       if (!alive.current) throw e;
       if (e.status === 401) {
         api.clearToken();
-        setData(emptySnapshot);
+        store(emptySnapshot);
         setStatus('signedOut');
       } else {
         setError(e);
@@ -44,7 +57,7 @@ export function SyncProvider({ children }) {
       }
       throw e;
     }
-  }, []);
+  }, [store]);
 
   // Resume the session on reload.
   useEffect(() => {
@@ -62,11 +75,18 @@ export function SyncProvider({ children }) {
   const signOut = useCallback(async () => {
     await api.logout().catch(() => {});
     if (!alive.current) return;
-    setData(emptySnapshot);
+    store(emptySnapshot);
     setStatus('signedOut');
-  }, []);
+  }, [store]);
 
-  const refresh = useCallback(() => runSync().catch(() => {}), [runSync]);
+  // scope: a resource name, a list of them, or nothing for a full sync.
+  const refresh = useCallback(
+    (scope) => {
+      const only = scope === undefined ? undefined : Array.isArray(scope) ? scope : [scope];
+      return runSync(undefined, only).catch(() => {});
+    },
+    [runSync],
+  );
 
   const value = useMemo(
     () => ({ ...data, status, error, signIn, signOut, refresh }),
