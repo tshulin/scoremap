@@ -138,10 +138,31 @@ describe('fetchMail', () => {
 		expect(mailbox).toEqual({ messages: [], unreadableMessages: 0 });
 	});
 
-	it('throws ModuleUnavailableError when the portal bounces the module to Home', async () => {
+	it('parses the message grid off the home page when the module bounces there', async () => {
+		const { fetchImpl } = fakeFetch([
+			fakeResponse({ status: 302, headers: { location: '/Home_PXP2.aspx' } }),
+			fakeResponse({ body: gridPage([FULL_ROW]) })
+		]);
+		const mailbox = await fetchMail(session(), { fetchImpl });
+
+		expect(mailbox.messages).toHaveLength(1);
+		expect(mailbox.messages[0]!.subject).toBe('Action Needed: DECA/ROP Survey');
+	});
+
+	it('throws ModuleUnavailableError when the bounced-to Home page has no message grid', async () => {
 		const { fetchImpl } = fakeFetch([
 			fakeResponse({ status: 302, headers: { location: '/Home_PXP2.aspx' } }),
 			fakeResponse({ body: '<html><body>home</body></html>' })
+		]);
+		await expect(fetchMail(session(), { fetchImpl })).rejects.toBeInstanceOf(
+			ModuleUnavailableError
+		);
+	});
+
+	it('never reads rows off a bounce target that is not Home', async () => {
+		const { fetchImpl } = fakeFetch([
+			fakeResponse({ status: 302, headers: { location: '/GenericError.aspx' } }),
+			fakeResponse({ body: gridPage([FULL_ROW]) })
 		]);
 		await expect(fetchMail(session(), { fetchImpl })).rejects.toBeInstanceOf(
 			ModuleUnavailableError

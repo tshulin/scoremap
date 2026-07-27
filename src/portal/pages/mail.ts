@@ -128,9 +128,16 @@ export async function fetchMail(
 	options: FetchFollowOptions = {}
 ): Promise<Mailbox> {
 	const page = await getPage(session, PAGE, options);
-	assertNotBounced(page, 'Messages');
 
-	const rows = findDataSourceWithKeys(page.body, ROW_KEYS);
+	// Many portals have no standalone messages page — PXP2 renders the message
+	// stream on the home page and bounces this URL there. A bounce to Home is
+	// only fatal if Home carries no recognizable message rows either; succeeding
+	// on found rows (never on their absence) means the fallback can't fabricate
+	// an empty inbox out of a genuinely unavailable module.
+	const bouncedHome =
+		page.redirected && /Home_PXP2\.aspx/i.test(new URL(page.finalUrl).pathname);
+	const rows = !page.redirected || bouncedHome ? findDataSourceWithKeys(page.body, ROW_KEYS) : [];
+	if (page.redirected && rows.length === 0) assertNotBounced(page, 'Messages');
 	const messages: MailMessage[] = [];
 	let unreadableMessages = 0;
 
