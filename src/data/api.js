@@ -36,6 +36,7 @@ import {
 const RELAY_URL = import.meta.env.VITE_RELAY_URL || 'ws://localhost:8080';
 const SESSION_KEY = 'grademax-session';
 const TEST_SESSION_KEY = 'grademax-test-session';
+const STUDENT_KEY = 'grademax-student';
 
 export class ApiError extends Error {
   constructor(code, message, status) {
@@ -81,12 +82,34 @@ function restore() {
   }
 }
 
+// Who is signed in, kept next to the session so a reload still knows the name
+// even if that sync's student-info request is the one that fails. Only the two
+// fields the chrome shows — never the portrait or the perm ID.
+export function rememberStudent(student) {
+  if (!student || !student.name) return;
+  try {
+    sessionStorage.setItem(STUDENT_KEY, JSON.stringify({ name: student.name, grade: student.grade }));
+  } catch {
+    /* storage unavailable */
+  }
+}
+
+export function recallStudent() {
+  try {
+    const raw = sessionStorage.getItem(STUDENT_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function clearToken() {
   session = null;
   testSession = false;
   try {
     sessionStorage.removeItem(SESSION_KEY);
     sessionStorage.removeItem(TEST_SESSION_KEY);
+    sessionStorage.removeItem(STUDENT_KEY);
   } catch {
     /* ignore */
   }
