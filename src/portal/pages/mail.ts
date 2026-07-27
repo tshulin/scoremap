@@ -25,14 +25,12 @@ const INBOX_FOLDER_TYPE = 0;
 const DOWNLOAD_PAGE = 'FileDownload.aspx';
 const ATTACHMENT_DB_ID = 3;
 
-// One list call is cheap; each body is its own request. Bodies for the messages
-// visible without scrolling are prefetched so the list can show previews, and
-// the rest load when opened (fetchMailMessage). The relay transport pools and
-// reuses connections, so these requests share the sync's handful of sockets
-// rather than opening one each — but they are still round trips, so the list
-// stays partial by design instead of loading fifty bodies up front.
-const BODY_PREFETCH = 8;
-const BODY_PREFETCH_CONCURRENCY = 4;
+// One list call, and nothing else. Each body is its own round trip, so the
+// mailbox deliberately loads none of them up front — a body is fetched only when
+// the student actually opens that message (fetchMailMessage). Prefetching the
+// visible ones bought inline previews on the list at a cost of eight extra
+// requests per sync, which was more than the rest of the sync combined; every
+// request the app makes is charged against a shared per-IP budget at the portal.
 const PAGE_SIZE = 50;
 
 // The service answers with JSON buried in an HTML document.
@@ -200,29 +198,6 @@ export async function fetchMail(
 			unreadableMessages++;
 		}
 	}
-
-	// Bodies for the top of the list, so previews are real. A body that fails to
-	// load leaves its message listed and openable rather than sinking the sync.
-	const targets = messages.slice(0, BODY_PREFETCH);
-	let next = 0;
-	const worker = async (): Promise<void> => {
-		for (let index = next++; index < targets.length; index = next++) {
-			const message = targets[index]!;
-			try {
-				messages[index] = await fetchMailMessage(
-					session,
-					message.id,
-					message.isSystemMessage,
-					options
-				);
-			} catch {
-				// Keep the listed message; its body loads when opened.
-			}
-		}
-	};
-	await Promise.all(
-		Array.from({ length: Math.min(BODY_PREFETCH_CONCURRENCY, targets.length) }, worker)
-	);
 
 	return validate(MailboxSchema, { messages, unreadableMessages }, 'mail');
 }

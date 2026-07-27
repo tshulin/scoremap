@@ -102,7 +102,7 @@ function ClassDetail() {
       <main style={{ flex: 1, padding: '32px 40px 64px', boxSizing: 'border-box' }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           {/* sync status */}
-          <SyncPill />
+          <SyncPill scope="gradebook" />
 
           {/* header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 24, marginBottom: 20, flexWrap: 'wrap' }}>

@@ -1,13 +1,17 @@
 // SyncPill — the "Last updated … · Refresh" pill shown at the top of every
 // logged-in page, now backed by the real sync state. Also the one place that
 // flags the backend's sample gradebook so invented grades never look real.
+//
+// `scope` names the resource this page displays ('gradebook' | 'attendance' |
+// 'documents' | 'mail'), and Refresh re-fetches only that one. Omitting it
+// re-syncs everything, which is four times the requests — pass it.
 import React from 'react';
 import { useSession, useSyncMeta, useSyncStatus } from '../data/SyncProvider.jsx';
 
 const fmtTime = (date) =>
   date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 
-function SyncPill({ note }) {
+function SyncPill({ note, scope }) {
   const session = useSession();
   const meta = useSyncMeta();
   const { status, refresh } = useSyncStatus();
@@ -39,7 +43,7 @@ function SyncPill({ note }) {
           href="#"
           onClick={(e) => {
             e.preventDefault();
-            if (status !== 'syncing') refresh();
+            if (status !== 'syncing') refresh(scope);
           }}
           style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
         >

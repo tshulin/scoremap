@@ -62,8 +62,14 @@ const Dot = () => (
   />
 );
 
-// The whole title line is one non-wrapping run that dissolves at the card's
-// right edge (Gmail-style), so a long subject or preview never wraps or clips.
+// The subject is one non-wrapping run that dissolves at the card's right edge
+// (Gmail-style), so a long subject never wraps or clips.
+//
+// There is deliberately no inline body preview. Showing one meant fetching a
+// message body per visible row — eight extra portal requests on every sync, more
+// than the whole rest of the sync combined — and those requests are charged
+// against a per-IP budget the entire school shares. The body loads when the
+// student opens the message.
 const TITLE_FADE = 'linear-gradient(to right, black 78%, transparent 98%)';
 
 function Mail() {
@@ -81,7 +87,7 @@ function Mail() {
       <main style={{ flex: 1, padding: '32px 40px 64px', boxSizing: 'border-box' }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           {/* sync status */}
-          <SyncPill />
+          <SyncPill scope="mail" />
 
           {!meta.mail.ok && meta.mail.message && (
             <div
@@ -144,7 +150,6 @@ function Mail() {
             )}
             {messages.map((m) => {
               const hov = hovered === m.id;
-              const preview = m.body.join(' ').replace(/\s+/g, ' ').trim();
               return (
                 <div
                   key={m.id}
@@ -162,7 +167,7 @@ function Mail() {
                     transition: 'box-shadow 150ms ease',
                   }}
                 >
-                  {/* subject + inline body preview, one line, fading out to the right */}
+                  {/* subject, one line, fading out to the right */}
                   <div
                     style={{
                       overflow: 'hidden',
@@ -174,9 +179,6 @@ function Mail() {
                   >
                     <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)', letterSpacing: '-0.2px' }}>
                       {m.subject}
-                    </span>
-                    <span style={{ fontSize: 15, color: 'var(--color-muted)', marginLeft: 10 }}>
-                      {preview}
                     </span>
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>

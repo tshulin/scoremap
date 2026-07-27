@@ -2,10 +2,15 @@
 // portal client (src/data/api.js, which scrapes the PXP2 portal over the blind
 // relay) and maps its domain shapes to the page shapes.
 //
-// One sync = student info + gradebook + attendance + documents, in parallel.
-// A resource that fails does not sink the others: its section stays empty and
-// `meta.<resource>.message` says why. A 401 anywhere aborts the sync so the
-// provider can sign the user out.
+// A sync fetches the resources in `scope`, in parallel, and merges them over the
+// snapshot the app already has. A resource that fails does not sink the others:
+// its section keeps its previous value and `meta.<resource>.message` says why. A
+// 401 anywhere aborts the sync so the provider can sign the user out.
+//
+// SCOPE EXISTS TO SAVE REQUESTS. Every request the app makes is charged against
+// the portal's per-IP budget, which a whole school shares behind one NAT address
+// (see options.md). Refreshing the dashboard must therefore cost one request for
+// the gradebook, not a fresh copy of the mailbox and the document list too.
 import * as api from './api.js';
 import { DEMO, DEMO_STUDENT } from './demo.js';
 import { emptySnapshot } from './snapshot.js';
@@ -246,7 +251,32 @@ const friendlyMailMessage = (error) => {
   return error.message;
 };
 
-export async function sync(knownStudent) {
+// The resources a sync can fetch. A page refreshes the one it displays; the
+// initial sign-in sync takes them all.
+export const ALL_RESOURCES = ['gradebook', 'attendance', 'documents', 'mail'];
+
+const FETCHERS = {
+  gradebook: () => api.getGradebook(),
+  attendance: () => api.getAttendance(),
+  documents: () => api.getDocuments(),
+  mail: () => api.getMail(),
+};
+
+// Who is signed in, without asking the portal if we can avoid it. Sign-in
+// already fetched the student to show the name, a reload finds it mirrored in
+// sessionStorage, and a scoped refresh still holds the previous snapshot — so in
+// the steady state this costs zero requests. Only a session that somehow knows
+// no name falls through to the portal.
+function knownIdentity(knownStudent, previous) {
+  if (knownStudent && knownStudent.name) return knownStudent;
+  const remembered = api.recallStudent();
+  if (remembered && remembered.name) return remembered;
+  const session = previous && previous.session;
+  if (session && session.studentName) return { name: session.studentName, grade: session.grade };
+  return null;
+}
+
+export async function sync(knownStudent, { scope = ALL_RESOURCES, previous = null } = {}) {
   if (DEMO) {
     const snapshot = demoSnapshot();
     harvestFromClasses(snapshot.classes);
@@ -257,34 +287,46 @@ export async function sync(knownStudent) {
     harvestFromClasses(snapshot.classes);
     return snapshot;
   }
-  const [student, gradebook, attendance, documents, mail] = await Promise.allSettled([
-    api.getStudent(),
-    api.getGradebook(),
-    api.getAttendance(),
-    api.getDocuments(),
-    api.getMail(),
-  ]);
 
-  for (const r of [student, gradebook, attendance, documents, mail]) {
+  const base = previous || emptySnapshot;
+  const identity = knownIdentity(knownStudent, base);
+
+  // Only the requested resources are fetched, plus student info if — and only
+  // if — nobody knows the name yet.
+  const jobs = scope.filter((name) => FETCHERS[name]).map((name) => [name, FETCHERS[name]()]);
+  if (!identity) jobs.unshift(['student', api.getStudent()]);
+
+  const settled = await Promise.allSettled(jobs.map(([, promise]) => promise));
+  const results = {};
+  jobs.forEach(([name], i) => {
+    results[name] = settled[i];
+  });
+
+  for (const r of settled) {
     if (r.status === 'rejected' && r.reason && r.reason.status === 401) throw r.reason;
   }
 
+  // Merged over the previous snapshot, not rebuilt from empty: a scoped refresh
+  // must leave the sections it did not fetch exactly as they were.
   const data = {
-    ...emptySnapshot,
-    meta: { ...emptySnapshot.meta },
-    session: { ...emptySnapshot.session, lastUpdated: new Date() },
+    ...base,
+    meta: { ...base.meta },
+    session: { ...base.session, lastUpdated: new Date() },
   };
 
   // A sync that loses only the student-info request must not blank the name out
   // of the chrome — the app already knows who is signed in, and after a reload
   // there is no caller to pass it back in.
-  const info = student.status === 'fulfilled' ? student.value : knownStudent || api.recallStudent();
+  const student = results.student;
+  const info = student && student.status === 'fulfilled' ? student.value : identity;
   if (info) {
     data.session = { ...data.session, studentName: info.name, grade: info.grade };
     api.rememberStudent(info);
   }
 
-  if (gradebook.status === 'fulfilled') {
+  const { gradebook, attendance, documents, mail } = results;
+
+  if (gradebook && gradebook.status === 'fulfilled') {
     const mapped = mapGradebook(gradebook.value.gradebook);
     data.classes = mapped.classes;
     data.assignmentsByClass = mapped.assignmentsByClass;
@@ -299,7 +341,7 @@ export async function sync(knownStudent) {
         ? 'Sample gradebook — the portal has no active grading period yet.'
         : '',
     };
-  } else {
+  } else if (gradebook) {
     data.meta.gradebook = {
       ok: false,
       placeholder: false,
@@ -307,7 +349,7 @@ export async function sync(knownStudent) {
     };
   }
 
-  if (attendance.status === 'fulfilled') {
+  if (attendance && attendance.status === 'fulfilled') {
     const att = attendance.value.attendance;
     data.attendance = {
       schoolName: att.schoolName,
@@ -315,11 +357,11 @@ export async function sync(knownStudent) {
       unreadableAbsences: att.unreadableAbsences,
     };
     data.meta.attendance = { ok: true, placeholder: attendance.value.placeholder, message: '' };
-  } else {
+  } else if (attendance) {
     data.meta.attendance = { ok: false, placeholder: false, message: attendance.reason.message };
   }
 
-  if (documents.status === 'fulfilled') {
+  if (documents && documents.status === 'fulfilled') {
     data.documents = documents.value.map((d) => ({
       id: d.docToken,
       docToken: d.docToken,
@@ -328,17 +370,17 @@ export async function sync(knownStudent) {
       date: d.uploadDate,
     }));
     data.meta.documents = { ok: true, message: '' };
-  } else {
+  } else if (documents) {
     data.meta.documents = { ok: false, message: documents.reason.message };
   }
 
-  if (mail.status === 'fulfilled') {
+  if (mail && mail.status === 'fulfilled') {
     data.mail = {
       messages: mail.value.messages.map(mapMailMessage),
       unreadableMessages: mail.value.unreadableMessages,
     };
     data.meta.mail = { ok: true, placeholder: false, message: '' };
-  } else {
+  } else if (mail) {
     data.meta.mail = { ok: false, placeholder: false, message: friendlyMailMessage(mail.reason) };
   }
 

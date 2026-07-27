@@ -77,11 +77,8 @@ const FULL_MESSAGE = {
 };
 
 describe('fetchMail', () => {
-	it('reads the message list and prefetches bodies for the visible messages', async () => {
-		const { fetchImpl, calls } = fakeFetch([
-			fakeResponse({ body: listOf([LIST_ROW]) }),
-			fakeResponse({ body: wrap({ Result: FULL_MESSAGE }) })
-		]);
+	it('reads the message list from a single request', async () => {
+		const { fetchImpl, calls } = fakeFetch([fakeResponse({ body: listOf([LIST_ROW]) })]);
 		const mailbox = await fetchMail(session(), { fetchImpl });
 
 		expect(mailbox.unreadableMessages).toBe(0);
@@ -96,79 +93,46 @@ describe('fetchMail', () => {
 			email: 'traaker@pleasantonusd.net'
 		});
 		expect(m.date).toBe('2025-05-13');
-		expect(m.body).toEqual(['Hi all,', 'Please complete the survey by Friday.', 'portal-only link']);
-		expect(m.links).toEqual([{ label: 'survey', url: 'https://forms.example.com/survey' }]);
-		expect(m.attachments).toEqual([
-			{ token: 'ATT-1', name: 'Flyer.pdf' },
-			{ token: 'ATT-2', name: 'Attachment' }
-		]);
-		expect(m.bodyLoaded).toBe(true);
+		// The list call carries no body; the reader fetches it on open.
+		expect(m.bodyLoaded).toBe(false);
+		expect(m.body).toEqual([]);
+		expect(m.hasAttachments).toBe(true);
 
+		expect(calls).toHaveLength(1);
 		expect(calls[0]!.url).toBe(
 			'https://ca-test-psv.edupoint.com/st_api/ST.Messaging/GetMessages?PORTAL=3'
 		);
 		expect(calls[0]!.body).toContain('data=');
 		expect(decodeURIComponent(calls[0]!.body!)).toContain('"folderType":0');
-		// Reading mail must never change the inbox's unread state.
-		expect(decodeURIComponent(calls[1]!.body!)).toContain('"markAsRead":false');
 	});
 
-	it('prefetches only the top of the list and leaves the rest body-not-loaded', async () => {
-		const rows = Array.from({ length: 12 }, (_, i) => ({
+	// The mailbox is the app's heaviest resource against the portal's per-IP
+	// budget, so its cost must not scale with the number of messages.
+	it('costs exactly one request no matter how long the mailbox is', async () => {
+		const rows = Array.from({ length: 50 }, (_, i) => ({
 			...LIST_ROW,
 			messagePersonId: `PERSON-${i}`,
 			subject: `Message ${i}`
 		}));
-		// One list response plus a body for each prefetched message. If the client
-		// asked for more bodies than this, fakeFetch throws.
-		const responses = [fakeResponse({ body: listOf(rows) })];
-		for (let i = 0; i < 8; i++) {
-			responses.push(fakeResponse({ body: wrap({ Result: FULL_MESSAGE }) }));
-		}
-		const { fetchImpl, calls } = fakeFetch(responses);
+		// Only a list response is queued: fakeFetch throws on any further request.
+		const { fetchImpl, calls } = fakeFetch([fakeResponse({ body: listOf(rows) })]);
 		const mailbox = await fetchMail(session(), { fetchImpl });
 
-		expect(mailbox.messages).toHaveLength(12);
-		expect(calls).toHaveLength(9); // 1 list + 8 bodies, never one per message
-		expect(mailbox.messages.filter((m) => m.bodyLoaded)).toHaveLength(8);
+		expect(calls).toHaveLength(1);
+		expect(mailbox.messages).toHaveLength(50);
+		expect(mailbox.messages.every((m) => !m.bodyLoaded)).toBe(true);
+		// Listed order is preserved, so the reader can resolve a message by id.
+		expect(mailbox.messages.map((m) => m.id)).toEqual(rows.map((r) => r.messagePersonId));
 
-		const tail = mailbox.messages[11]!;
-		expect(tail.bodyLoaded).toBe(false);
+		const tail = mailbox.messages[49]!;
 		expect(tail.body).toEqual([]);
 		// The count is unknown until the body loads, but their existence is not.
 		expect(tail.attachments).toEqual([]);
 		expect(tail.hasAttachments).toBe(true);
 	});
 
-	it('keeps every message in its listed order while prefetching concurrently', async () => {
-		const rows = Array.from({ length: 8 }, (_, i) => ({
-			...LIST_ROW,
-			messagePersonId: `PERSON-${i}`,
-			subject: `Message ${i}`
-		}));
-		const responses = [fakeResponse({ body: listOf(rows) })];
-		for (let i = 0; i < 8; i++) {
-			responses.push(
-				fakeResponse({
-					body: wrap({
-						Result: { ...FULL_MESSAGE, messagePersonId: `PERSON-${i}`, subject: `Message ${i}` }
-					})
-				})
-			);
-		}
-		const { fetchImpl } = fakeFetch(responses);
-		const mailbox = await fetchMail(session(), { fetchImpl });
-
-		// Workers pull from a shared cursor, so a slot must still hold its own message.
-		expect(mailbox.messages.map((m) => m.id)).toEqual(rows.map((r) => r.messagePersonId));
-		expect(mailbox.messages.map((m) => m.subject)).toEqual(rows.map((r) => r.subject));
-	});
-
-	it('keeps a message whose body fails to load', async () => {
-		const { fetchImpl } = fakeFetch([
-			fakeResponse({ body: listOf([LIST_ROW]) }),
-			fakeResponse({ status: 200, body: '<html>not json</html>' })
-		]);
+	it('leaves a listed message body-not-loaded rather than sinking the sync', async () => {
+		const { fetchImpl } = fakeFetch([fakeResponse({ body: listOf([LIST_ROW]) })]);
 		const mailbox = await fetchMail(session(), { fetchImpl });
 
 		expect(mailbox.messages).toHaveLength(1);
@@ -178,10 +142,7 @@ describe('fetchMail', () => {
 
 	it('drops an unreadable row into the count instead of failing the mailbox', async () => {
 		const dateless = { ...LIST_ROW, messagePersonId: 'BAD', sendDateTime: 'not a date' };
-		const { fetchImpl } = fakeFetch([
-			fakeResponse({ body: listOf([LIST_ROW, dateless]) }),
-			fakeResponse({ body: wrap({ Result: FULL_MESSAGE }) })
-		]);
+		const { fetchImpl } = fakeFetch([fakeResponse({ body: listOf([LIST_ROW, dateless]) })]);
 		const mailbox = await fetchMail(session(), { fetchImpl });
 
 		expect(mailbox.messages).toHaveLength(1);
