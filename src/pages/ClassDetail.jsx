@@ -7,9 +7,10 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import Sidebar from '../components/Sidebar.jsx';
-import SyncPill from '../components/SyncPill.jsx';
+import TopBar from '../components/TopBar.jsx';
+import { DeltaValue } from '../components/RefreshDelta.jsx';
 import { scoreBandColor as bandColor } from '../lib/grades.js';
-import { useAssignments, useClass } from '../data/SyncProvider.jsx';
+import { useAssignments, useClass, useSyncChanges } from '../data/SyncProvider.jsx';
 // The grade engine runs right here in the browser — the server only supplies
 // the assignment data.
 import {
@@ -70,6 +71,16 @@ function ClassDetail() {
     toggleHypothetical(false);
   }, [classId, toggleHypothetical]);
 
+  const { list: changedClasses } = useSyncChanges();
+  const myChange = changedClasses.find((c) => c.id === classId);
+  const deltaLine = myChange ? (
+    <span>
+      <DeltaValue delta={myChange.delta} /> from last refresh
+    </span>
+  ) : (
+    'No change since last refresh'
+  );
+
   const anyCalculable = effective.some(isCalculable);
   const computedGrade = anyCalculable ? courseGrade(effective, categories) : null;
   const impactById = React.useMemo(
@@ -102,54 +113,69 @@ function ClassDetail() {
 
       <main style={{ flex: 1, padding: '32px 40px 64px', boxSizing: 'border-box' }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
-          {/* sync status */}
-          <SyncPill />
-
-          {/* header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 24, marginBottom: 20, flexWrap: 'wrap' }}>
-            <h1 style={{ margin: 0, fontSize: 'clamp(28px, 3.4vw, 42px)', fontWeight: 600, letterSpacing: '-1px', color: 'var(--color-ink)' }}>
-              {CLASS_NAME}
-            </h1>
-            {hypothetical ? (
-              <div style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                <div style={{ fontSize: 'clamp(24px, 2.8vw, 36px)', fontWeight: 600, letterSpacing: '-0.5px', color: computedGrade != null ? bandColor(computedGrade) : 'var(--color-ink)' }}>
-                  {computedGrade != null
-                    ? `${resolveLetter(computedGrade, scale)} ${fmt2(computedGrade)}%`
-                    : '—'}
-                </div>
-                <div style={{ fontSize: 13, color: 'var(--color-muted)' }}>
-                  hypothetical · official: {GRADE || '—'}
-                </div>
+          {/* top bar: class name · refresh pill (tabs beneath it) · grade */}
+          <TopBar
+            pillDelta={deltaLine}
+            left={
+              <div>
+                <h1 style={{ margin: 0, fontSize: 'clamp(24px, 2.6vw, 34px)', fontWeight: 600, letterSpacing: '-0.7px', lineHeight: 1.2, color: 'var(--color-ink)' }}>
+                  {CLASS_NAME}
+                </h1>
+                {/* compact section switcher, flush with the course name's left edge */}
+                <nav
+                  aria-label="Class sections"
+                  style={{
+                    display: 'inline-flex',
+                    gap: 2,
+                    padding: 3,
+                    marginTop: 10,
+                    borderRadius: 'var(--radius-pill)',
+                    background: 'var(--color-surface-card)',
+                    border: '1px solid var(--color-hairline-strong)',
+                  }}
+                >
+                  {TABS.map(([id, label]) => (
+                    <button
+                      key={id}
+                      onClick={() => setTab(id)}
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: 'var(--radius-pill)',
+                        border: 'none',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        fontFamily: 'var(--font-sans)',
+                        fontSize: 12,
+                        fontWeight: 500,
+                        background: tab === id ? 'var(--color-surface-dark-elevated)' : 'transparent',
+                        color: tab === id ? 'var(--color-ink)' : 'var(--color-body)',
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </nav>
               </div>
-            ) : (
-              <div style={{ fontSize: 'clamp(24px, 2.8vw, 36px)', fontWeight: 600, letterSpacing: '-0.5px', color: 'var(--color-ink)', whiteSpace: 'nowrap' }}>
-                {GRADE}
-              </div>
-            )}
-          </div>
-
-          {/* sub-tabs (Grade index joins in a later phase) */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: 4, borderRadius: 'var(--radius-lg)', background: 'var(--color-surface-card)', border: '1px solid var(--color-hairline-strong)', marginBottom: 20 }}>
-            {TABS.map(([id, label]) => (
-              <button
-                key={id}
-                onClick={() => setTab(id)}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: 'var(--radius-md)',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontFamily: 'var(--font-sans)',
-                  fontSize: 15,
-                  fontWeight: 500,
-                  background: tab === id ? 'var(--color-surface-dark-elevated)' : 'transparent',
-                  color: tab === id ? 'var(--color-ink)' : 'var(--color-body)',
-                }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+            }
+            right={
+              hypothetical ? (
+                <div style={{ whiteSpace: 'nowrap' }}>
+                  <div style={{ fontSize: 'clamp(24px, 2.8vw, 36px)', fontWeight: 600, letterSpacing: '-0.5px', color: computedGrade != null ? bandColor(computedGrade) : 'var(--color-ink)' }}>
+                    {computedGrade != null
+                      ? `${resolveLetter(computedGrade, scale)} ${fmt2(computedGrade)}%`
+                      : '—'}
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--color-muted)' }}>
+                    hypothetical · official: {GRADE || '—'}
+                  </div>
+                </div>
+              ) : (
+                <div style={{ fontSize: 'clamp(24px, 2.8vw, 36px)', fontWeight: 600, letterSpacing: '-0.5px', color: 'var(--color-ink)', whiteSpace: 'nowrap' }}>
+                  {GRADE}
+                </div>
+              )
+            }
+          />
 
           {tab === 'assignments' && (
             <>

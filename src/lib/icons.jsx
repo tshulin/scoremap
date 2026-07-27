@@ -39,6 +39,24 @@ export const ArrowLeftIcon = ({ size = 18 }) => (
   </svg>
 );
 
+export const ChevronDownIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" {...base}>
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+);
+
+export const ChevronLeftIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" {...base}>
+    <path d="m15 18-6-6 6-6" />
+  </svg>
+);
+
+export const ChevronRightIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" {...base}>
+    <path d="m9 18 6-6-6-6" />
+  </svg>
+);
+
 export const SunIcon = ({ size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" {...base}>
     <circle cx="12" cy="12" r="4" />
