@@ -16,10 +16,11 @@ import { fetchStudentInfo } from '../portal/pages/studentInfo';
 import { fetchDocuments, downloadDocument as portalDownloadDocument } from '../portal/pages/documents';
 import { fetchAttendance } from '../portal/pages/attendance';
 import { fetchGradebook } from '../portal/pages/gradebook/index';
+import { fetchMail, downloadMailAttachment as portalDownloadMailAttachment } from '../portal/pages/mail';
 import { SessionExpiredError, NoActiveGradingPeriodError, ParseError } from '../portal/errors';
 import { SAMPLE_GRADEBOOK, SAMPLE_ATTENDANCE, PLACEHOLDER_DATA } from './placeholders';
 import { DEMO, DEMO_STUDENT } from './demo';
-import { isTestCredentials, TEST_STUDENT, testDocumentContent } from './testAccount';
+import { isTestCredentials, TEST_STUDENT, testDocumentContent, testMailAttachmentContent } from './testAccount';
 
 // Set at build time (deploy workflow); wss:// in production, ws://localhost in dev.
 const RELAY_URL = import.meta.env.VITE_RELAY_URL || 'ws://localhost:8080';
@@ -200,6 +201,21 @@ export async function getGradebook() {
       if (PLACEHOLDER_DATA && blocked) return { gradebook: SAMPLE_GRADEBOOK, placeholder: true };
       throw e;
     }
+  });
+}
+
+export function getMail() {
+  return withSession((s) => fetchMail(s, options));
+}
+
+export async function downloadMailAttachment(token) {
+  if (isTestSession()) {
+    const { bytes, mimeType, fileName } = testMailAttachmentContent(token);
+    return { blob: new Blob([bytes], { type: mimeType }), fileName };
+  }
+  return withSession(async (s) => {
+    const { bytes, mimeType, fileName } = await portalDownloadMailAttachment(s, token, options);
+    return { blob: new Blob([bytes], { type: mimeType }), fileName };
   });
 }
 

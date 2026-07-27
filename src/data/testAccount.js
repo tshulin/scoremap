@@ -11,7 +11,7 @@
 // 10+ dated assignments per course (so the grade chart has a real series),
 // and a document center with several categories. Shapes are validated against
 // the domain schemas at import, so a typo fails loudly.
-import { GradebookSchema, AttendanceSchema, DocumentMetaSchema } from '../domain/index';
+import { GradebookSchema, AttendanceSchema, DocumentMetaSchema, MailMessageSchema } from '../domain/index';
 
 export const TEST_DISTRICT = {
   state: 'Test',
@@ -240,6 +240,126 @@ export const TEST_DOCUMENTS = [
   { docToken: 'TESTDOC-10', title: 'Class Schedule 2026-2027', category: 'Schedule', uploadDate: '2026-08-10' },
 ].map((d) => DocumentMetaSchema.parse(d));
 
+// The former Mail.jsx placeholder messages, now the test account's mailbox so
+// mail flows through the same sync pipeline as everything else. Contents match
+// the design mock (Gmail-style mail design.pdf).
+export const TEST_MAIL = [
+  {
+    id: 'm1',
+    subject: 'Action Needed: DECA/ROP Survey',
+    sender: { name: 'Tami Raaker', role: 'Teacher', email: 'traaker@pleasantonusd.net' },
+    date: '2025-05-13',
+    body: [
+      'Hi all,',
+      "Please complete the DECA/ROP end-of-year survey by this Friday. It helps us plan next year's program and only takes a couple of minutes.",
+      'Regards,\nMrs. Raaker',
+    ],
+    links: [{ label: 'DECA/ROP Survey', url: 'https://example.com/deca-rop-survey' }],
+    attachments: [],
+  },
+  {
+    id: 'm2',
+    subject: 'Grades: 09, 10, 11, 12, 13 - Are You Moving?',
+    sender: { name: 'Brigitte Holling', role: 'Staff', email: 'bholling@pleasantonusd.net' },
+    date: '2025-05-07',
+    body: [
+      'Families,',
+      'If your student is moving or will not be returning to Foothill next year, please let the office know so we can update enrollment. The withdrawal form, FAQ, and office contact are linked below.',
+      'Thank you,\nB. Holling',
+    ],
+    links: [
+      { label: 'Withdrawal Form', url: 'https://example.com/withdrawal-form' },
+      { label: 'Enrollment FAQ', url: 'https://example.com/enrollment-faq' },
+      { label: 'Contact the Office', url: 'https://example.com/office-contact' },
+    ],
+    attachments: [],
+  },
+  {
+    id: 'm3',
+    subject: 'Grades: 09, 10, 11 - Summer Opportunities!',
+    sender: { name: 'Anabel Delgado', role: 'Staff', email: 'adelgado@pleasantonusd.net' },
+    date: '2025-04-28',
+    body: [
+      'Hello students,',
+      'A number of summer programs, internships, and volunteer opportunities are now open. Details and application links are below, and the flyers are attached.',
+      'Best,\nA. Delgado',
+    ],
+    links: [
+      { label: 'Summer Internships', url: 'https://example.com/summer-internships' },
+      { label: 'Volunteer Portal', url: 'https://example.com/volunteer-portal' },
+      { label: 'Enrichment Camps', url: 'https://example.com/enrichment-camps' },
+      { label: 'Scholarships', url: 'https://example.com/scholarships' },
+    ],
+    attachments: [
+      { token: 'TESTMAIL-ATT-01', name: 'Summer Programs.pdf' },
+      { token: 'TESTMAIL-ATT-02', name: 'Internship Flyer.pdf' },
+      { token: 'TESTMAIL-ATT-03', name: 'Volunteer Guide.pdf' },
+      { token: 'TESTMAIL-ATT-04', name: 'Camp Schedule.pdf' },
+      { token: 'TESTMAIL-ATT-05', name: 'Scholarship List.pdf' },
+    ],
+  },
+  {
+    id: 'm4',
+    subject: 'Grades: 09, 10, 11 - Summer Enrichment Opportunities!',
+    sender: { name: 'Anabel Delgado', role: 'Staff', email: 'adelgado@pleasantonusd.net' },
+    date: '2025-04-22',
+    body: [
+      'Hello students,',
+      'More enrichment opportunities for the summer have been posted. See the links below to learn more and apply.',
+      'Best,\nA. Delgado',
+    ],
+    links: [
+      { label: 'STEM Summer Institute', url: 'https://example.com/stem-institute' },
+      { label: 'Arts Intensive', url: 'https://example.com/arts-intensive' },
+      { label: 'Writing Workshop', url: 'https://example.com/writing-workshop' },
+      { label: 'Leadership Camp', url: 'https://example.com/leadership-camp' },
+    ],
+    attachments: [],
+  },
+  {
+    id: 'm5',
+    subject: 'Grades: 09, 10, 11, 12 - Volunteers Needed!',
+    sender: { name: 'Anabel Delgado', role: 'Staff', email: 'adelgado@pleasantonusd.net' },
+    date: '2025-04-17',
+    body: [
+      'Hi everyone,',
+      "We're looking for volunteers to help at upcoming school events. Sign up using the link below — all grade levels welcome.",
+      'Thanks,\nA. Delgado',
+    ],
+    links: [{ label: 'Volunteer Sign-Up', url: 'https://example.com/volunteer-signup' }],
+    attachments: [],
+  },
+  {
+    id: 'm6',
+    subject: 'Grades: 09, 10, 11, 12 - Volunteer Opportunities!',
+    sender: { name: 'Anabel Delgado', role: 'Staff', email: 'adelgado@pleasantonusd.net' },
+    date: '2025-04-15',
+    body: [
+      'Hi everyone,',
+      'New volunteer opportunities are available this month. Check the links below for details and to sign up.',
+      'Thanks,\nA. Delgado',
+    ],
+    links: [
+      { label: 'Community Cleanup', url: 'https://example.com/community-cleanup' },
+      { label: 'Tutoring Program', url: 'https://example.com/tutoring-program' },
+    ],
+    attachments: [],
+  },
+  {
+    id: 'm7',
+    subject: 'Grades: 09, 10, 11, 12 - Out of State Mini College Fair: Tomorrow during lunch at FHS!',
+    sender: { name: 'Anabel Delgado', role: 'Staff', email: 'adelgado@pleasantonusd.net' },
+    date: '2025-04-14',
+    body: [
+      'Students,',
+      'A mini college fair with out-of-state schools will be held tomorrow during lunch at FHS. Stop by to meet admissions reps — the list of attending colleges is attached.',
+      'Best,\nA. Delgado',
+    ],
+    links: [],
+    attachments: [{ token: 'TESTMAIL-ATT-06', name: 'College List.pdf' }],
+  },
+].map((m) => MailMessageSchema.parse(m));
+
 // ---- document downloads ----
 // Real documents stream from the portal; test documents are generated here as
 // tiny single-page PDFs so the download flow (blob → save) works end to end.
@@ -297,4 +417,22 @@ export function testDocumentContent(docToken) {
   ]);
   const fileName = `${doc.title.replace(/[—–]/g, '-').replace(/[^A-Za-z0-9-]+/g, '_')}.pdf`;
   return { bytes, mimeType: 'application/pdf', fileName };
+}
+
+export function testMailAttachmentContent(token) {
+  for (const message of TEST_MAIL) {
+    const attachment = message.attachments.find((a) => a.token === token);
+    if (!attachment) continue;
+    const bytes = buildPdf(attachment.name.replace(/\.pdf$/i, ''), [
+      "Hustler's University",
+      `Attached to: ${message.subject}`,
+      `From: ${message.sender.name}`,
+      `Sent: ${message.date}`,
+      '',
+      'This is a generated sample attachment for the Grademax test account.',
+      'It is not a real school document.',
+    ]);
+    return { bytes, mimeType: 'application/pdf', fileName: attachment.name };
+  }
+  throw new Error('Unknown test attachment.');
 }
