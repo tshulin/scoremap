@@ -7,6 +7,9 @@
 export const emptySnapshot = {
   classes: [],
   assignmentsByClass: {},
+  // All reporting-period names the portal listed; session.semester is the
+  // current one. Feeds the top-bar quarter/semester dropdown.
+  semesters: [],
   attendance: { schoolName: '', records: [], unreadableAbsences: 0 },
   documents: [],
   session: {
