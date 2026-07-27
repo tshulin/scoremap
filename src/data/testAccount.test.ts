@@ -1,13 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { courseGrade, gradesMatch } from '../calc/index';
-import { AttendanceSchema, DocumentMetaSchema, GradebookSchema } from '../domain/index';
+import {
+	AttendanceSchema,
+	DocumentMetaSchema,
+	GradebookSchema,
+	MailMessageSchema
+} from '../domain/index';
 import {
 	TEST_ATTENDANCE,
 	TEST_DISTRICT,
 	TEST_DOCUMENTS,
 	TEST_GRADEBOOK,
+	TEST_MAIL,
 	isTestCredentials,
-	testDocumentContent
+	testDocumentContent,
+	testMailAttachmentContent
 } from './testAccount.js';
 
 const markOf = (name: string) => {
@@ -142,5 +149,38 @@ describe('TEST_ATTENDANCE and TEST_DOCUMENTS', () => {
 
 	it('rejects an unknown document token', () => {
 		expect(() => testDocumentContent('NOPE')).toThrow();
+	});
+});
+
+describe('TEST_MAIL', () => {
+	it('satisfies the domain schema', () => {
+		for (const message of TEST_MAIL) {
+			expect(() => MailMessageSchema.parse(message)).not.toThrow();
+		}
+	});
+
+	it('covers the states the UI renders: links, attachments, multiples, and neither', () => {
+		expect(TEST_MAIL.some((m) => m.links.length === 0 && m.attachments.length > 0)).toBe(true);
+		expect(TEST_MAIL.some((m) => m.links.length > 0 && m.attachments.length === 0)).toBe(true);
+		expect(TEST_MAIL.some((m) => m.links.length > 1 && m.attachments.length > 1)).toBe(true);
+	});
+
+	it('message ids are unique (they are route params)', () => {
+		expect(new Set(TEST_MAIL.map((m) => m.id)).size).toBe(TEST_MAIL.length);
+	});
+
+	it('every attachment downloads as a PDF named after itself', () => {
+		for (const message of TEST_MAIL) {
+			for (const attachment of message.attachments) {
+				const { bytes, mimeType, fileName } = testMailAttachmentContent(attachment.token);
+				expect(mimeType).toBe('application/pdf');
+				expect(fileName).toBe(attachment.name);
+				expect(new TextDecoder().decode(bytes.slice(0, 5))).toBe('%PDF-');
+			}
+		}
+	});
+
+	it('rejects an unknown attachment token', () => {
+		expect(() => testMailAttachmentContent('NOPE')).toThrow();
 	});
 });

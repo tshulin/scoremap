@@ -1,0 +1,43 @@
+import { z } from 'zod';
+import { IsoDateString } from './common';
+
+export const MailLinkSchema = z.object({
+	label: z.string().min(1),
+	url: z.string().min(1)
+});
+
+export const MailAttachmentSchema = z.object({
+	token: z.string().min(1),
+	name: z.string().min(1)
+});
+
+export const MailSenderSchema = z.object({
+	name: z.string().min(1),
+	role: z.string().optional(),
+	email: z.string().optional()
+});
+
+// Bodies are plain-text paragraphs: the portal sends HTML, which the portal layer
+// reduces to text + an extracted link list so the app never renders portal markup.
+export const MailMessageSchema = z.object({
+	id: z.string().min(1),
+	subject: z.string().min(1),
+	sender: MailSenderSchema,
+	date: IsoDateString,
+	body: z.array(z.string()),
+	links: z.array(MailLinkSchema),
+	attachments: z.array(MailAttachmentSchema)
+});
+
+export const MailboxSchema = z.object({
+	messages: z.array(MailMessageSchema),
+	// Rows the parser could not read. Surfaced rather than hidden: a short message list
+	// could silently hide an "action needed" notice from the school.
+	unreadableMessages: z.number().int().min(0).default(0)
+});
+
+export type MailLink = z.infer<typeof MailLinkSchema>;
+export type MailAttachment = z.infer<typeof MailAttachmentSchema>;
+export type MailSender = z.infer<typeof MailSenderSchema>;
+export type MailMessage = z.infer<typeof MailMessageSchema>;
+export type Mailbox = z.infer<typeof MailboxSchema>;

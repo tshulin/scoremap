@@ -30,5 +30,14 @@ export type {
 	Staff
 } from './gradebook';
 
+export {
+	MailAttachmentSchema,
+	MailLinkSchema,
+	MailMessageSchema,
+	MailSenderSchema,
+	MailboxSchema
+} from './mail';
+export type { Mailbox, MailAttachment, MailLink, MailMessage, MailSender } from './mail';
+
 export { ApiErrorSchema, PortalErrorCodeSchema } from './errorCodes';
 export type { ApiError, PortalErrorCode } from './errorCodes';

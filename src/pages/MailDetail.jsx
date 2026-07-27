@@ -1,16 +1,18 @@
 /**
  * MailDetail — a single message, Gmail-style reading pane (route: /mail/:mailId).
  *
- * FRONTEND ONLY. Resolves the message from the placeholder MAIL list in Mail.jsx
- * (the backend will supply the real message + attachment/link URLs later). Keeps
- * the app sidebar and drops all of Gmail's chrome (compose, folder list, toolbar
- * icons) the app doesn't need — just a clean read view in the Grademax style.
+ * Resolves the message from the synced mailbox (useMail). Links open in a new
+ * tab; attachments download through the portal (or the generated test-account
+ * PDFs) and open in the browser's viewer, same flow as Documents. Keeps the app
+ * sidebar and drops all of Gmail's chrome the app doesn't need — just a clean
+ * read view in the Grademax style.
  */
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import Sidebar from '../components/Sidebar.jsx';
+import { downloadMailAttachment } from '../data/api.js';
+import { useMail } from '../data/SyncProvider.jsx';
 import { ArrowLeftIcon, LinkIcon, PaperclipIcon } from '../lib/icons.jsx';
-import { MAIL } from './Mail.jsx';
 
 const longDate = (iso) => {
   const [y, m, d] = iso.split('-').map(Number);
@@ -61,7 +63,48 @@ function BackButton({ onClick }) {
 function MailDetail() {
   const navigate = useNavigate();
   const { mailId } = useParams();
-  const m = MAIL.find((x) => x.id === mailId);
+  const mail = useMail();
+  const m = mail.messages.find((x) => x.id === mailId);
+
+  const [downloading, setDownloading] = useState(null);
+  const [downloadError, setDownloadError] = useState('');
+  const attachmentUrls = useRef(new Set());
+
+  useEffect(() => {
+    return () => {
+      attachmentUrls.current.forEach((url) => URL.revokeObjectURL(url));
+      attachmentUrls.current.clear();
+    };
+  }, []);
+
+  const openAttachment = async (attachment) => {
+    if (downloading) return;
+    setDownloading(attachment.token);
+    setDownloadError('');
+
+    try {
+      const { blob, fileName } = await downloadMailAttachment(attachment.token);
+      const viewableBlob =
+        blob.type === 'application/octet-stream' && fileName.toLowerCase().endsWith('.pdf')
+          ? blob.slice(0, blob.size, 'application/pdf')
+          : blob;
+      const url = URL.createObjectURL(viewableBlob);
+      const viewer = window.open(url, '_blank');
+
+      if (viewer) {
+        attachmentUrls.current.add(url);
+        viewer.opener = null;
+      } else {
+        // An asynchronous open can be blocked by stricter popup settings.
+        // Falling back to the current tab still avoids downloading the file.
+        window.location.assign(url);
+      }
+    } catch (e) {
+      setDownloadError(e && e.message ? e.message : 'Attachment could not be opened.');
+    } finally {
+      setDownloading(null);
+    }
+  };
 
   if (!m) {
     return (
@@ -88,18 +131,37 @@ function MailDetail() {
         <div style={{ minWidth: 0 }}>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 15, color: 'var(--color-ink)' }}>
-              <span style={{ fontWeight: 600 }}>{m.sender}</span>{' '}
-              <span style={{ color: 'var(--color-muted)' }}>&lt;{m.email}&gt;</span>
+              <span style={{ fontWeight: 600 }}>{m.sender}</span>
+              {m.email && <span style={{ color: 'var(--color-muted)' }}> &lt;{m.email}&gt;</span>}
             </div>
-            <div style={{ fontSize: 13, color: 'var(--color-muted)', marginTop: 2 }}>
-              {m.role}
-            </div>
+            {m.role && (
+              <div style={{ fontSize: 13, color: 'var(--color-muted)', marginTop: 2 }}>
+                {m.role}
+              </div>
+            )}
           </div>
         </div>
         <div style={{ fontSize: 13, color: 'var(--color-muted)', whiteSpace: 'nowrap' }}>{longDate(m.date)}</div>
       </div>
 
       <div style={{ height: 1, background: 'var(--color-hairline)', margin: '24px 0 28px' }} />
+
+      {downloadError && (
+        <div
+          role="alert"
+          style={{
+            margin: '0 0 24px',
+            padding: '12px 16px',
+            borderRadius: 'var(--radius-md)',
+            background: 'rgba(251, 44, 54, 0.14)',
+            color: 'var(--color-grade-bad)',
+            fontSize: 14,
+            lineHeight: 1.5,
+          }}
+        >
+          {downloadError}
+        </div>
+      )}
 
       {/* body */}
       <div style={{ fontSize: 16, lineHeight: 1.7, color: 'var(--color-body)' }}>
@@ -118,7 +180,13 @@ function MailDetail() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {m.links.map((l, i) => (
-              <a key={i} href={l.url} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: 'var(--color-text-link)', fontSize: 14, width: 'fit-content' }}>
+              <a
+                key={i}
+                href={l.url}
+                target="_blank"
+                rel="noreferrer"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: 'var(--color-text-link)', fontSize: 14, width: 'fit-content' }}
+              >
                 <LinkIcon size={14} />
                 {l.label}
               </a>
@@ -134,9 +202,11 @@ function MailDetail() {
             {plural(m.attachments.length, 'Attachment')}
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-            {m.attachments.map((a, i) => (
-              <span
-                key={i}
+            {m.attachments.map((a) => (
+              <button
+                key={a.token}
+                onClick={() => openAttachment(a)}
+                aria-busy={downloading === a.token}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -146,16 +216,18 @@ function MailDetail() {
                   background: 'var(--color-surface-card)',
                   border: '1px solid var(--color-hairline-strong)',
                   color: 'var(--color-ink)',
+                  fontFamily: 'var(--font-sans)',
                   fontSize: 14,
                   fontWeight: 500,
-                  cursor: 'pointer',
+                  cursor: downloading === a.token ? 'wait' : 'pointer',
                 }}
               >
                 <span style={{ color: 'var(--color-preview)', display: 'inline-flex' }}>
                   <PaperclipIcon size={16} />
                 </span>
                 {a.name}
-              </span>
+                {downloading === a.token && <span style={{ color: 'var(--color-muted)' }}>Opening…</span>}
+              </button>
             ))}
           </div>
         </div>

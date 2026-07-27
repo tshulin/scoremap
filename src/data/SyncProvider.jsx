@@ -85,6 +85,7 @@ export const useSession = () => useSync().session;
 export const useClasses = () => useSync().classes;
 export const useAttendance = () => useSync().attendance;
 export const useDocuments = () => useSync().documents;
+export const useMail = () => useSync().mail;
 export const useSyncMeta = () => useSync().meta;
 export const useSyncStatus = () => {
   const { status, error, refresh } = useSync();

@@ -1,10 +1,10 @@
 /**
  * Mail — the student's school messages (route: /mail).
  *
- * FRONTEND ONLY. MAIL below is local placeholder data matching the shape a
- * StudentVUE pull produces (subject, sender, date, body, links, attachments).
- * The backend will supply the real list later — swap MAIL then. MAIL is exported
- * so the message reader (MailDetail) can resolve a message by id.
+ * The list comes from the sync layer (portal messages module scraped in the
+ * browser, or the test/demo mailbox). meta.mail tells the page whether the
+ * mailbox is real, sample (placeholder), or failed to load — the banner reflects
+ * that instead of hardcoding "not connected".
  *
  * Uses the same card box as the Documents page for a consistent look. Clicking a
  * message opens the reader at /mail/:mailId.
@@ -12,139 +12,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar.jsx';
+import SyncPill from '../components/SyncPill.jsx';
+import { useMail, useSyncMeta } from '../data/SyncProvider.jsx';
 import { PersonIcon, LinkIcon, PaperclipIcon } from '../lib/icons.jsx';
-
-// --- placeholder data (backend/StudentVUE will replace this) ---
-export const MAIL = [
-  {
-    id: 'm1',
-    subject: 'Action Needed: DECA/ROP Survey',
-    sender: 'Tami Raaker',
-    role: 'Teacher',
-    email: 'traaker@pleasantonusd.net',
-    date: '2025-05-13',
-    body: [
-      'Hi all,',
-      "Please complete the DECA/ROP end-of-year survey by this Friday. It helps us plan next year's program and only takes a couple of minutes.",
-      'Regards,\nMrs. Raaker',
-    ],
-    links: [{ label: 'DECA/ROP Survey', url: '#' }],
-    attachments: [],
-  },
-  {
-    id: 'm2',
-    subject: 'Grades: 09, 10, 11, 12, 13 - Are You Moving?',
-    sender: 'Brigitte Holling',
-    role: 'Staff',
-    email: 'bholling@pleasantonusd.net',
-    date: '2025-05-07',
-    body: [
-      'Families,',
-      'If your student is moving or will not be returning to Foothill next year, please let the office know so we can update enrollment. The withdrawal form, FAQ, and office contact are linked below.',
-      'Thank you,\nB. Holling',
-    ],
-    links: [
-      { label: 'Withdrawal Form', url: '#' },
-      { label: 'Enrollment FAQ', url: '#' },
-      { label: 'Contact the Office', url: '#' },
-    ],
-    attachments: [],
-  },
-  {
-    id: 'm3',
-    subject: 'Grades: 09, 10, 11 - Summer Opportunities!',
-    sender: 'Anabel Delgado',
-    role: 'Staff',
-    email: 'adelgado@pleasantonusd.net',
-    date: '2025-04-28',
-    body: [
-      'Hello students,',
-      'A number of summer programs, internships, and volunteer opportunities are now open. Details and application links are below, and the flyers are attached.',
-      'Best,\nA. Delgado',
-    ],
-    links: [
-      { label: 'Summer Internships', url: '#' },
-      { label: 'Volunteer Portal', url: '#' },
-      { label: 'Enrichment Camps', url: '#' },
-      { label: 'Scholarships', url: '#' },
-    ],
-    attachments: [
-      { name: 'Summer Programs.pdf' },
-      { name: 'Internship Flyer.pdf' },
-      { name: 'Volunteer Guide.pdf' },
-      { name: 'Camp Schedule.pdf' },
-      { name: 'Scholarship List.pdf' },
-    ],
-  },
-  {
-    id: 'm4',
-    subject: 'Grades: 09, 10, 11 - Summer Enrichment Opportunities!',
-    sender: 'Anabel Delgado',
-    role: 'Staff',
-    email: 'adelgado@pleasantonusd.net',
-    date: '2025-04-22',
-    body: [
-      'Hello students,',
-      'More enrichment opportunities for the summer have been posted. See the links below to learn more and apply.',
-      'Best,\nA. Delgado',
-    ],
-    links: [
-      { label: 'STEM Summer Institute', url: '#' },
-      { label: 'Arts Intensive', url: '#' },
-      { label: 'Writing Workshop', url: '#' },
-      { label: 'Leadership Camp', url: '#' },
-    ],
-    attachments: [],
-  },
-  {
-    id: 'm5',
-    subject: 'Grades: 09, 10, 11, 12 - Volunteers Needed!',
-    sender: 'Anabel Delgado',
-    role: 'Staff',
-    email: 'adelgado@pleasantonusd.net',
-    date: '2025-04-17',
-    body: [
-      'Hi everyone,',
-      "We're looking for volunteers to help at upcoming school events. Sign up using the link below — all grade levels welcome.",
-      'Thanks,\nA. Delgado',
-    ],
-    links: [{ label: 'Volunteer Sign-Up', url: '#' }],
-    attachments: [],
-  },
-  {
-    id: 'm6',
-    subject: 'Grades: 09, 10, 11, 12 - Volunteer Opportunities!',
-    sender: 'Anabel Delgado',
-    role: 'Staff',
-    email: 'adelgado@pleasantonusd.net',
-    date: '2025-04-15',
-    body: [
-      'Hi everyone,',
-      'New volunteer opportunities are available this month. Check the links below for details and to sign up.',
-      'Thanks,\nA. Delgado',
-    ],
-    links: [
-      { label: 'Community Cleanup', url: '#' },
-      { label: 'Tutoring Program', url: '#' },
-    ],
-    attachments: [],
-  },
-  {
-    id: 'm7',
-    subject: 'Grades: 09, 10, 11, 12 - Out of State Mini College Fair: Tomorrow during lunch at FHS!',
-    sender: 'Anabel Delgado',
-    role: 'Staff',
-    email: 'adelgado@pleasantonusd.net',
-    date: '2025-04-14',
-    body: [
-      'Students,',
-      'A mini college fair with out-of-state schools will be held tomorrow during lunch at FHS. Stop by to meet admissions reps — the list of attending colleges is attached.',
-      'Best,\nA. Delgado',
-    ],
-    links: [],
-    attachments: [{ name: 'College List.pdf' }],
-  },
-];
 
 const fmtDate = (iso) => {
   const [y, m, d] = iso.split('-').map(Number);
@@ -183,9 +53,11 @@ function Chip({ icon, tone = 'neutral', children }) {
 
 function Mail() {
   const navigate = useNavigate();
+  const mail = useMail();
+  const meta = useSyncMeta();
   const [hovered, setHovered] = useState(null);
 
-  const messages = [...MAIL].sort((a, b) => b.date.localeCompare(a.date));
+  const messages = [...mail.messages].sort((a, b) => b.date.localeCompare(a.date));
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-canvas)', fontFamily: 'var(--font-sans)' }}>
@@ -193,22 +65,60 @@ function Mail() {
 
       <main style={{ flex: 1, padding: '32px 40px 64px', boxSizing: 'border-box' }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
-          {/* Mail is the one section with no backend endpoint yet — these are
-              sample messages, and the banner must say so. */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
+          {/* sync status */}
+          <SyncPill />
+
+          {!meta.mail.ok && meta.mail.message && (
             <div
+              role="alert"
               style={{
-                padding: '6px 14px',
-                borderRadius: 'var(--radius-pill)',
-                background: 'rgba(240, 177, 0, 0.14)',
-                color: 'var(--color-grade-mid)',
-                fontSize: 13,
-                fontWeight: 600,
+                margin: '0 auto 24px',
+                maxWidth: 640,
+                padding: '12px 16px',
+                borderRadius: 'var(--radius-md)',
+                background: 'rgba(251, 44, 54, 0.14)',
+                color: 'var(--color-grade-bad)',
+                fontSize: 14,
+                lineHeight: 1.5,
+                textAlign: 'center',
               }}
             >
-              Sample messages — Mail is not connected to StudentVUE yet.
+              Mail could not be loaded: {meta.mail.message}
             </div>
-          </div>
+          )}
+
+          {(meta.mail.placeholder || mail.unreadableMessages > 0) && (
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
+              {meta.mail.placeholder && (
+                <div
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: 'var(--radius-pill)',
+                    background: 'rgba(240, 177, 0, 0.14)',
+                    color: 'var(--color-grade-mid)',
+                    fontSize: 13,
+                    fontWeight: 600,
+                  }}
+                >
+                  {meta.mail.message || 'Sample messages.'}
+                </div>
+              )}
+              {mail.unreadableMessages > 0 && (
+                <div
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: 'var(--radius-pill)',
+                    background: 'rgba(240, 177, 0, 0.14)',
+                    color: 'var(--color-grade-mid)',
+                    fontSize: 13,
+                    fontWeight: 600,
+                  }}
+                >
+                  {plural(mail.unreadableMessages, 'message')} could not be read.
+                </div>
+              )}
+            </div>
+          )}
 
           {/* message list — same narrow card box as Documents */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 820, margin: '0 auto' }}>
@@ -222,7 +132,7 @@ function Mail() {
               return (
                 <div
                   key={m.id}
-                  onClick={() => navigate(`/mail/${m.id}`)}
+                  onClick={() => navigate(`/mail/${encodeURIComponent(m.id)}`)}
                   onMouseEnter={() => setHovered(m.id)}
                   onMouseLeave={() => setHovered(null)}
                   style={{
@@ -241,7 +151,8 @@ function Mail() {
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                     <Chip icon={<PersonIcon />}>
-                      {m.sender} ({m.role})
+                      {m.sender}
+                      {m.role ? ` (${m.role})` : ''}
                     </Chip>
                     <Chip>{fmtDate(m.date)}</Chip>
                     {m.links.length > 0 && (

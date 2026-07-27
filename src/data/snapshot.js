@@ -9,6 +9,7 @@ export const emptySnapshot = {
   assignmentsByClass: {},
   attendance: { schoolName: '', records: [], unreadableAbsences: 0 },
   documents: [],
+  mail: { messages: [], unreadableMessages: 0 },
   session: {
     studentName: '',
     username: '',
@@ -20,6 +21,7 @@ export const emptySnapshot = {
     gradebook: { ok: false, placeholder: false, message: '' },
     attendance: { ok: false, placeholder: false, message: '' },
     documents: { ok: false, message: '' },
+    mail: { ok: false, placeholder: false, message: '' },
   },
 };
 

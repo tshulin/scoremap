@@ -11,7 +11,7 @@ import { DEMO, DEMO_STUDENT } from './demo.js';
 import { emptySnapshot } from './snapshot.js';
 import { harvestFromClasses } from './gradeIndexStore.js';
 import { SAMPLE_ATTENDANCE, SAMPLE_GRADEBOOK } from './placeholders.js';
-import { TEST_STUDENT, TEST_GRADEBOOK, TEST_ATTENDANCE, TEST_DOCUMENTS } from './testAccount.js';
+import { TEST_STUDENT, TEST_GRADEBOOK, TEST_ATTENDANCE, TEST_DOCUMENTS, TEST_MAIL } from './testAccount.js';
 import { GradebookSchema } from '../domain/index';
 
 const slug = (name) =>
@@ -134,6 +134,23 @@ function mapAbsence(a) {
   return { date: a.date, status, note: a.note || '', reason: a.reason || '', periods };
 }
 
+// ---- mail → message list ----
+
+// Flattens the sender for the pages (the shape Mail.jsx always rendered).
+function mapMailMessage(m) {
+  return {
+    id: m.id,
+    subject: m.subject,
+    sender: m.sender.name,
+    role: m.sender.role || '',
+    email: m.sender.email || '',
+    date: m.date,
+    body: m.body,
+    links: m.links,
+    attachments: m.attachments,
+  };
+}
+
 // ---- demo snapshot (VITE_DEMO) ----
 // Built through the exact same mappings real data takes, so every feature works
 // identically in demo — the only difference is where the Gradebook came from.
@@ -150,6 +167,7 @@ function demoSnapshot() {
       unreadableAbsences: SAMPLE_ATTENDANCE.unreadableAbsences,
     },
     documents: [],
+    mail: { messages: TEST_MAIL.map(mapMailMessage), unreadableMessages: 0 },
     session: {
       ...emptySnapshot.session,
       studentName: DEMO_STUDENT.name,
@@ -162,6 +180,7 @@ function demoSnapshot() {
       gradebook: { ok: true, placeholder: true, message: 'Demo mode — sample data.' },
       attendance: { ok: true, placeholder: true, message: '' },
       documents: { ok: true, message: '' },
+      mail: { ok: true, placeholder: true, message: 'Demo mode — sample messages.' },
     },
   };
 }
@@ -190,6 +209,7 @@ function testSnapshot() {
       category: d.category,
       date: d.uploadDate,
     })),
+    mail: { messages: TEST_MAIL.map(mapMailMessage), unreadableMessages: 0 },
     session: {
       ...emptySnapshot.session,
       studentName: TEST_STUDENT.name,
@@ -202,6 +222,7 @@ function testSnapshot() {
       gradebook: { ok: true, placeholder: true, message: 'Test account — sample data.' },
       attendance: { ok: true, placeholder: true, message: '' },
       documents: { ok: true, message: '' },
+      mail: { ok: true, placeholder: true, message: 'Test account — sample messages.' },
     },
   };
 }
@@ -216,6 +237,12 @@ const friendlyGradebookMessage = (error) => {
   return error.message;
 };
 
+const friendlyMailMessage = (error) => {
+  if (error.code === 'PARSE_FAILED')
+    return 'Messages are not readable yet — live mail support is still being finished.';
+  return error.message;
+};
+
 export async function sync(knownStudent) {
   if (DEMO) {
     const snapshot = demoSnapshot();
@@ -227,14 +254,15 @@ export async function sync(knownStudent) {
     harvestFromClasses(snapshot.classes);
     return snapshot;
   }
-  const [student, gradebook, attendance, documents] = await Promise.allSettled([
+  const [student, gradebook, attendance, documents, mail] = await Promise.allSettled([
     api.getStudent(),
     api.getGradebook(),
     api.getAttendance(),
     api.getDocuments(),
+    api.getMail(),
   ]);
 
-  for (const r of [student, gradebook, attendance, documents]) {
+  for (const r of [student, gradebook, attendance, documents, mail]) {
     if (r.status === 'rejected' && r.reason && r.reason.status === 401) throw r.reason;
   }
 
@@ -293,6 +321,16 @@ export async function sync(knownStudent) {
     data.meta.documents = { ok: true, message: '' };
   } else {
     data.meta.documents = { ok: false, message: documents.reason.message };
+  }
+
+  if (mail.status === 'fulfilled') {
+    data.mail = {
+      messages: mail.value.messages.map(mapMailMessage),
+      unreadableMessages: mail.value.unreadableMessages,
+    };
+    data.meta.mail = { ok: true, placeholder: false, message: '' };
+  } else {
+    data.meta.mail = { ok: false, placeholder: false, message: friendlyMailMessage(mail.reason) };
   }
 
   return data;

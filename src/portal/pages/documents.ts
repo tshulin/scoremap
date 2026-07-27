@@ -38,8 +38,7 @@ export async function fetchDocuments(
 	});
 }
 
-function fileNameFrom(disposition: string | null): string {
-	const fallback = 'document.pdf';
+export function fileNameFrom(disposition: string | null, fallback = 'document.pdf'): string {
 	if (!disposition) return fallback;
 	const encoded = /filename\*=(?:UTF-8'')?([^;]+)/i.exec(disposition)?.[1];
 	if (encoded) {
