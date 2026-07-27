@@ -16,11 +16,21 @@ import { fetchStudentInfo } from '../portal/pages/studentInfo';
 import { fetchDocuments, downloadDocument as portalDownloadDocument } from '../portal/pages/documents';
 import { fetchAttendance } from '../portal/pages/attendance';
 import { fetchGradebook } from '../portal/pages/gradebook/index';
-import { fetchMail, downloadMailAttachment as portalDownloadMailAttachment } from '../portal/pages/mail';
+import {
+  fetchMail,
+  fetchMailMessage,
+  downloadMailAttachment as portalDownloadMailAttachment,
+} from '../portal/pages/mail';
 import { SessionExpiredError, NoActiveGradingPeriodError, ParseError } from '../portal/errors';
 import { SAMPLE_GRADEBOOK, SAMPLE_ATTENDANCE, PLACEHOLDER_DATA } from './placeholders';
 import { DEMO, DEMO_STUDENT } from './demo';
-import { isTestCredentials, TEST_STUDENT, testDocumentContent, testMailAttachmentContent } from './testAccount';
+import {
+  isTestCredentials,
+  TEST_STUDENT,
+  TEST_MAIL,
+  testDocumentContent,
+  testMailAttachmentContent,
+} from './testAccount';
 
 // Set at build time (deploy workflow); wss:// in production, ws://localhost in dev.
 const RELAY_URL = import.meta.env.VITE_RELAY_URL || 'ws://localhost:8080';
@@ -210,6 +220,17 @@ export async function getGradebook() {
 
 export function getMail() {
   return withSession((s) => fetchMail(s, options));
+}
+
+// One message with its body and attachments. The list call carries neither, so
+// the reader loads them on open for anything the sync did not prefetch.
+export function getMailMessage(id, isSystemMessage = false) {
+  if (isTestSession() || DEMO) {
+    const message = TEST_MAIL.find((m) => m.id === id);
+    if (!message) throw new ApiError('NOT_FOUND', 'Message not found.', 404);
+    return Promise.resolve(message);
+  }
+  return withSession((s) => fetchMailMessage(s, id, isSystemMessage, options));
 }
 
 export async function downloadMailAttachment(token) {

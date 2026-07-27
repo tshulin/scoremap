@@ -148,6 +148,9 @@ function mapMailMessage(m) {
     body: m.body,
     links: m.links,
     attachments: m.attachments,
+    bodyLoaded: m.bodyLoaded,
+    hasAttachments: m.hasAttachments || m.attachments.length > 0,
+    isSystemMessage: m.isSystemMessage,
   };
 }
 

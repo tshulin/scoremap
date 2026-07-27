@@ -7,64 +7,91 @@ import {
 	type MailMessage,
 	type Mailbox
 } from '../../domain/index';
-import {
-	assertNotBounced,
-	decodeEntities,
-	findDataSourceWithKeys,
-	stripTags,
-	toIsoDate
-} from '../../extract/index';
+import { decodeEntities, stripTags, toIsoDate } from '../../extract/index';
 import { ModuleUnavailableError, ParseError } from '../errors';
-import { fetchFollowRaw, type FetchFollowOptions } from '../http';
+import { fetchFollow, fetchFollowRaw, type FetchFollowOptions } from '../http';
 import type { PortalSession } from '../login';
+import { assertSessionAlive } from '../session';
 import { fileNameFrom } from './documents';
-import { asString, getPage, portalUrl, validate } from './shared';
+import { portalUrl, validate } from './shared';
 
-const PAGE = 'PXP2_Messages.aspx?AGU=0';
-const ATTACHMENT_PAGE = 'PXP_ShowSMAttachment.aspx?AGU=0&SmAttachmentGU=';
+// Synergy Mail is a knockout app, not a scraped grid: PXP2_Messages.aspx is a
+// shell whose bundle calls this JSON service. The Bearer value is the literal
+// constant the portal seeds into ST.Authorization — the real credential is the
+// session cookie. PORTAL=3 identifies StudentVUE (ST.CurrentWebPortal).
+const SERVICE = 'st_api/ST.Messaging';
+const PORTAL = 3;
+const INBOX_FOLDER_TYPE = 0;
+const DOWNLOAD_PAGE = 'FileDownload.aspx';
+const ATTACHMENT_DB_ID = 3;
 
-// Every name below is a reconstruction from the SOAP-era SynergyMail shapes — no
-// live capture of the PXP2 messages grid exists yet (mail_plan.md, Phase B0). The
-// candidate lists are deliberately broad so a real grid still matches; a wrong
-// guess costs one row (counted in unreadableMessages), never a silent short list.
-const ID_KEYS = ['SMMessageGU', 'MessageGU', 'ID', 'MessageID'];
-const SUBJECT_KEYS = ['Subject', 'SubjectNoHTML', 'MessageSubject'];
-const SENDER_KEYS = ['From', 'FromName', 'Sender', 'StaffName'];
-const ROLE_KEYS = ['Role', 'FromRole', 'StaffType', 'SenderType'];
-const EMAIL_KEYS = ['Email', 'FromEmail', 'StaffEmail'];
-const DATE_KEYS = ['SendDateTime', 'SendDate', 'MessageDate', 'Date', 'BeginDate'];
-const CONTENT_KEYS = ['Content', 'MessageText', 'MessageBody', 'Body', 'Message'];
-const ATTACHMENT_LIST_KEYS = ['Attachments', 'AttachmentXMLs', 'MessageAttachments'];
-const ATTACHMENT_TOKEN_KEYS = ['SmAttachmentGU', 'AttachmentGU', 'DocumentGU', 'GU'];
-const ATTACHMENT_NAME_KEYS = ['AttachmentName', 'DocumentName', 'FileName', 'Name'];
-const ROW_KEYS = [...SUBJECT_KEYS, ...DATE_KEYS, ...CONTENT_KEYS];
+// One list call is cheap; each body is its own request. Bodies for the messages
+// visible without scrolling are prefetched so the list can show previews, and
+// the rest load when opened (fetchMailMessage). In the browser every request is
+// its own TLS connection through the relay, so this is deliberately small and
+// rate-limited — raising either number multiplies handshakes per sync.
+const BODY_PREFETCH = 8;
+const BODY_PREFETCH_CONCURRENCY = 4;
+const PAGE_SIZE = 50;
 
-const firstString = (row: Record<string, unknown>, keys: string[]): string => {
-	for (const key of keys) {
-		const value = asString(row[key]);
-		if (value) return value;
+// The service answers with JSON buried in an HTML document.
+function unwrapResult(body: string, what: string): Record<string, unknown> {
+	const inner = /id="json-result"[^>]*>([\s\S]*?)<\/div>/.exec(body)?.[1] ?? body;
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(inner);
+	} catch {
+		throw new ParseError(`The portal returned an unreadable ${what} response.`);
 	}
-	return '';
-};
+	if (typeof parsed !== 'object' || parsed === null) {
+		throw new ParseError(`The portal returned an unexpected ${what} response.`);
+	}
+	const envelope = parsed as Record<string, unknown>;
+	if (typeof envelope['Error'] === 'string' && envelope['Error'] !== '') {
+		throw new ModuleUnavailableError(`Messages are unavailable: ${envelope['Error']}`);
+	}
+	const result = envelope['Result'];
+	if (typeof result !== 'object' || result === null) {
+		throw new ParseError(`The portal's ${what} response had no result.`);
+	}
+	return result as Record<string, unknown>;
+}
+
+async function callMessaging(
+	session: PortalSession,
+	method: string,
+	data: Record<string, unknown>,
+	options: FetchFollowOptions
+): Promise<Record<string, unknown>> {
+	const page = await fetchFollow(
+		portalUrl(session, `${SERVICE}/${method}?PORTAL=${PORTAL}`),
+		{
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+				Authorization: 'Bearer authorized',
+				'X-Requested-With': 'XMLHttpRequest'
+			},
+			body: new URLSearchParams({ data: JSON.stringify(data) }).toString()
+		},
+		session.jar,
+		options
+	);
+	assertSessionAlive(page);
+	return unwrapResult(page.body, method);
+}
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
 	typeof value === 'object' && value !== null && !Array.isArray(value);
 
-interface Anchor {
-	href: string;
-	text: string;
-}
+const asString = (value: unknown): string => (typeof value === 'string' ? value : '');
 
-function anchors(html: string): Anchor[] {
-	const out: Anchor[] = [];
+function anchors(html: string): Array<{ href: string; text: string }> {
 	const re = /<a\b[^>]*\bhref\s*=\s*(?:"([^"]*)"|'([^']*)')[^>]*>([\s\S]*?)<\/a>/gi;
-	for (const match of html.matchAll(re)) {
-		out.push({
-			href: decodeEntities(match[1] ?? match[2] ?? '').trim(),
-			text: stripTags(match[3] ?? '')
-		});
-	}
-	return out;
+	return [...html.matchAll(re)].map((match) => ({
+		href: decodeEntities(match[1] ?? match[2] ?? '').trim(),
+		text: stripTags(match[3] ?? '')
+	}));
 }
 
 // Only links that work outside the portal; javascript: and portal-relative hrefs
@@ -74,84 +101,127 @@ const contentLinks = (html: string): MailLink[] =>
 		.filter((a) => /^https?:\/\//i.test(a.href))
 		.map((a) => ({ label: a.text || a.href, url: a.href }));
 
+// The portal sends rich HTML; it is reduced to text paragraphs here so the app
+// never renders portal markup.
 const contentParagraphs = (html: string): string[] =>
 	html
 		.split(/<\/(?:p|div|li|h[1-6]|tr|table)>|<br\s*\/?>/gi)
 		.map((part) => stripTags(part))
 		.filter((text) => text !== '');
 
-function toAttachments(row: Record<string, unknown>): MailAttachment[] {
-	for (const key of ATTACHMENT_LIST_KEYS) {
-		const value = row[key];
-		if (Array.isArray(value)) {
-			return value.filter(isRecord).flatMap((entry) => {
-				const token = firstString(entry, ATTACHMENT_TOKEN_KEYS);
-				if (!token) return [];
-				return [{ token, name: stripTags(firstString(entry, ATTACHMENT_NAME_KEYS)) || 'Attachment' }];
-			});
-		}
-		if (typeof value === 'string' && value !== '') {
-			return anchors(value).flatMap(({ href, text }) => {
-				const token = /SmAttachmentGU=([^"&']+)/i.exec(href)?.[1] ?? href;
-				if (!token) return [];
-				return [{ token, name: text || 'Attachment' }];
-			});
-		}
-	}
-	return [];
+function toAttachments(value: unknown): MailAttachment[] {
+	if (!Array.isArray(value)) return [];
+	return value.filter(isRecord).flatMap((entry) => {
+		const token = asString(entry['attachmentId']);
+		if (!token) return [];
+		return [{ token, name: stripTags(asString(entry['name'])) || 'Attachment' }];
+	});
 }
 
-function toMessage(row: Record<string, unknown>, index: number): unknown {
-	const contentHtml = firstString(row, CONTENT_KEYS);
-	const senderHtml = firstString(row, SENDER_KEYS);
-	const email =
-		stripTags(firstString(row, EMAIL_KEYS)) ||
-		decodeEntities(/mailto:([^"'?>]+)/i.exec(senderHtml)?.[1] ?? '');
-	const role = stripTags(firstString(row, ROLE_KEYS));
+function toMessage(row: Record<string, unknown>): unknown {
+	const from = isRecord(row['from']) ? row['from'] : {};
+	const emails = from['emails'];
+	const email = Array.isArray(emails) ? asString(emails[0]) : asString(emails);
+	const role = stripTags(asString(from['contactDetails2']));
+	const messageText = asString(row['messageText']);
+	// The list call carries no body; only GetMessage does. bodyLoaded keeps
+	// "not fetched yet" distinguishable from "genuinely empty".
+	const bodyLoaded = 'messageText' in row;
+
 	return {
-		id: firstString(row, ID_KEYS) || `msg-${index + 1}`,
-		subject: stripTags(firstString(row, SUBJECT_KEYS)),
+		// messagePersonId, not messageId: it is what GetMessage and the read
+		// state are keyed on, and it is unique per recipient.
+		id: asString(row['messagePersonId']) || asString(row['messageId']),
+		subject: stripTags(asString(row['subject'])) || '(no subject)',
 		sender: {
-			name: stripTags(senderHtml),
+			name: stripTags(asString(from['contactDetails1'])) || 'Unknown sender',
 			...(role ? { role } : {}),
 			...(email ? { email } : {})
 		},
-		date: toIsoDate(stripTags(firstString(row, DATE_KEYS))),
-		body: contentParagraphs(contentHtml),
-		links: contentLinks(contentHtml),
-		attachments: toAttachments(row)
+		date: toIsoDate(asString(row['sendDateTime'])),
+		body: contentParagraphs(messageText),
+		links: contentLinks(messageText),
+		attachments: toAttachments(row['attachments']),
+		bodyLoaded,
+		hasAttachments: row['hasAttachments'] === true,
+		isSystemMessage: row['isSystemMessage'] === true
 	};
+}
+
+export async function fetchMailMessage(
+	session: PortalSession,
+	id: string,
+	isSystemMessage = false,
+	options: FetchFollowOptions = {}
+): Promise<MailMessage> {
+	// markAsRead stays false: reading mail in Grademax must not silently change
+	// the unread state of the student's real inbox.
+	const result = await callMessaging(
+		session,
+		'GetMessage',
+		{ id, languageCode: '', markAsRead: false, isSystemMessage },
+		options
+	);
+	return validate(MailMessageSchema, toMessage(result), 'message');
 }
 
 export async function fetchMail(
 	session: PortalSession,
 	options: FetchFollowOptions = {}
 ): Promise<Mailbox> {
-	const page = await getPage(session, PAGE, options);
+	const result = await callMessaging(
+		session,
+		'GetMessages',
+		{
+			folderType: INBOX_FOLDER_TYPE,
+			folderId: null,
+			languageCode: '',
+			showDeleted: false,
+			skip: 0,
+			take: PAGE_SIZE,
+			requireTotalCount: true
+		},
+		options
+	);
 
-	// Many portals have no standalone messages page — PXP2 renders the message
-	// stream on the home page and bounces this URL there. A bounce to Home is
-	// only fatal if Home carries no recognizable message rows either; succeeding
-	// on found rows (never on their absence) means the fallback can't fabricate
-	// an empty inbox out of a genuinely unavailable module.
-	const bouncedHome =
-		page.redirected && /Home_PXP2\.aspx/i.test(new URL(page.finalUrl).pathname);
-	const rows = !page.redirected || bouncedHome ? findDataSourceWithKeys(page.body, ROW_KEYS) : [];
-	if (page.redirected && rows.length === 0) assertNotBounced(page, 'Messages');
+	const rows = Array.isArray(result['data']) ? result['data'].filter(isRecord) : [];
 	const messages: MailMessage[] = [];
 	let unreadableMessages = 0;
 
-	// Per row, so one unexpected shape costs that row rather than the whole page. Only a
-	// ParseError means "this row is not what we expected"; anything else is our own bug
-	// and must still surface.
+	// Per row, so one unexpected shape costs that row rather than the whole
+	// mailbox. Only a ParseError means "this row is not what we expected";
+	// anything else is our own bug and must still surface.
 	for (const [index, row] of rows.entries()) {
 		try {
-			messages.push(validate(MailMessageSchema, toMessage(row, index), `message row ${index + 1}`));
+			messages.push(validate(MailMessageSchema, toMessage(row), `message row ${index + 1}`));
 		} catch (error) {
 			if (!(error instanceof ParseError)) throw error;
 			unreadableMessages++;
 		}
 	}
+
+	// Bodies for the top of the list, so previews are real. A body that fails to
+	// load leaves its message listed and openable rather than sinking the sync.
+	const targets = messages.slice(0, BODY_PREFETCH);
+	let next = 0;
+	const worker = async (): Promise<void> => {
+		for (let index = next++; index < targets.length; index = next++) {
+			const message = targets[index]!;
+			try {
+				messages[index] = await fetchMailMessage(
+					session,
+					message.id,
+					message.isSystemMessage,
+					options
+				);
+			} catch {
+				// Keep the listed message; its body loads when opened.
+			}
+		}
+	};
+	await Promise.all(
+		Array.from({ length: Math.min(BODY_PREFETCH_CONCURRENCY, targets.length) }, worker)
+	);
 
 	return validate(MailboxSchema, { messages, unreadableMessages }, 'mail');
 }
@@ -161,16 +231,15 @@ export async function downloadMailAttachment(
 	token: string,
 	options: FetchFollowOptions = {}
 ): Promise<DocumentContent> {
-	// A token may be a bare GU or a full href scraped from the message row.
-	const url = /^https?:\/\//i.test(token)
-		? token
-		: portalUrl(
-				session,
-				token.includes('.aspx')
-					? token.replace(/^\//, '')
-					: `${ATTACHMENT_PAGE}${encodeURIComponent(token)}`
-			);
-	const { response } = await fetchFollowRaw(url, { method: 'GET' }, session.jar, options);
+	const { response } = await fetchFollowRaw(
+		portalUrl(
+			session,
+			`${DOWNLOAD_PAGE}?fdID=${encodeURIComponent(token)}&dbID=${ATTACHMENT_DB_ID}`
+		),
+		{ method: 'GET' },
+		session.jar,
+		options
+	);
 
 	const contentType = response.headers.get('content-type') ?? '';
 	if (!response.ok || contentType.includes('text/html')) {
@@ -182,6 +251,6 @@ export async function downloadMailAttachment(
 	return {
 		bytes: new Uint8Array(await response.arrayBuffer()),
 		mimeType: contentType.split(';')[0]?.trim() || 'application/octet-stream',
-		fileName: fileNameFrom(response.headers.get('content-disposition'), 'attachment.pdf')
+		fileName: fileNameFrom(response.headers.get('content-disposition'), 'attachment')
 	};
 }
