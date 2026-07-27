@@ -10,7 +10,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import Sidebar from '../components/Sidebar.jsx';
-import { downloadMailAttachment } from '../data/api.js';
+import { downloadMailAttachment, getMailMessage } from '../data/api.js';
 import { useMail } from '../data/SyncProvider.jsx';
 import { ArrowLeftIcon, LinkIcon, PaperclipIcon } from '../lib/icons.jsx';
 
@@ -64,11 +64,46 @@ function MailDetail() {
   const navigate = useNavigate();
   const { mailId } = useParams();
   const mail = useMail();
-  const m = mail.messages.find((x) => x.id === mailId);
+  const listed = mail.messages.find((x) => x.id === mailId);
 
+  // The portal's message list carries no body, so anything the sync did not
+  // prefetch loads here on open. `loaded` holds that fetched message.
+  const [loaded, setLoaded] = useState(null);
+  const [bodyError, setBodyError] = useState('');
+  const [loadingBody, setLoadingBody] = useState(false);
   const [downloading, setDownloading] = useState(null);
   const [downloadError, setDownloadError] = useState('');
   const attachmentUrls = useRef(new Set());
+
+  const needsBody = !!listed && !listed.bodyLoaded;
+  useEffect(() => {
+    if (!needsBody) return;
+    let alive = true;
+    setLoadingBody(true);
+    setBodyError('');
+    getMailMessage(listed.id, listed.isSystemMessage)
+      .then((full) => {
+        if (!alive) return;
+        setLoaded({
+          ...listed,
+          body: full.body,
+          links: full.links,
+          attachments: full.attachments,
+          bodyLoaded: true,
+        });
+      })
+      .catch((e) => {
+        if (alive) setBodyError(e && e.message ? e.message : 'This message could not be loaded.');
+      })
+      .finally(() => {
+        if (alive) setLoadingBody(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [needsBody, listed]);
+
+  const m = loaded && listed && loaded.id === listed.id ? loaded : listed;
 
   useEffect(() => {
     return () => {
@@ -146,7 +181,7 @@ function MailDetail() {
 
       <div style={{ height: 1, background: 'var(--color-hairline)', margin: '24px 0 28px' }} />
 
-      {downloadError && (
+      {(downloadError || bodyError) && (
         <div
           role="alert"
           style={{
@@ -159,12 +194,15 @@ function MailDetail() {
             lineHeight: 1.5,
           }}
         >
-          {downloadError}
+          {downloadError || bodyError}
         </div>
       )}
 
       {/* body */}
       <div style={{ fontSize: 16, lineHeight: 1.7, color: 'var(--color-body)' }}>
+        {loadingBody && !m.bodyLoaded && (
+          <p style={{ margin: 0, color: 'var(--color-muted)' }}>Loading message…</p>
+        )}
         {m.body.map((p, i) => (
           <p key={i} style={{ margin: '0 0 16px', whiteSpace: 'pre-line' }}>
             {p}

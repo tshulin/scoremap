@@ -188,8 +188,14 @@ function Mail() {
                     {m.links.length > 0 && (
                       <Chip tone="link">{plural(m.links.length, 'Link')}</Chip>
                     )}
-                    {m.attachments.length > 0 && (
-                      <Chip tone="attachment">{plural(m.attachments.length, 'Attachment')}</Chip>
+                    {/* Until a body is loaded the count is unknown, but the list
+                        already knows whether attachments exist. */}
+                    {(m.attachments.length > 0 || m.hasAttachments) && (
+                      <Chip tone="attachment">
+                        {m.attachments.length > 0
+                          ? plural(m.attachments.length, 'Attachment')
+                          : 'Attachments'}
+                      </Chip>
                     )}
                   </div>
                 </div>

@@ -358,7 +358,7 @@ export const TEST_MAIL = [
     links: [],
     attachments: [{ token: 'TESTMAIL-ATT-06', name: 'College List.pdf' }],
   },
-].map((m) => MailMessageSchema.parse(m));
+].map((m) => MailMessageSchema.parse({ ...m, hasAttachments: m.attachments.length > 0 }));
 
 // ---- document downloads ----
 // Real documents stream from the portal; test documents are generated here as
