@@ -24,6 +24,8 @@ function Sidebar() {
     () => (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) || 'dark',
   );
 
+  // Deliberately leaves the menu open (GradeCompass does the same): the
+  // sun/moon icon rotates through the swap and the flip is visible in place.
   const toggleTheme = () => {
     const next = theme === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
@@ -33,8 +35,38 @@ function Sidebar() {
       /* ignore */
     }
     setTheme(next);
-    setMenuOpen(false);
   };
+
+  // Sun and moon stacked; the active one rotates in while the other rotates
+  // out — the reference app's dark-toggle icon animation.
+  const themeIcon = (
+    <span style={{ position: 'relative', display: 'inline-flex', width: 16, height: 16 }}>
+      <span
+        style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'inline-flex',
+          transition: 'transform 300ms ease, opacity 300ms ease',
+          transform: theme === 'dark' ? 'rotate(0deg) scale(1)' : 'rotate(90deg) scale(0)',
+          opacity: theme === 'dark' ? 1 : 0,
+        }}
+      >
+        <SunIcon size={16} />
+      </span>
+      <span
+        style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'inline-flex',
+          transition: 'transform 300ms ease, opacity 300ms ease',
+          transform: theme === 'dark' ? 'rotate(-90deg) scale(0)' : 'rotate(0deg) scale(1)',
+          opacity: theme === 'dark' ? 0 : 1,
+        }}
+      >
+        <MoonIcon size={16} />
+      </span>
+    </span>
+  );
 
   const handleLogout = async () => {
     setMenuOpen(false);
@@ -170,6 +202,7 @@ function Sidebar() {
             <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
             <div
               role="menu"
+              className="gm-pop-in"
               style={{
                 position: 'absolute',
                 bottom: 'calc(100% + 6px)',
@@ -184,7 +217,7 @@ function Sidebar() {
               }}
             >
               <MenuRow
-                icon={theme === 'dark' ? <SunIcon size={16} /> : <MoonIcon size={16} />}
+                icon={themeIcon}
                 label={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
                 onClick={toggleTheme}
               />

@@ -28,6 +28,8 @@ function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES
   const weighted = !!(categories && categories.length > 0);
   const [hidden, setHidden] = React.useState(() => new Set());
   const [hover, setHover] = React.useState(null);
+  // Cursor position in container px — the tooltip follows it (GradeCompass).
+  const [mouse, setMouse] = React.useState({ x: 0, y: 0, flipX: false, flipY: false });
 
   const lines = React.useMemo(() => {
     const built = [];
@@ -144,6 +146,12 @@ function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES
       }
     }
     setHover(best);
+    setMouse({
+      x: evt.clientX - rect.left,
+      y: evt.clientY - rect.top,
+      flipX: evt.clientX - rect.left > rect.width * 0.55,
+      flipY: evt.clientY - rect.top > rect.height * 0.55,
+    });
   };
 
   const pathFor = (points) =>
@@ -223,10 +231,13 @@ function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES
         {hoverRows.length > 0 && (
           <div
             style={{
+              // Trails the cursor with a soft 80ms lag, like the reference
+              // app's layerchart tooltip; flips to stay inside the chart.
               position: 'absolute',
-              left: `${(xAt(hover) / W) * 100}%`,
-              top: 6,
-              transform: `translateX(${hover > dates.length / 2 ? 'calc(-100% - 10px)' : '10px'})`,
+              left: mouse.x + 14,
+              top: mouse.y + 14,
+              transform: `${mouse.flipX ? 'translateX(calc(-100% - 28px))' : ''} ${mouse.flipY ? 'translateY(calc(-100% - 28px))' : ''}`.trim() || 'none',
+              transition: 'left 80ms linear, top 80ms linear',
               background: 'var(--color-surface-dark-elevated)',
               border: '1px solid var(--color-hairline-strong)',
               borderRadius: 'var(--radius-md)',

@@ -144,6 +144,7 @@ function Documents() {
           {(meta.documents.message || downloadError) && (
             <div
               role="alert"
+              className="gm-fade-in"
               style={{
                 margin: '0 auto 24px',
                 maxWidth: 640,

@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../lib/ds.js';
 import Sidebar from '../components/Sidebar.jsx';
 import TopBar from '../components/TopBar.jsx';
+import GradeNumber from '../components/GradeNumber.jsx';
 import { ChangeTicker } from '../components/RefreshDelta.jsx';
 import { useClasses, useSemesters, useSession, useSyncChanges, useSyncMeta, useSyncStatus } from '../data/SyncProvider.jsx';
 import { gradeBandColor } from '../lib/grades.js';
@@ -125,7 +126,7 @@ function DashboardPage() {
           overflow: 'hidden',
         }}
       >
-        <div style={{ width: `${Math.min(pct, 100)}%`, height: '100%', background: color, borderRadius: 'var(--radius-pill)' }} />
+        <div style={{ width: `${Math.min(pct, 100)}%`, height: '100%', background: color, borderRadius: 'var(--radius-pill)', transition: 'width 400ms cubic-bezier(0.22, 1, 0.36, 1), background 400ms ease' }} />
       </div>
     );
   }
@@ -257,7 +258,7 @@ function DashboardPage() {
 
                   <div style={{ flex: '1 1 240px', display: 'flex', alignItems: 'center', gap: 16, minWidth: 220 }}>
                     <div style={{ width: 150, flexShrink: 0, textAlign: 'right', fontSize: 22, fontWeight: 600, letterSpacing: '-0.5px', color: 'var(--color-ink)', whiteSpace: 'nowrap' }}>
-                      {c.pct != null ? `${c.grade} ${c.pct}%` : '—'}
+                      {c.pct != null ? <GradeNumber prefix={`${c.grade} `} value={c.pct} /> : '—'}
                     </div>
                     <ProgressBar pct={c.pct ?? 0} color={color} />
                   </div>

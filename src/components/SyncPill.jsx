@@ -124,6 +124,7 @@ function SyncPill({ note, scope, below, delta, avoid }) {
         </div>
         {session.demo && (
           <div
+            className="gm-fade-in"
             style={{
               padding: '6px 14px',
               borderRadius: 'var(--radius-pill)',
@@ -138,6 +139,7 @@ function SyncPill({ note, scope, below, delta, avoid }) {
         )}
         {!session.demo && meta.gradebook.placeholder && (
           <div
+            className="gm-fade-in"
             style={{
               padding: '6px 14px',
               borderRadius: 'var(--radius-pill)',
@@ -152,6 +154,7 @@ function SyncPill({ note, scope, below, delta, avoid }) {
         )}
         {!session.demo && meta.attendance.placeholder && (
           <div
+            className="gm-fade-in"
             style={{
               padding: '6px 14px',
               borderRadius: 'var(--radius-pill)',

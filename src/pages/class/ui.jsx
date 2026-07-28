@@ -91,6 +91,7 @@ export function Dialog({ title, onClose, children, maxWidth = 720 }) {
   return (
     <div
       onClick={onClose}
+      className="gm-fade-in"
       style={{
         position: 'fixed',
         inset: 0,
@@ -104,6 +105,7 @@ export function Dialog({ title, onClose, children, maxWidth = 720 }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
+        className="gm-pop-in"
         role="dialog"
         aria-label={title}
         style={{

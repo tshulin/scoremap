@@ -287,6 +287,7 @@ function Login() {
             {error && (
               <div
                 role="alert"
+                className="gm-fade-in"
                 style={{
                   padding: '12px 16px',
                   borderRadius: 'var(--radius-md)',
