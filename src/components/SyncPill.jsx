@@ -35,7 +35,7 @@ function SyncPill({ note, scope }) {
           border: '1px solid var(--color-hairline-strong)',
           background: 'var(--color-surface-card)',
           fontSize: 13,
-          color: 'var(--color-body)',
+          color: 'var(--color-text-updated)',
         }}
       >
         <span>{label}</span>
@@ -55,7 +55,8 @@ function SyncPill({ note, scope }) {
           style={{
             padding: '6px 14px',
             borderRadius: 'var(--radius-pill)',
-            background: 'rgba(77, 168, 255, 0.14)',
+            background: 'var(--color-surface-demo)',
+            border: '1px solid var(--color-text-link)',
             color: 'var(--color-text-link)',
             fontSize: 13,
             fontWeight: 600,
@@ -69,7 +70,7 @@ function SyncPill({ note, scope }) {
           style={{
             padding: '6px 14px',
             borderRadius: 'var(--radius-pill)',
-            background: 'rgba(240, 177, 0, 0.14)',
+            background: 'var(--color-tint-mid)',
             color: 'var(--color-grade-mid)',
             fontSize: 13,
             fontWeight: 600,
@@ -83,7 +84,7 @@ function SyncPill({ note, scope }) {
           style={{
             padding: '6px 14px',
             borderRadius: 'var(--radius-pill)',
-            background: 'rgba(240, 177, 0, 0.14)',
+            background: 'var(--color-tint-mid)',
             color: 'var(--color-grade-mid)',
             fontSize: 13,
             fontWeight: 600,

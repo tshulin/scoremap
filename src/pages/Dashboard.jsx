@@ -35,7 +35,7 @@ function DashboardPage() {
   function Chip({ children, tone = 'neutral' }) {
     const tones = {
       neutral: { background: 'var(--color-surface-strong)', border: '1px solid var(--color-hairline)', color: 'var(--color-body)' },
-      new: { background: 'rgba(0, 201, 80, 0.14)', border: '1px solid transparent', color: 'var(--color-grade-good)', fontWeight: 600 },
+      new: { background: 'var(--color-tint-good)', border: '1px solid transparent', color: 'var(--color-grade-good)', fontWeight: 600 },
     };
     return (
       <span
@@ -62,7 +62,7 @@ function DashboardPage() {
           flex: 1,
           height: 8,
           borderRadius: 'var(--radius-pill)',
-          background: 'var(--color-surface-dark-elevated)',
+          background: 'var(--color-progress-track)',
           overflow: 'hidden',
         }}
       >
@@ -115,7 +115,7 @@ function DashboardPage() {
                     alignItems: 'center',
                     gap: 28,
                     flexWrap: 'wrap',
-                    background: 'var(--color-surface-card)',
+                    background: hov ? 'var(--color-card-hover)' : 'var(--color-surface-card)',
                     border: '1px solid var(--color-hairline-strong)',
                     borderRadius: 'var(--radius-xl)',
                     padding: '14px 24px',
@@ -132,7 +132,7 @@ function DashboardPage() {
                         height: 46,
                         flexShrink: 0,
                         borderRadius: 'var(--radius-full)',
-                        background: 'var(--color-surface-dark-elevated)',
+                        background: 'var(--color-avatar-bg)',
                         border: '1px solid var(--color-hairline-strong)',
                         display: 'flex',
                         alignItems: 'center',
@@ -148,8 +148,8 @@ function DashboardPage() {
                       <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.3px', color: 'var(--color-ink)', marginBottom: 4 }}>
                         {c.name}
                       </div>
-                      <div style={{ fontSize: 14, color: 'var(--color-body)' }}>
-                        {c.teacher} <span style={{ color: 'var(--color-muted)' }}>·</span> {c.room}
+                      <div style={{ fontSize: 14, color: 'var(--color-text-meta)' }}>
+                        {c.teacher} <span style={{ color: 'var(--color-text-meta)' }}>·</span> {c.room}
                       </div>
                     </div>
                   </div>
@@ -193,7 +193,7 @@ function DashboardPage() {
             <span style={{ color: 'var(--color-muted)' }}>·</span>
             <a href="#">Provide feedback</a>
           </div>
-          <div style={{ textAlign: 'center', marginTop: 12, fontSize: 12, color: 'var(--color-muted)' }}>
+          <div style={{ textAlign: 'center', marginTop: 12, fontSize: 12, color: 'var(--color-text-disclaimer)' }}>
             Grademax is not affiliated with or endorsed by Edupoint Educational Systems LLC.
           </div>
         </div>

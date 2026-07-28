@@ -54,7 +54,7 @@ function ImpactChip({ impact }) {
 
 function ScoreBar({ pct }) {
   return (
-    <div style={{ width: '58.333%', alignSelf: 'flex-end', height: 8, borderRadius: 'var(--radius-pill)', background: 'var(--color-surface-dark-elevated)', overflow: 'hidden' }}>
+    <div style={{ width: '58.333%', alignSelf: 'flex-end', height: 8, borderRadius: 'var(--radius-pill)', background: 'var(--color-progress-track)', overflow: 'hidden' }}>
       <div style={{ width: `${pct != null ? Math.min(pct, 100) : 0}%`, height: '100%', background: bandColor(pct ?? 0), borderRadius: 'var(--radius-pill)' }} />
     </div>
   );
@@ -67,8 +67,8 @@ const categoryTone = (name) => {
     return { background: 'var(--color-surface-strong)', border: '1px solid var(--color-hairline)', color: 'var(--color-body)' };
   }
   return assessmentLike(name)
-    ? { background: 'rgba(251, 44, 54, 0.14)', border: '1px solid transparent', color: 'var(--color-grade-bad)' }
-    : { background: 'rgba(0, 201, 80, 0.14)', border: '1px solid transparent', color: 'var(--color-grade-good)' };
+    ? { background: 'var(--color-tint-bad)', border: '1px solid transparent', color: 'var(--color-grade-bad)' }
+    : { background: 'var(--color-tint-good)', border: '1px solid transparent', color: 'var(--color-grade-good)' };
 };
 
 // Options open on the native popup, which won't show the tinted chip
@@ -181,7 +181,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
           fontSize: 15,
           fontWeight: 500,
           background: active ? 'var(--color-surface-dark-elevated)' : 'transparent',
-          color: active ? 'var(--color-ink)' : 'var(--color-body)',
+          color: active ? 'var(--color-ink)' : 'var(--color-text-meta)',
         }}
       >
         {dot && <span style={{ width: 8, height: 8, borderRadius: '50%', background: dot }} />}

@@ -32,10 +32,10 @@ export const todayIso = () => {
 export function Chip({ children, tone = 'neutral' }) {
   const tones = {
     neutral: { background: 'var(--color-surface-strong)', border: '1px solid var(--color-hairline)', color: 'var(--color-body)' },
-    assignment: { background: 'rgba(0, 201, 80, 0.14)', border: '1px solid transparent', color: 'var(--color-grade-good)' },
-    assessment: { background: 'rgba(251, 44, 54, 0.14)', border: '1px solid transparent', color: 'var(--color-grade-bad)' },
-    info: { background: 'rgba(77, 168, 255, 0.14)', border: '1px solid transparent', color: 'var(--color-text-link)' },
-    warn: { background: 'rgba(240, 177, 0, 0.14)', border: '1px solid transparent', color: 'var(--color-grade-mid)' },
+    assignment: { background: 'var(--color-tint-good)', border: '1px solid transparent', color: 'var(--color-grade-good)' },
+    assessment: { background: 'var(--color-tint-bad)', border: '1px solid transparent', color: 'var(--color-grade-bad)' },
+    info: { background: 'var(--color-tint-accent)', border: '1px solid transparent', color: 'var(--color-text-link)' },
+    warn: { background: 'var(--color-tint-mid)', border: '1px solid transparent', color: 'var(--color-grade-mid)' },
   };
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 600, lineHeight: 1.2, ...tones[tone] }}>
@@ -144,7 +144,7 @@ export function PillButton({ onClick, children }) {
         borderRadius: 'var(--radius-md)',
         border: '1px solid var(--color-hairline-strong)',
         background: 'var(--color-surface-card)',
-        color: 'var(--color-ink)',
+        color: 'var(--color-text-pill)',
         fontFamily: 'var(--font-sans)',
         fontSize: 14,
         fontWeight: 600,
