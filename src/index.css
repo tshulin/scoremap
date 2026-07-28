@@ -9,55 +9,58 @@ body {
   font-family: var(--font-sans);
 }
 
-/* ---- Dark theme (default) ---- */
+/* ---- Dark theme (default) — the original Grademax dark palette ----
+   Values match the design-system defaults (_ds/tokens/colors.css); the
+   purpose tokens map them onto the same knobs the light theme drives, so
+   components stay theme-agnostic. */
 :root {
   color-scheme: dark;
 
   /* Surfaces */
-  --color-canvas: #101214;
-  --color-canvas-soft: #0d0f11;
-  --color-surface-card: #17191c;
-  --color-surface-strong: #17191c;
-  --color-surface-dark: #17191c;
-  --color-surface-dark-elevated: #1d2024;
-  --color-surface-sidebar: #17191c;
-  --color-surface-demo: #10161c;
-  --color-nav-active: #17191c;
-  --color-card-hover: #17191c;
-  --color-progress-track: #17191c;
-  --color-avatar-bg: #17191c;
+  --color-canvas: #111113;
+  --color-canvas-soft: #0d0e10;
+  --color-surface-card: #18191b;
+  --color-surface-strong: #18191b;
+  --color-surface-dark: #1c1d20;
+  --color-surface-dark-elevated: #202125;
+  --color-surface-sidebar: #111113;
+  --color-surface-demo: color-mix(in srgb, var(--color-text-link) 14%, transparent);
+  --color-nav-active: #18191b;
+  --color-card-hover: #18191b;
+  --color-progress-track: #202125;
+  --color-avatar-bg: #202125;
 
   /* Borders */
-  --color-hairline: rgba(255, 255, 255, 0.12);
-  --color-hairline-soft: rgba(255, 255, 255, 0.08);
-  --color-hairline-strong: rgba(255, 255, 255, 0.18);
+  --color-hairline: rgba(255, 255, 255, 0.08);
+  --color-hairline-soft: rgba(255, 255, 255, 0.06);
+  --color-hairline-strong: rgba(255, 255, 255, 0.14);
 
   /* Text */
   --color-ink: #ffffff;
-  --color-body: #c7cbd1;
-  --color-body-strong: #f2f3f5;
-  --color-muted: #8b9096;
-  --color-muted-soft: #6b7178;
+  --color-body: #a1a1aa;
+  --color-body-strong: #ffffff;
+  --color-muted: #71717a;
+  --color-muted-soft: #45454b;
   --color-on-dark: #ffffff;
-  --color-on-dark-soft: #c7cbd1;
-  --color-text-pill: #e6e8ea;
-  --color-text-updated: #b7bcc2;
-  --color-text-meta: #9aa1a8;
-  --color-text-privacy: #8b9096;
-  --color-text-disclaimer: #6b7178;
+  --color-on-dark-soft: #a1a1aa;
+  --color-text-pill: #ffffff;
+  --color-text-updated: #a1a1aa;
+  --color-text-meta: #a1a1aa;
+  --color-text-privacy: #71717a;
+  --color-text-disclaimer: #71717a;
   --color-trend-stroke: #ffffff;
 
   /* Accent */
-  --color-text-link: #7db4f5;
-  --color-text-link-hover: #a7cdfa;
-  --color-text-link-secondary: #7db4f5;
-  --color-accent-link-bright: #a7cdfa;
+  --color-text-link: #4da8ff;
+  --color-text-link-hover: #4da8ff;
+  --color-text-link-secondary: #7c94ff;
+  --color-accent-link-bright: #47c2ff;
 
-  /* Grade bands (neon) */
-  --color-grade-good: #39ff6a;
-  --color-grade-mid: #ffc400;
-  --color-grade-bad: #ff2d55;
-  --color-grade-none: #54585d;
+  /* Grade bands */
+  --color-grade-good: #00c950;
+  --color-grade-mid: #f0b100;
+  --color-grade-bad: #fb2c36;
+  --color-grade-none: #45454b;
 
   /* 14% tints — chip/badge backgrounds derived from their foreground */
   --color-tint-good: color-mix(in srgb, var(--color-grade-good) 14%, transparent);
