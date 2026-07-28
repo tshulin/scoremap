@@ -37,6 +37,12 @@ const RELAY_URL = import.meta.env.VITE_RELAY_URL || 'ws://localhost:8080';
 const SESSION_KEY = 'grademax-session';
 const TEST_SESSION_KEY = 'grademax-test-session';
 const STUDENT_KEY = 'grademax-student';
+const SNAPSHOT_KEY = 'grademax-snapshot';
+
+// How long a mirrored snapshot is worth showing. The portal drops an idle
+// session after roughly twenty minutes, so anything older belongs to a session
+// that is probably already gone — at which point a sync is needed regardless.
+const SNAPSHOT_MAX_AGE_MS = 20 * 60_000;
 
 export class ApiError extends Error {
   constructor(code, message, status) {
@@ -103,6 +109,50 @@ export function recallStudent() {
   }
 }
 
+// The last synced snapshot, mirrored beside the cookie jar so a reload can show
+// the data it already had instead of re-fetching all of it. Reloading was the
+// last thing in the app that still cost a full sync every time — F5, a restored
+// tab, or following a link back in all paid for one.
+//
+// It holds grades and messages, which is why it lives in sessionStorage (dies
+// with the tab, same as the jar) and is cleared by clearToken() on sign-out.
+export function rememberSnapshot(snapshot) {
+  // An unsynced snapshot has nothing worth restoring, and writing it would
+  // overwrite a good one during sign-out.
+  if (!snapshot || !snapshot.session || !snapshot.session.lastUpdated) return;
+  try {
+    sessionStorage.setItem(
+      SNAPSHOT_KEY,
+      JSON.stringify({
+        ...snapshot,
+        session: { ...snapshot.session, lastUpdated: snapshot.session.lastUpdated.toISOString() },
+      }),
+    );
+  } catch {
+    // Out of quota, most likely. A missing mirror only costs a sync, so drop
+    // the stale one rather than leaving a half-written record behind.
+    try {
+      sessionStorage.removeItem(SNAPSHOT_KEY);
+    } catch {
+      /* storage unavailable */
+    }
+  }
+}
+
+export function recallSnapshot() {
+  try {
+    const raw = sessionStorage.getItem(SNAPSHOT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const lastUpdated = new Date(parsed.session.lastUpdated);
+    if (Number.isNaN(lastUpdated.getTime())) return null;
+    if (Date.now() - lastUpdated.getTime() > SNAPSHOT_MAX_AGE_MS) return null;
+    return { ...parsed, session: { ...parsed.session, lastUpdated } };
+  } catch {
+    return null;
+  }
+}
+
 export function clearToken() {
   session = null;
   testSession = false;
@@ -110,6 +160,7 @@ export function clearToken() {
     sessionStorage.removeItem(SESSION_KEY);
     sessionStorage.removeItem(TEST_SESSION_KEY);
     sessionStorage.removeItem(STUDENT_KEY);
+    sessionStorage.removeItem(SNAPSHOT_KEY);
   } catch {
     /* ignore */
   }

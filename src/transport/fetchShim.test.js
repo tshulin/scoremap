@@ -304,7 +304,7 @@ describe('createRelayFetch', () => {
 		let clock = 0;
 		const relayFetch = createRelayFetch({
 			relayUrl: 'ws://relay',
-			idleReuseMs: 15_000,
+			idleCloseMs: 15_000,
 			now: () => clock
 		});
 
@@ -317,6 +317,144 @@ describe('createRelayFetch', () => {
 		await relayFetch(URL_A, {});
 		expect(opened).toHaveLength(2);
 		expect(opened[0].closed).toBe(true);
+	});
+
+	// An idle connection holds one of the relay's per-IP slots until something
+	// closes it. Waiting for the next request to notice is not good enough: a
+	// student who stops clicking must stop occupying the school's slots.
+	describe('idle connections are closed, not just skipped', () => {
+		// A manual scheduler, driven alongside the injected clock so the timer and
+		// `now()` can never disagree.
+		function fakeScheduler() {
+			let timers = [];
+			let clock = 0;
+			return {
+				now: () => clock,
+				setTimer: (fn, ms) => {
+					const timer = { at: clock + ms, fn };
+					timers.push(timer);
+					return timer;
+				},
+				advance(ms) {
+					clock += ms;
+					const due = timers.filter((t) => t.at <= clock);
+					timers = timers.filter((t) => t.at > clock);
+					for (const t of due) t.fn();
+				},
+				pending: () => timers.length
+			};
+		}
+
+		it('closes an idle connection on its own, with no further requests', async () => {
+			const s = fakeScheduler();
+			const relayFetch = createRelayFetch({
+				relayUrl: 'ws://relay',
+				idleCloseMs: 15_000,
+				now: s.now,
+				setTimer: s.setTimer
+			});
+
+			await relayFetch(URL_A, {});
+			expect(opened[0].closed).toBe(false);
+			expect(relayFetch.stats()).toEqual({ live: 1, idle: 1 });
+
+			s.advance(14_000);
+			expect(opened[0].closed).toBe(false); // still inside the reuse window
+
+			s.advance(2_000);
+			// Nothing asked for a connection — the pool closed it by itself.
+			expect(opened[0].closed).toBe(true);
+			expect(relayFetch.stats()).toEqual({ live: 0, idle: 0 });
+		});
+
+		it('closes every idle connection a burst left behind', async () => {
+			const s = fakeScheduler();
+			let release;
+			const gate = new Promise((resolve) => {
+				release = resolve;
+			});
+			respond = async () => {
+				await gate;
+				return { body: 'ok' };
+			};
+			const relayFetch = createRelayFetch({
+				relayUrl: 'ws://relay',
+				maxConnections: 2,
+				idleCloseMs: 15_000,
+				now: s.now,
+				setTimer: s.setTimer
+			});
+
+			const burst = [relayFetch(URL_A, {}), relayFetch(URL_A, {})];
+			await vi.waitFor(() => expect(opened).toHaveLength(2));
+			release();
+			await Promise.all(burst);
+			expect(relayFetch.stats()).toEqual({ live: 2, idle: 2 });
+
+			s.advance(16_000);
+			expect(opened.every((c) => c.closed)).toBe(true);
+			expect(relayFetch.stats()).toEqual({ live: 0, idle: 0 });
+		});
+
+		it('keeps a connection that was used again inside the window', async () => {
+			const s = fakeScheduler();
+			const relayFetch = createRelayFetch({
+				relayUrl: 'ws://relay',
+				idleCloseMs: 15_000,
+				now: s.now,
+				setTimer: s.setTimer
+			});
+
+			await relayFetch(URL_A, {});
+			s.advance(10_000);
+			await relayFetch(URL_A, {}); // resets the idle clock
+			expect(opened).toHaveLength(1);
+
+			s.advance(10_000); // 20s since the first use, 10s since the second
+			expect(opened[0].closed).toBe(false);
+
+			s.advance(6_000);
+			expect(opened[0].closed).toBe(true);
+		});
+
+		it('arms no timer while the pool is empty', async () => {
+			const s = fakeScheduler();
+			const relayFetch = createRelayFetch({
+				relayUrl: 'ws://relay',
+				idleCloseMs: 15_000,
+				now: s.now,
+				setTimer: s.setTimer
+			});
+
+			expect(s.pending()).toBe(0);
+			await relayFetch(URL_A, {});
+			expect(s.pending()).toBe(1);
+
+			s.advance(16_000);
+			// Swept clean, and nothing left to wake up for.
+			expect(s.pending()).toBe(0);
+		});
+	});
+
+	it('holds at most two connections by default', async () => {
+		let release;
+		const gate = new Promise((resolve) => {
+			release = resolve;
+		});
+		respond = async (req, conn) => {
+			await gate;
+			return { body: `c${conn.index}` };
+		};
+		const relayFetch = createRelayFetch({ relayUrl: 'ws://relay' });
+
+		const all = Array.from({ length: 8 }, () => relayFetch(URL_A, {}));
+		await vi.waitFor(() => expect(opened.length).toBeGreaterThan(0));
+		// The default cap is what bounds a tab's share of the school's relay slots.
+		expect(opened).toHaveLength(2);
+
+		release();
+		await Promise.all(all);
+		expect(opened).toHaveLength(2);
 	});
 
 	it('honours an abort signal instead of hanging forever', async () => {
