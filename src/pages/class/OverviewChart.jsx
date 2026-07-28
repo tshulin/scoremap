@@ -16,10 +16,11 @@ import { useCursorTooltip } from './useCursorTooltip.js';
 const CAT_COLORS = ['#3987e5', '#d95926', '#199e70', '#9085e9', '#d55181'];
 const CUMULATIVE = '__cumulative__';
 
-// Geometry is shared with GradeChart (same viewBox, same paddings) so
+// Geometry is shared with GradeChart (same fixed height, same paddings) so
 // switching between the Assignments and Overview tabs keeps the plot frame
-// perfectly in place — only the lines change.
-const W = 1000;
+// perfectly in place — only the lines change. Width is measured from the
+// container (GradeCompass-style): the svg maps 1:1 to pixels at any screen
+// size, so the chart fills the page and text never stretches.
 const H = 260;
 const padL = 40;
 const padR = 8;
@@ -34,6 +35,18 @@ function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES
   const [hover, setHover] = React.useState(null);
   // The tooltip eases toward the cursor every frame (rAF smoothing — see hook).
   const { tooltipRef, onMove, flipStyle } = useCursorTooltip();
+  // Real pixel width from the container, so coordinates are 1:1 with screen.
+  const wrapRef = React.useRef(null);
+  const [W, setW] = React.useState(1000);
+  React.useLayoutEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return undefined;
+    const measure = () => setW(Math.max(320, el.clientWidth));
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const lines = React.useMemo(() => {
     const built = [];
@@ -175,10 +188,12 @@ function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES
 
   return (
     <div>
-      <div style={{ position: 'relative' }}>
+      <div ref={wrapRef} style={{ position: 'relative' }}>
         <svg
           viewBox={`0 0 ${W} ${H}`}
           width="100%"
+          height={H}
+          preserveAspectRatio="none"
           style={{ display: 'block' }}
           onMouseMove={pickNearest}
           onMouseLeave={() => setHover(null)}

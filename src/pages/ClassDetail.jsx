@@ -177,17 +177,21 @@ function ClassDetail() {
               )
             }
           />
+        </div>
 
-          {tab === 'assignments' && (
-            <>
-              {/* grade over time, derived from the effective assignments — edits
-                  and added hypotheticals visibly reshape the line */}
-              <GradeChart
-                series={series}
-                activeDates={activeDates}
-                activeType={filter === 'All' ? null : filter}
-              />
+        {tab === 'assignments' && (
+          <>
+            {/* grade over time, derived from the effective assignments — edits
+                and added hypotheticals visibly reshape the line. The chart runs
+                the full main width (GradeCompass-style); the cards below keep
+                the readable cap. */}
+            <GradeChart
+              series={series}
+              activeDates={activeDates}
+              activeType={filter === 'All' ? null : filter}
+            />
 
+            <div style={{ maxWidth: 1160, margin: '0 auto' }}>
               {/* toggles left, calculators right (Pin chart deliberately omitted) */}
               <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                 <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -209,39 +213,43 @@ function ClassDetail() {
                 filter={filter}
                 onFilter={setFilter}
               />
-            </>
-          )}
+            </div>
+          </>
+        )}
 
-          {tab === 'overview' && (
-            <OverviewTab
-              assignments={effective}
-              categories={categories}
-              hiddenRows={hiddenRows}
-            />
-          )}
+        {tab === 'overview' && (
+          <OverviewTab
+            assignments={effective}
+            categories={categories}
+            hiddenRows={hiddenRows}
+          />
+        )}
 
-          {tab === 'index' && <GradeIndexTab classId={classId} />}
+        {tab === 'index' && (
+          <div style={{ maxWidth: 1160, margin: '0 auto' }}>
+            <GradeIndexTab classId={classId} />
+          </div>
+        )}
 
-          {targetOpen && (
-            <TargetDialog
-              onClose={() => setTargetOpen(false)}
-              effective={effective}
-              categories={categories}
-              scale={scale}
-            />
-          )}
+        {targetOpen && (
+          <TargetDialog
+            onClose={() => setTargetOpen(false)}
+            effective={effective}
+            categories={categories}
+            scale={scale}
+          />
+        )}
 
-          {boundsOpen && (
-            <BoundsDialog
-              onClose={() => setBoundsOpen(false)}
-              baseAssignments={baseRaws}
-              effective={effective}
-              hypothetical={hypothetical}
-              categories={categories}
-              scale={scale}
-            />
-          )}
-        </div>
+        {boundsOpen && (
+          <BoundsDialog
+            onClose={() => setBoundsOpen(false)}
+            baseAssignments={baseRaws}
+            effective={effective}
+            hypothetical={hypothetical}
+            categories={categories}
+            scale={scale}
+          />
+        )}
       </main>
     </div>
   );

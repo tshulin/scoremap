@@ -101,7 +101,9 @@ function OverviewTab({ assignments, categories, hiddenRows = [] }) {
         <OverviewChart assignments={assignments} categories={categories} rows={baseRows} overrides={overrides} />
       </div>
 
-      <div style={{ ...card, overflowX: 'auto' }}>
+      {/* the table keeps the readable cap while the chart above runs full width */}
+      <div style={{ maxWidth: 1160, margin: '0 auto' }}>
+        <div style={{ ...card, overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14, color: 'var(--color-ink)' }}>
             <thead>
               <tr style={{ textAlign: 'left', color: 'var(--color-muted)', fontSize: 13 }}>
@@ -188,6 +190,7 @@ function OverviewTab({ assignments, categories, hiddenRows = [] }) {
               </tr>
             </tbody>
           </table>
+        </div>
       </div>
     </>
   );

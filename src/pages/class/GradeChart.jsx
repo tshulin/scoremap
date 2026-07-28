@@ -6,10 +6,11 @@ import React from 'react';
 import { fmt2, shortDate, signed, weekdayDate } from './ui.jsx';
 import { useCursorTooltip } from './useCursorTooltip.js';
 
-// Geometry is shared with OverviewChart (same viewBox, same paddings) so
+// Geometry is shared with OverviewChart (same fixed height, same paddings) so
 // switching between the Assignments and Overview tabs keeps the plot frame
-// perfectly in place — only the lines change.
-const W = 1000;
+// perfectly in place — only the lines change. Width is measured from the
+// container (GradeCompass-style): the svg maps 1:1 to pixels at any screen
+// size, so the chart fills the page and text never stretches.
 const H = 260;
 const padL = 40;
 const padR = 8;
@@ -26,6 +27,18 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
   const [dotIndex, setDotIndex] = React.useState(null);
   // The tooltip eases toward the cursor every frame (rAF smoothing — see hook).
   const { tooltipRef, onMove, flipStyle } = useCursorTooltip();
+  // Real pixel width from the container, so coordinates are 1:1 with screen.
+  const wrapRef = React.useRef(null);
+  const [W, setW] = React.useState(1000);
+  React.useLayoutEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return undefined;
+    const measure = () => setW(Math.max(320, el.clientWidth));
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   React.useEffect(() => setHover(null), [activeDates]);
   React.useEffect(() => setDotIndex(null), [series.length]);
   if (series.length < 2) return null;
@@ -86,10 +99,12 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
   const hoverDelta = hover != null && hover > 0 ? series[hover].grade - series[hover - 1].grade : null;
 
   return (
-    <div style={{ position: 'relative', marginBottom: 20 }}>
+    <div ref={wrapRef} style={{ position: 'relative', marginBottom: 20 }}>
       <svg
         viewBox={`0 0 ${W} ${H}`}
         width="100%"
+        height={H}
+        preserveAspectRatio="none"
         style={{ display: 'block' }}
         onMouseMove={pickNearest}
         onMouseLeave={() => setHover(null)}
