@@ -56,7 +56,6 @@ function SyncPill({ note, scope }) {
             padding: '6px 14px',
             borderRadius: 'var(--radius-pill)',
             background: 'var(--color-surface-demo)',
-            border: '1px solid var(--color-text-link)',
             color: 'var(--color-text-link)',
             fontSize: 13,
             fontWeight: 600,

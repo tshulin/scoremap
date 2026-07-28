@@ -115,7 +115,7 @@ function DashboardPage() {
                     alignItems: 'center',
                     gap: 28,
                     flexWrap: 'wrap',
-                    background: hov ? 'var(--color-card-hover)' : 'var(--color-surface-card)',
+                    background: 'var(--color-surface-card)',
                     border: '1px solid var(--color-hairline-strong)',
                     borderRadius: 'var(--radius-xl)',
                     padding: '14px 24px',

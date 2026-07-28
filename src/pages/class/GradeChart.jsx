@@ -74,16 +74,7 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
   const hoverDelta = hover != null && hover > 0 ? series[hover].grade - series[hover - 1].grade : null;
 
   return (
-    <div
-      style={{
-        position: 'relative',
-        marginBottom: 20,
-        background: 'var(--color-surface-card)',
-        border: '1px solid var(--color-hairline)',
-        borderRadius: 'var(--radius-xl)',
-        padding: '16px 12px 8px',
-      }}
-    >
+    <div style={{ position: 'relative', marginBottom: 20 }}>
       <svg
         viewBox={`0 0 ${W} ${H}`}
         width="100%"
