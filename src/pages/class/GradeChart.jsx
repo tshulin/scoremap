@@ -118,7 +118,9 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
         {ticks.map((t) => (
           <g key={t}>
             <line x1={padL} y1={yAt(t)} x2={W - padR} y2={yAt(t)} stroke="var(--color-hairline)" strokeWidth="1" />
-            <text x={padL - 8} y={yAt(t) + 4} textAnchor="end" fontSize="12" fill="var(--color-muted)">
+            {/* left-anchored at the svg edge — the page header's course name
+                aligns to this same line */}
+            <text x={0} y={yAt(t) + 4} textAnchor="start" fontSize="12" fill="var(--color-muted)">
               {fmt2(t)}
             </text>
           </g>
