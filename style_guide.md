@@ -43,22 +43,21 @@ persisted in `localStorage.grademax-theme`).
 | `#71717a` | Assignment dates, delta values, privacy note, ⋮ icon, footer disclaimer |
 | `#45454b` | Softest text, ungraded / no score |
 
-### Accent
+### Accent (tweakable)
 
 | Color | Usage |
 | --- | --- |
-| `#4da8ff` | Links, Refresh, demo pill text (hover: same, underline only) |
-| `#7c94ff` | Legal/footer links |
-| `#47c2ff` | Rare small link accents |
+| `#7db4f5` | Links, Refresh, demo pill text |
+| `#a7cdfa` | Link hover |
 
-### Grade colors
+### Grade colors (neon)
 
 | Color | Usage |
 | --- | --- |
-| `#00c950` | Green — passing / Homework legend |
-| `#f0b100` | Amber — borderline |
-| `#fb2c36` | Red — failing / Quizzes + Tests legend |
-| `#45454b` | Ungraded / no score |
+| `#39ff6a` | Green — passing / Homework legend |
+| `#ffc400` | Amber — borderline |
+| `#ff2d55` | Red — failing / Quizzes + Tests legend |
+| `#54585d` | Ungraded / no score |
 
 ---
 
@@ -162,12 +161,12 @@ design-system defaults and adds the purpose tokens; the
 | `--color-text-disclaimer` | `#71717a` | `#918da1` | Footer disclaimer |
 | `--color-muted-soft` | `#45454b` | `#918da1` | Softest DS text |
 | `--color-trend-stroke` | `#ffffff` | `#413e4f` | Grade-over-time line + dots |
-| `--color-text-link` | `#4da8ff` | `#7d7ab3` | Accent: links, Refresh, demo pill |
-| `--color-text-link-hover` | `#4da8ff` | `#63609a` | Link hover |
-| `--color-grade-good` | `#00c950` | `#6cc79a` | Passing / homework-type |
-| `--color-grade-mid` | `#f0b100` | `#f0c46a` | Borderline |
-| `--color-grade-bad` | `#fb2c36` | `#ec8b8b` | Failing / assessment-type |
-| `--color-grade-none` | `#45454b` | `#cfcbdc` | Ungraded / no score |
+| `--color-text-link` | `#7db4f5` | `#7d7ab3` | Accent: links, Refresh, demo pill |
+| `--color-text-link-hover` | `#a7cdfa` | `#63609a` | Link hover |
+| `--color-grade-good` | `#39ff6a` | `#6cc79a` | Passing / homework-type |
+| `--color-grade-mid` | `#ffc400` | `#f0c46a` | Borderline |
+| `--color-grade-bad` | `#ff2d55` | `#ec8b8b` | Failing / assessment-type |
+| `--color-grade-none` | `#54585d` | `#cfcbdc` | Ungraded / no score |
 
 ---
 
