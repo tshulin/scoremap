@@ -22,6 +22,17 @@ const SyncContext = createContext(null);
 // Read once per mount, not per render.
 const restored = () => (api.hasToken() ? api.recallSnapshot() : null);
 
+// Per-class grade movement between the previous completed sync and the
+// latest one: [{ id, name, delta }] for every class whose percentage moved.
+// `baseline` is false until a second sync exists to compare against.
+function diffClasses(prevClasses, freshClasses) {
+  const prevById = new Map(prevClasses.map((c) => [c.id, c.pct]));
+  return freshClasses
+    .filter((c) => c.pct != null && prevById.get(c.id) != null)
+    .map((c) => ({ id: c.id, name: c.name, delta: Math.round((c.pct - prevById.get(c.id)) * 100) / 100 }))
+    .filter((c) => c.delta !== 0);
+}
+
 export function SyncProvider({ children }) {
   const initial = useRef(null);
   if (initial.current === null) initial.current = { snapshot: restored() };
@@ -32,6 +43,10 @@ export function SyncProvider({ children }) {
     cached ? 'ready' : api.hasToken() ? 'syncing' : 'signedOut',
   );
   const [error, setError] = useState(null);
+  const [changes, setChanges] = useState({ list: [], baseline: false });
+  // Seeded from the restored mirror so the first refresh after a reload can
+  // still report movement against what the student was last shown.
+  const prevClassesRef = useRef(cached ? cached.classes : null);
   // Re-arm on every mount: StrictMode's dev-only unmount/remount would
   // otherwise leave this false forever and every sync result would be dropped.
   const alive = useRef(true);
@@ -56,6 +71,14 @@ export function SyncProvider({ children }) {
     try {
       const fresh = await syncStudentVue(knownStudent, { scope, previous: latest.current });
       if (!alive.current) return fresh;
+      // Deltas only when this sync actually re-fetched the gradebook — a
+      // mail/attendance-scoped refresh reuses the merged classes untouched
+      // and must not overwrite the last real comparison.
+      if (!scope || scope.includes('gradebook')) {
+        const prev = prevClassesRef.current;
+        setChanges(prev ? { list: diffClasses(prev, fresh.classes), baseline: true } : { list: [], baseline: false });
+        prevClassesRef.current = fresh.classes;
+      }
       store(fresh);
       setStatus('ready');
       return fresh;
@@ -63,6 +86,8 @@ export function SyncProvider({ children }) {
       if (!alive.current) throw e;
       if (e.status === 401) {
         api.clearToken();
+        prevClassesRef.current = null;
+        setChanges({ list: [], baseline: false });
         store(emptySnapshot);
         setStatus('signedOut');
       } else {
@@ -90,6 +115,8 @@ export function SyncProvider({ children }) {
   const signOut = useCallback(async () => {
     await api.logout().catch(() => {});
     if (!alive.current) return;
+    prevClassesRef.current = null;
+    setChanges({ list: [], baseline: false });
     store(emptySnapshot);
     setStatus('signedOut');
   }, [store]);
@@ -104,8 +131,8 @@ export function SyncProvider({ children }) {
   );
 
   const value = useMemo(
-    () => ({ ...data, status, error, signIn, signOut, refresh }),
-    [data, status, error, signIn, signOut, refresh],
+    () => ({ ...data, status, error, changes, signIn, signOut, refresh }),
+    [data, status, error, changes, signIn, signOut, refresh],
   );
   return <SyncContext.Provider value={value}>{children}</SyncContext.Provider>;
 }
@@ -118,6 +145,10 @@ function useSync() {
 
 export const useSession = () => useSync().session;
 export const useClasses = () => useSync().classes;
+export const useSemesters = () => useSync().semesters;
+// { list: [{ id, name, delta }], baseline } — grade movement since the
+// previous sync; baseline is false until there has been a second sync.
+export const useSyncChanges = () => useSync().changes;
 export const useAttendance = () => useSync().attendance;
 export const useDocuments = () => useSync().documents;
 export const useMail = () => useSync().mail;

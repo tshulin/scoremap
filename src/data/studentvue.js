@@ -108,7 +108,12 @@ function mapGradebook(rawGradebook) {
   const period = gradebook.reportingPeriods.find(
     (p) => p.index === gradebook.currentPeriodIndex,
   );
-  return { classes, assignmentsByClass, semester: period ? period.name : '' };
+  return {
+    classes,
+    assignmentsByClass,
+    semester: period ? period.name : '',
+    semesters: gradebook.reportingPeriods.map((p) => p.name),
+  };
 }
 
 // ---- attendance → calendar/list records ----
@@ -163,12 +168,28 @@ function mapMailMessage(m) {
 // Built through the exact same mappings real data takes, so every feature works
 // identically in demo — the only difference is where the Gradebook came from.
 
+// Demo-only: refreshes after the first nudge a few class percentages so the
+// "changed since last refresh" UI has real deltas to show. Never runs for
+// real portal data.
+let demoSyncCount = 0;
+
+function jitterDemoClasses(classes) {
+  if (demoSyncCount++ === 0) return;
+  for (const c of classes) {
+    if (c.pct == null || Math.random() >= 0.6) continue;
+    const delta = Math.round((Math.random() * 1.6 - 0.8) * 100) / 100;
+    c.pct = Math.round((c.pct + delta) * 100) / 100;
+  }
+}
+
 function demoSnapshot() {
   const mapped = mapGradebook(SAMPLE_GRADEBOOK);
+  jitterDemoClasses(mapped.classes);
   return {
     ...emptySnapshot,
     classes: mapped.classes,
     assignmentsByClass: mapped.assignmentsByClass,
+    semesters: mapped.semesters,
     attendance: {
       schoolName: SAMPLE_ATTENDANCE.schoolName,
       records: SAMPLE_ATTENDANCE.absences.map(mapAbsence),
@@ -205,6 +226,7 @@ function testSnapshot() {
     ...emptySnapshot,
     classes: mapped.classes,
     assignmentsByClass: mapped.assignmentsByClass,
+    semesters: mapped.semesters,
     attendance: {
       schoolName: TEST_ATTENDANCE.schoolName,
       records: TEST_ATTENDANCE.absences.map(mapAbsence),
@@ -330,6 +352,7 @@ export async function sync(knownStudent, { scope = ALL_RESOURCES, previous = nul
     const mapped = mapGradebook(gradebook.value.gradebook);
     data.classes = mapped.classes;
     data.assignmentsByClass = mapped.assignmentsByClass;
+    data.semesters = mapped.semesters;
     data.session.semester = mapped.semester;
     // Every sync teaches the per-class grade index a little more — the
     // portal's letters are the only honest source of each teacher's scale.
