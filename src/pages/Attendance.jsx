@@ -19,10 +19,10 @@ import { useAttendance, useClasses, useSyncMeta } from '../data/SyncProvider.jsx
 
 // StudentVUE status bands → design-system band colors.
 const STATUS = {
-  excused: { label: 'Excused', color: 'var(--color-grade-good)', bg: 'rgba(0, 201, 80, 0.14)' },
-  tardy: { label: 'Tardy', color: 'var(--color-grade-mid)', bg: 'rgba(240, 177, 0, 0.14)' },
-  unexcused: { label: 'Unexcused', color: 'var(--color-grade-bad)', bg: 'rgba(251, 44, 54, 0.14)' },
-  activity: { label: 'Activity', color: 'var(--color-text-link)', bg: 'rgba(77, 168, 255, 0.14)' },
+  excused: { label: 'Excused', color: 'var(--color-grade-good)', bg: 'var(--color-tint-good)' },
+  tardy: { label: 'Tardy', color: 'var(--color-grade-mid)', bg: 'var(--color-tint-mid)' },
+  unexcused: { label: 'Unexcused', color: 'var(--color-grade-bad)', bg: 'var(--color-tint-bad)' },
+  activity: { label: 'Activity', color: 'var(--color-text-link)', bg: 'var(--color-tint-accent)' },
 };
 const statusMeta = (s) => STATUS[s] || { label: s, color: 'var(--color-muted)', bg: 'var(--color-surface-strong)' };
 
@@ -169,7 +169,7 @@ function Attendance() {
                 maxWidth: 640,
                 padding: '12px 16px',
                 borderRadius: 'var(--radius-md)',
-                background: 'rgba(240, 177, 0, 0.14)',
+                background: 'var(--color-tint-mid)',
                 color: 'var(--color-grade-mid)',
                 fontSize: 14,
                 lineHeight: 1.5,

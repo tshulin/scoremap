@@ -54,7 +54,7 @@ function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES
     const cum = {
       key: CUMULATIVE,
       label: 'Cumulative',
-      color: 'var(--color-ink)',
+      color: 'var(--color-trend-stroke)',
       points: cumBase.map((p) => ({ date: p.date, grade: p.grade })),
       dashedFrom: null,
       width: 2.5,
@@ -256,7 +256,7 @@ function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES
         {lines.map((l) => (
           <label
             key={l.key}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600, color: 'var(--color-ink)', lineHeight: 1.2 }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600, color: 'var(--color-text-meta)', lineHeight: 1.2 }}
           >
             <input
               type="checkbox"

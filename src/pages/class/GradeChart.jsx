@@ -74,7 +74,16 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
   const hoverDelta = hover != null && hover > 0 ? series[hover].grade - series[hover - 1].grade : null;
 
   return (
-    <div style={{ position: 'relative', marginBottom: 20 }}>
+    <div
+      style={{
+        position: 'relative',
+        marginBottom: 20,
+        background: 'var(--color-surface-card)',
+        border: '1px solid var(--color-hairline)',
+        borderRadius: 'var(--radius-xl)',
+        padding: '16px 12px 8px',
+      }}
+    >
       <svg
         viewBox={`0 0 ${W} ${H}`}
         width="100%"
@@ -84,8 +93,8 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
       >
         <defs>
           <linearGradient id="gradeFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="rgba(255,255,255,0.10)" />
-            <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+            <stop offset="0%" stopColor="var(--color-trend-stroke)" stopOpacity="0.10" />
+            <stop offset="100%" stopColor="var(--color-trend-stroke)" stopOpacity="0" />
           </linearGradient>
         </defs>
         {ticks.map((t) => (
@@ -97,7 +106,7 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
           </g>
         ))}
         <path d={areaPath} fill="url(#gradeFill)" />
-        <path d={linePath} fill="none" stroke="var(--color-ink)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+        <path d={linePath} fill="none" stroke="var(--color-trend-stroke)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
         {series.map(
           (p, i) =>
             hoverable(i) && (
@@ -106,7 +115,7 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
                 cx={xAt(i)}
                 cy={yAt(p.grade)}
                 r={hover === i ? 4.5 : 2.6}
-                fill="var(--color-ink)"
+                fill="var(--color-trend-stroke)"
               />
             ),
         )}

@@ -24,8 +24,8 @@ const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
 const TONES = {
   neutral: { background: 'var(--color-surface-strong)', color: 'var(--color-body)', border: '1px solid var(--color-hairline)', fontWeight: 500 },
-  link: { background: 'rgba(0, 201, 80, 0.22)', color: 'var(--color-grade-good)', border: '1px solid transparent', fontWeight: 600 },
-  attachment: { background: 'rgba(168, 85, 247, 0.22)', color: 'var(--color-preview)', border: '1px solid transparent', fontWeight: 600 },
+  link: { background: 'color-mix(in srgb, var(--color-grade-good) 22%, transparent)', color: 'var(--color-grade-good)', border: '1px solid transparent', fontWeight: 600 },
+  attachment: { background: 'color-mix(in srgb, var(--color-preview) 22%, transparent)', color: 'var(--color-preview)', border: '1px solid transparent', fontWeight: 600 },
 };
 
 function Chip({ icon, tone = 'neutral', children }) {
@@ -97,7 +97,7 @@ function Mail() {
                 maxWidth: 640,
                 padding: '12px 16px',
                 borderRadius: 'var(--radius-md)',
-                background: 'rgba(251, 44, 54, 0.14)',
+                background: 'var(--color-tint-bad)',
                 color: 'var(--color-grade-bad)',
                 fontSize: 14,
                 lineHeight: 1.5,
@@ -115,7 +115,7 @@ function Mail() {
                   style={{
                     padding: '6px 14px',
                     borderRadius: 'var(--radius-pill)',
-                    background: 'rgba(240, 177, 0, 0.14)',
+                    background: 'var(--color-tint-mid)',
                     color: 'var(--color-grade-mid)',
                     fontSize: 13,
                     fontWeight: 600,
@@ -129,7 +129,7 @@ function Mail() {
                   style={{
                     padding: '6px 14px',
                     borderRadius: 'var(--radius-pill)',
-                    background: 'rgba(240, 177, 0, 0.14)',
+                    background: 'var(--color-tint-mid)',
                     color: 'var(--color-grade-mid)',
                     fontSize: 13,
                     fontWeight: 600,

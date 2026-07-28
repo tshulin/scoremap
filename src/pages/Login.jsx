@@ -290,7 +290,7 @@ function Login() {
                 style={{
                   padding: '12px 16px',
                   borderRadius: 'var(--radius-md)',
-                  background: 'rgba(251, 44, 54, 0.14)',
+                  background: 'var(--color-tint-bad)',
                   color: 'var(--color-grade-bad)',
                   fontSize: 14,
                   lineHeight: 1.5,

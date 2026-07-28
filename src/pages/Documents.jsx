@@ -18,9 +18,9 @@ import { useDocuments, useSyncMeta } from '../data/SyncProvider.jsx';
 // Known category → band color + subtle chip background (matches the filter
 // dots). Categories the portal sends that aren't listed get a neutral chip.
 const CATEGORY = {
-  Transcript: { color: 'var(--color-grade-bad)', bg: 'rgba(251, 44, 54, 0.14)' },
-  'Report Card': { color: 'var(--color-grade-mid)', bg: 'rgba(240, 177, 0, 0.14)' },
-  'MAP Growth Family Report': { color: 'var(--color-text-link)', bg: 'rgba(77, 168, 255, 0.14)' },
+  Transcript: { color: 'var(--color-grade-bad)', bg: 'var(--color-tint-bad)' },
+  'Report Card': { color: 'var(--color-grade-mid)', bg: 'var(--color-tint-mid)' },
+  'MAP Growth Family Report': { color: 'var(--color-text-link)', bg: 'var(--color-tint-accent)' },
 };
 
 const fmtDate = (iso) => {
@@ -149,7 +149,7 @@ function Documents() {
                 maxWidth: 640,
                 padding: '12px 16px',
                 borderRadius: 'var(--radius-md)',
-                background: 'rgba(251, 44, 54, 0.14)',
+                background: 'var(--color-tint-bad)',
                 color: 'var(--color-grade-bad)',
                 fontSize: 14,
                 lineHeight: 1.5,

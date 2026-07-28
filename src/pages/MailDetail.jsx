@@ -188,7 +188,7 @@ function MailDetail() {
             margin: '0 0 24px',
             padding: '12px 16px',
             borderRadius: 'var(--radius-md)',
-            background: 'rgba(251, 44, 54, 0.14)',
+            background: 'var(--color-tint-bad)',
             color: 'var(--color-grade-bad)',
             fontSize: 14,
             lineHeight: 1.5,
