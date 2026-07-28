@@ -8,6 +8,10 @@
 // refresh(scope) syncs only the named resources and merges them over the current
 // snapshot, so the Refresh button on a page costs one request for what that page
 // shows instead of a full re-sync of everything (see studentvue.js).
+//
+// A reload restores the mirrored snapshot rather than re-syncing (api.js). The
+// pill always shows how old the data is and Refresh is one click away, so the
+// student is never shown stale data without being told.
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import * as api from './api.js';
 import { emptySnapshot } from './snapshot.js';
@@ -15,9 +19,18 @@ import { sync as syncStudentVue } from './studentvue.js';
 
 const SyncContext = createContext(null);
 
+// Read once per mount, not per render.
+const restored = () => (api.hasToken() ? api.recallSnapshot() : null);
+
 export function SyncProvider({ children }) {
-  const [data, setData] = useState(emptySnapshot);
-  const [status, setStatus] = useState(api.hasToken() ? 'syncing' : 'signedOut');
+  const initial = useRef(null);
+  if (initial.current === null) initial.current = { snapshot: restored() };
+  const cached = initial.current.snapshot;
+
+  const [data, setData] = useState(cached || emptySnapshot);
+  const [status, setStatus] = useState(
+    cached ? 'ready' : api.hasToken() ? 'syncing' : 'signedOut',
+  );
   const [error, setError] = useState(null);
   // Re-arm on every mount: StrictMode's dev-only unmount/remount would
   // otherwise leave this false forever and every sync result would be dropped.
@@ -30,9 +43,10 @@ export function SyncProvider({ children }) {
   // A scoped sync merges over what the app already holds, and runSync is a
   // stable callback — so it reads the current snapshot from a ref rather than
   // closing over a stale `data`.
-  const latest = useRef(emptySnapshot);
+  const latest = useRef(cached || emptySnapshot);
   const store = useCallback((snapshot) => {
     latest.current = snapshot;
+    api.rememberSnapshot(snapshot);
     setData(snapshot);
   }, []);
 
@@ -59,9 +73,10 @@ export function SyncProvider({ children }) {
     }
   }, [store]);
 
-  // Resume the session on reload.
+  // Resume the session on reload — but only sync when there was nothing to
+  // restore. A reload with a fresh mirror costs zero portal requests.
   useEffect(() => {
-    if (api.hasToken()) runSync().catch(() => {});
+    if (api.hasToken() && !initial.current.snapshot) runSync().catch(() => {});
   }, [runSync]);
 
   const signIn = useCallback(

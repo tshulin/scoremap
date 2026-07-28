@@ -23,14 +23,28 @@ const USER_AGENT =
 
 // Kept well under the relay's per-IP concurrent cap (8 by default): idle pooled
 // connections still occupy a slot, and the student may have more than one tab.
-const MAX_CONNECTIONS = 4;
+// A whole school shares one public IP, so this number is really "how many of the
+// school's 8 slots may one browser tab hold" — 2 lets four students sync at once
+// instead of two, and a sync is only a handful of requests now anyway.
+const MAX_CONNECTIONS = 2;
 
-// The portal and the relay both hang up on idle connections. Reusing one that
-// has already gone away costs a wasted round trip, so retire them early.
-const IDLE_REUSE_MS = 15_000;
+// An idle pooled connection is worth keeping for the next request in a burst,
+// and worth nothing after that — but it still occupies one of the relay's
+// per-IP slots until somebody closes it. So they are CLOSED on this timer, not
+// merely skipped when stale: waiting for the relay's own idle timeout (120s)
+// meant one student parked slots for two minutes after they stopped clicking.
+const IDLE_CLOSE_MS = 15_000;
 
 const utf8 = new TextEncoder();
 const latin1 = new TextDecoder('latin1');
+
+// Node keeps a process alive for a pending timer. A pool sweep must never do
+// that, or a CLI script (and every test run) would hang on an idle connection.
+const defaultSetTimer = (fn, ms) => {
+	const id = setTimeout(fn, ms);
+	if (id && typeof id === 'object' && typeof id.unref === 'function') id.unref();
+	return id;
+};
 
 function concat(parts) {
 	let len = 0;
@@ -249,10 +263,18 @@ async function exchange(entry, url, { method, head, body }) {
 
 // The pool is the app's global limit on concurrent relay connections: a request
 // that cannot get one waits rather than opening another.
-function createPool({ relayUrl, WebSocketImpl, maxConnections, idleReuseMs, now = () => Date.now() }) {
+function createPool({
+	relayUrl,
+	WebSocketImpl,
+	maxConnections,
+	idleCloseMs,
+	now = () => Date.now(),
+	setTimer = defaultSetTimer
+}) {
 	const idle = new Map(); // host -> entry[], least-recently-used first
 	const waiters = [];
 	let live = 0;
+	let sweepTimer = null;
 
 	const wake = () => {
 		const next = waiters.shift();
@@ -268,11 +290,37 @@ function createPool({ relayUrl, WebSocketImpl, maxConnections, idleReuseMs, now 
 		}
 	};
 
+	// Closes every connection that has been idle past its welcome, then re-arms
+	// for whichever one expires next. Nothing is scheduled while the pool is
+	// empty, so an idle app holds no timer and no sockets.
+	const sweep = () => {
+		sweepTimer = null;
+		const cutoff = now() - idleCloseMs;
+		for (const [host, list] of [...idle]) {
+			while (list.length > 0 && list[0].lastUsed <= cutoff) retire(list.shift());
+			if (list.length === 0) idle.delete(host);
+		}
+		schedule();
+	};
+
+	// Arms for the oldest idle entry. An entry taken back out of the pool before
+	// its turn just makes the timer fire early — the sweep finds nothing due and
+	// re-arms — so only `release` needs to schedule.
+	const schedule = () => {
+		if (sweepTimer !== null) return;
+		let oldest = Infinity;
+		for (const list of idle.values()) {
+			if (list.length > 0 && list[0].lastUsed < oldest) oldest = list[0].lastUsed;
+		}
+		if (oldest === Infinity) return;
+		sweepTimer = setTimer(sweep, Math.max(0, oldest + idleCloseMs - now()));
+	};
+
 	const takeIdle = (host) => {
 		const list = idle.get(host);
 		while (list && list.length > 0) {
 			const entry = list.pop();
-			if (now() - entry.lastUsed <= idleReuseMs) {
+			if (now() - entry.lastUsed <= idleCloseMs) {
 				entry.reused = true;
 				return entry;
 			}
@@ -332,6 +380,7 @@ function createPool({ relayUrl, WebSocketImpl, maxConnections, idleReuseMs, now 
 			const list = idle.get(entry.host);
 			if (list) list.push(entry);
 			else idle.set(entry.host, [entry]);
+			schedule();
 			wake();
 		},
 
@@ -383,11 +432,19 @@ export function createRelayFetch({
 	relayUrl,
 	WebSocketImpl,
 	maxConnections = MAX_CONNECTIONS,
-	idleReuseMs = IDLE_REUSE_MS,
-	now
+	idleCloseMs = IDLE_CLOSE_MS,
+	now,
+	setTimer
 } = {}) {
 	if (!relayUrl) throw new Error('createRelayFetch requires a relayUrl');
-	const pool = createPool({ relayUrl, WebSocketImpl, maxConnections, idleReuseMs, now });
+	const pool = createPool({
+		relayUrl,
+		WebSocketImpl,
+		maxConnections,
+		idleCloseMs,
+		now,
+		...(setTimer ? { setTimer } : {})
+	});
 
 	const relayFetch = async function relayFetch(url, init = {}) {
 		const u = new URL(url);
