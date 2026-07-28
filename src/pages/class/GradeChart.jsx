@@ -69,12 +69,18 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
     }
     setHover(best);
     if (best != null) setDotIndex(best);
-    setMouse({
-      x: evt.clientX - rect.left,
-      y: evt.clientY - rect.top,
-      flipX: evt.clientX - rect.left > rect.width * 0.55,
-      flipY: evt.clientY - rect.top > rect.height * 0.55,
-    });
+    // Which side of the cursor the tooltip sits on, with hysteresis: it only
+    // flips after the cursor moves well past the midline, and the flip itself
+    // is animated (see the tooltip's transform transition) so the box glides
+    // across the cursor instead of teleporting.
+    const relX = evt.clientX - rect.left;
+    const relY = evt.clientY - rect.top;
+    setMouse((prev) => ({
+      x: relX,
+      y: relY,
+      flipX: prev.flipX ? relX > rect.width * 0.45 : relX > rect.width * 0.65,
+      flipY: prev.flipY ? relY > rect.height * 0.4 : relY > rect.height * 0.7,
+    }));
   };
 
   const linePath = grades
@@ -155,8 +161,8 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
             position: 'absolute',
             left: mouse.x + 14,
             top: mouse.y + 14,
-            transform: `${mouse.flipX ? 'translateX(calc(-100% - 28px))' : ''} ${mouse.flipY ? 'translateY(calc(-100% - 28px))' : ''}`.trim() || 'none',
-            transition: 'left 80ms linear, top 80ms linear',
+            transform: `translateX(${mouse.flipX ? 'calc(-100% - 28px)' : '0px'}) translateY(${mouse.flipY ? 'calc(-100% - 28px)' : '0px'})`,
+            transition: 'left 80ms linear, top 80ms linear, transform 240ms cubic-bezier(0.22, 1, 0.36, 1)',
             background: 'var(--color-surface-dark-elevated)',
             border: '1px solid var(--color-hairline-strong)',
             borderRadius: 'var(--radius-md)',
