@@ -4,6 +4,7 @@
 // GradeCompass behaved too. Renders only with 2+ points.
 import React from 'react';
 import { fmt2, shortDate, signed, weekdayDate } from './ui.jsx';
+import { useCursorTooltip } from './useCursorTooltip.js';
 
 const W = 1000;
 const H = 260;
@@ -20,8 +21,8 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
   // The focus dot's resting index: keeps the last hovered node so the dot can
   // slide between nodes (and fade out in place) instead of teleporting.
   const [dotIndex, setDotIndex] = React.useState(null);
-  // Cursor position in container px — the tooltip follows it (GradeCompass).
-  const [mouse, setMouse] = React.useState({ x: 0, y: 0, flipX: false, flipY: false });
+  // The tooltip eases toward the cursor every frame (rAF smoothing — see hook).
+  const { tooltipRef, onMove, flipStyle } = useCursorTooltip();
   React.useEffect(() => setHover(null), [activeDates]);
   React.useEffect(() => setDotIndex(null), [series.length]);
   if (series.length < 2) return null;
@@ -69,18 +70,7 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
     }
     setHover(best);
     if (best != null) setDotIndex(best);
-    // Which side of the cursor the tooltip sits on, with hysteresis: it only
-    // flips after the cursor moves well past the midline, and the flip itself
-    // is animated (see the tooltip's transform transition) so the box glides
-    // across the cursor instead of teleporting.
-    const relX = evt.clientX - rect.left;
-    const relY = evt.clientY - rect.top;
-    setMouse((prev) => ({
-      x: relX,
-      y: relY,
-      flipX: prev.flipX ? relX > rect.width * 0.45 : relX > rect.width * 0.65,
-      flipY: prev.flipY ? relY > rect.height * 0.4 : relY > rect.height * 0.7,
-    }));
+    onMove(evt, rect);
   };
 
   const linePath = grades
@@ -155,14 +145,12 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
 
       {hovered && (
         <div
+          ref={tooltipRef}
           style={{
-            // Trails the cursor with a soft 80ms lag, like the reference
-            // app's layerchart tooltip; flips to stay inside the chart.
+            // Position (left/top) is driven by the rAF smoother in
+            // useCursorTooltip; only the side-flip lives in `flipStyle`.
             position: 'absolute',
-            left: mouse.x + 14,
-            top: mouse.y + 14,
-            transform: `translateX(${mouse.flipX ? 'calc(-100% - 28px)' : '0px'}) translateY(${mouse.flipY ? 'calc(-100% - 28px)' : '0px'})`,
-            transition: 'left 80ms linear, top 80ms linear, transform 240ms cubic-bezier(0.22, 1, 0.36, 1)',
+            ...flipStyle,
             background: 'var(--color-surface-dark-elevated)',
             border: '1px solid var(--color-hairline-strong)',
             borderRadius: 'var(--radius-md)',

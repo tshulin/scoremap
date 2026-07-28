@@ -7,6 +7,7 @@
 import React from 'react';
 import { gradeSeries } from '../../calc/index';
 import { fmt2, shortDate, todayIso, weekdayDate } from './ui.jsx';
+import { useCursorTooltip } from './useCursorTooltip.js';
 
 // Categorical palette, validated (dataviz six-checks) against the dark card
 // surface: lightness band, chroma, CVD ΔE ≥ 8 on adjacent pairs, contrast.
@@ -28,8 +29,8 @@ function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES
   const weighted = !!(categories && categories.length > 0);
   const [hidden, setHidden] = React.useState(() => new Set());
   const [hover, setHover] = React.useState(null);
-  // Cursor position in container px — the tooltip follows it (GradeCompass).
-  const [mouse, setMouse] = React.useState({ x: 0, y: 0, flipX: false, flipY: false });
+  // The tooltip eases toward the cursor every frame (rAF smoothing — see hook).
+  const { tooltipRef, onMove, flipStyle } = useCursorTooltip();
 
   const lines = React.useMemo(() => {
     const built = [];
@@ -146,16 +147,7 @@ function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES
       }
     }
     setHover(best);
-    // Side-of-cursor with hysteresis; the flip animates via the tooltip's
-    // transform transition so the box glides across, never teleports.
-    const relX = evt.clientX - rect.left;
-    const relY = evt.clientY - rect.top;
-    setMouse((prev) => ({
-      x: relX,
-      y: relY,
-      flipX: prev.flipX ? relX > rect.width * 0.45 : relX > rect.width * 0.65,
-      flipY: prev.flipY ? relY > rect.height * 0.4 : relY > rect.height * 0.7,
-    }));
+    onMove(evt, rect);
   };
 
   const pathFor = (points) =>
@@ -234,14 +226,12 @@ function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES
 
         {hoverRows.length > 0 && (
           <div
+            ref={tooltipRef}
             style={{
-              // Trails the cursor with a soft 80ms lag, like the reference
-              // app's layerchart tooltip; flips to stay inside the chart.
+              // Position (left/top) is driven by the rAF smoother in
+              // useCursorTooltip; only the side-flip lives in `flipStyle`.
               position: 'absolute',
-              left: mouse.x + 14,
-              top: mouse.y + 14,
-              transform: `translateX(${mouse.flipX ? 'calc(-100% - 28px)' : '0px'}) translateY(${mouse.flipY ? 'calc(-100% - 28px)' : '0px'})`,
-              transition: 'left 80ms linear, top 80ms linear, transform 240ms cubic-bezier(0.22, 1, 0.36, 1)',
+              ...flipStyle,
               background: 'var(--color-surface-dark-elevated)',
               border: '1px solid var(--color-hairline-strong)',
               borderRadius: 'var(--radius-md)',
