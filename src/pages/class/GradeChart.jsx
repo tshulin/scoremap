@@ -6,10 +6,13 @@ import React from 'react';
 import { fmt2, shortDate, signed, weekdayDate } from './ui.jsx';
 import { useCursorTooltip } from './useCursorTooltip.js';
 
+// Geometry is shared with OverviewChart (same viewBox, same paddings) so
+// switching between the Assignments and Overview tabs keeps the plot frame
+// perfectly in place — only the lines change.
 const W = 1000;
 const H = 260;
-const padL = 46;
-const padR = 46;
+const padL = 40;
+const padR = 8;
 const padT = 14;
 const padB = 34;
 
@@ -136,7 +139,14 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
         {series.map(
           (p, i) =>
             labeled.has(i) && (
-              <text key={`l${p.date}`} x={xAt(i)} y={H - 10} textAnchor="middle" fontSize="12" fill="var(--color-muted)">
+              <text
+                key={`l${p.date}`}
+                x={xAt(i)}
+                y={H - 10}
+                textAnchor={i === series.length - 1 ? 'end' : 'middle'}
+                fontSize="12"
+                fill="var(--color-muted)"
+              >
                 {shortDate(p.date)}
               </text>
             ),
