@@ -18,18 +18,50 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../lib/ds.js';
 import Sidebar from '../components/Sidebar.jsx';
-import SyncPill from '../components/SyncPill.jsx';
-import { useClasses, useSession, useSyncMeta, useSyncStatus } from '../data/SyncProvider.jsx';
+import TopBar from '../components/TopBar.jsx';
+import { ChangeTicker } from '../components/RefreshDelta.jsx';
+import { useClasses, useSemesters, useSession, useSyncChanges, useSyncMeta, useSyncStatus } from '../data/SyncProvider.jsx';
 import { gradeBandColor } from '../lib/grades.js';
+import { ChevronLeftIcon, ChevronRightIcon } from '../lib/icons.jsx';
+
+// Portals hand back names as "First Last" or "Last, First" — greet with the
+// first name either way.
+const firstName = (name) => {
+  const n = (name || '').trim();
+  if (!n) return '';
+  if (n.includes(',')) return n.split(',')[1].trim().split(/\s+/)[0];
+  return n.split(/\s+/)[0];
+};
+
+const greetingForHour = (hour) => {
+  if (hour >= 5 && hour < 12) return 'Good morning,';
+  if (hour >= 12 && hour < 18) return 'Good afternoon,';
+  return 'Good evening,';
+};
 
 function DashboardPage() {
   const navigate = useNavigate();
   const classes = useClasses();
   const session = useSession();
+  const semesters = useSemesters();
   const meta = useSyncMeta();
   const { status } = useSyncStatus();
   const totalNew = classes.reduce((n, c) => n + (c.isNew || 0), 0);
   const [hovered, setHovered] = React.useState(null);
+
+  // Selecting another period is display-state only for now — the sync always
+  // fetches the portal's current period, so other quarters have no data yet.
+  const [semester, setSemester] = React.useState('');
+  React.useEffect(() => setSemester(session.semester), [session.semester]);
+  const semesterOptions = semesters.length > 0 ? semesters : session.semester ? [session.semester] : [];
+
+  const { list: changedClasses } = useSyncChanges();
+  const deltaLine =
+    changedClasses.length > 0 ? (
+      <ChangeTicker items={changedClasses} />
+    ) : (
+      'No change since last refresh'
+    );
 
   // ---- small building blocks ----
   function Chip({ children, tone = 'neutral' }) {
@@ -52,6 +84,33 @@ function DashboardPage() {
       >
         {children}
       </span>
+    );
+  }
+
+  // Prev/next stepper flanking the quarter label. At either end the button
+  // grays out further and stops responding.
+  function QuarterStep({ dir }) {
+    const target = semesterOptions.indexOf(semester) + dir;
+    const disabled = target < 0 || target >= semesterOptions.length;
+    return (
+      <button
+        type="button"
+        aria-label={dir === -1 ? 'Previous grading period' : 'Next grading period'}
+        disabled={disabled}
+        onClick={() => setSemester(semesterOptions[target])}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          padding: 2,
+          border: 'none',
+          background: 'transparent',
+          color: disabled ? 'var(--color-muted)' : 'var(--color-ink)',
+          opacity: disabled ? 0.45 : 1,
+          cursor: disabled ? 'default' : 'pointer',
+        }}
+      >
+        {dir === -1 ? <ChevronLeftIcon size={20} /> : <ChevronRightIcon size={20} />}
+      </button>
     );
   }
 
@@ -79,17 +138,59 @@ function DashboardPage() {
       {/* ---------- Main ---------- */}
       <main style={{ flex: 1, padding: '32px 40px 48px', boxSizing: 'border-box' }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
-          {/* sync status */}
-          <SyncPill scope="gradebook" />
-
-          {/* semester selector */}
-          {session.semester && (
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
-              <Button variant="secondary" size="sm">
-                {session.semester} <span aria-hidden="true" style={{ opacity: 0.7 }}>⌄</span>
-              </Button>
-            </div>
-          )}
+          {/* top bar: greeting · refresh pill · quarter selector */}
+          <TopBar
+            pillScope="gradebook"
+            pillDelta={deltaLine}
+            left={
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-body)', marginBottom: 2 }}>
+                  {greetingForHour(new Date().getHours())}
+                </div>
+                <div
+                  style={{
+                    fontSize: 'clamp(24px, 2.6vw, 34px)',
+                    fontWeight: 600,
+                    letterSpacing: '-0.7px',
+                    lineHeight: 1.2,
+                    color: 'var(--color-ink)',
+                  }}
+                >
+                  {firstName(session.studentName) || 'there'}
+                </div>
+              </div>
+            }
+            right={
+              semesterOptions.length > 0 && (
+                <div>
+                  {/* Mirrors the greeting on the left: small line on top, then
+                      the quarter as bare heading text between prev/next steppers. */}
+                  {session.semester && (
+                    <div style={{ marginBottom: 2, fontSize: 14, fontWeight: 500, color: 'var(--color-body)' }}>
+                      Latest: {session.semester}
+                    </div>
+                  )}
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <QuarterStep dir={-1} />
+                    <span
+                      style={{
+                        fontSize: 'clamp(21px, 2.3vw, 29px)',
+                        fontWeight: 600,
+                        letterSpacing: '-0.6px',
+                        lineHeight: 1.2,
+                        color: 'var(--color-ink)',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {semester}
+                    </span>
+                    <QuarterStep dir={1} />
+                  </div>
+                </div>
+              )
+            }
+          />
+          <div style={{ height: 20 }} />
 
           {/* class rows */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
