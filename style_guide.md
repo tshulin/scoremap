@@ -6,60 +6,59 @@ layered over `_ds/…/tokens/colors.css` (design-system defaults). Components
 never hardcode hex values — they reference tokens, so retheming is a
 token-file edit.
 
-Dark is the default theme; light is opt-in via `data-theme="light"` on
-`<html>` (toggled from the sidebar account menu, persisted in
-`localStorage.grademax-theme`).
+Dark is the default theme and uses the **original Grademax dark palette**
+(the design-system defaults). Light is the pastel palette and is opt-in via
+`data-theme="light"` on `<html>` (toggled from the sidebar account menu,
+persisted in `localStorage.grademax-theme`).
 
 ---
 
-## Dark mode
+## Dark mode (original palette)
 
 ### Surfaces
 
 | Color | Usage |
 | --- | --- |
-| `#101214` | Page / main content background, body background |
-| `#17191c` | Sidebar, all boxes — course cards, assignment rows, pills, chart panel, privacy note, avatar circle, progress-bar tracks, nav hover/active, sidebar divider |
-| `#10161c` | Demo-mode pill background (accent-tinted) |
-| `#1d2024` | *(derived)* Elevated floating layers — account-menu popover, chart tooltips, active filter-tab fill |
-| `#0d0f11` | *(derived)* Alternating soft band on marketing pages (`--color-canvas-soft`) |
+| `#111113` | Page / main content background, body, sidebar |
+| `#18191b` | All boxes — course cards, assignment rows, pills, tag chips, nav active fill |
+| `#1c1d20` | Featured/elevated DS card |
+| `#202125` | Elevated floating layers — popover, chart tooltips, active filter-tab fill, progress-bar tracks, avatar circle |
+| `#0d0e10` | Alternating soft band on marketing pages (`--color-canvas-soft`) |
+| accent @ 14% | Demo-mode pill background (derived via `color-mix`) |
 
 ### Borders
 
 | Color | Usage |
 | --- | --- |
-| `rgba(255,255,255,0.18)` | Course cards, pills, assignment rows, tab strip, avatar circle |
-| `rgba(255,255,255,0.12)` | Sidebar right edge, chart panel, privacy note, sidebar divider |
-| `rgba(255,255,255,0.08)` | *(derived)* Softest hairline (chart gridlines fallback, DS internals) |
+| `rgba(255,255,255,0.14)` | Course cards, pills, assignment rows, tab strip, avatar circle |
+| `rgba(255,255,255,0.08)` | Sidebar right edge, privacy note, divider, chart gridlines |
+| `rgba(255,255,255,0.06)` | Softest hairline |
 
 ### Text
 
 | Color | Usage |
 | --- | --- |
-| `#ffffff` | Logo, course names, grades, page headings, active nav, trend-line stroke |
-| `#f2f3f5` | Base body text |
-| `#e6e8ea` | Pill button labels |
-| `#c7cbd1` | Sidebar nav items, checkbox label, Feedback link |
-| `#b7bcc2` | "Last updated" text |
-| `#9aa1a8` | Teacher / room meta, inactive tabs, legend labels |
-| `#8b9096` | Assignment dates, delta values, privacy note, ⋮ icon |
-| `#6b7178` | Footer disclaimer |
+| `#ffffff` | Logo, course names, grades, page headings, active nav, pill button labels, trend-line stroke, base body text |
+| `#a1a1aa` | Sidebar nav items, checkbox labels, "Last updated", teacher / room meta, inactive tabs, legend labels |
+| `#71717a` | Assignment dates, delta values, privacy note, ⋮ icon, footer disclaimer |
+| `#45454b` | Softest text, ungraded / no score |
 
-### Accent (tweakable)
+### Accent
 
 | Color | Usage |
 | --- | --- |
-| `#7db4f5` | Links, Refresh, active tab underline, demo pill border + text |
-| `#a7cdfa` | Link hover |
+| `#4da8ff` | Links, Refresh, demo pill text (hover: same, underline only) |
+| `#7c94ff` | Legal/footer links |
+| `#47c2ff` | Rare small link accents |
 
-### Grade colors (neon)
+### Grade colors
 
 | Color | Usage |
 | --- | --- |
-| `#39ff6a` | Green — passing / Homework legend |
-| `#ffc400` | Amber — borderline |
-| `#ff2d55` | Red — failing / Quizzes + Tests legend |
-| `#54585d` | Ungraded / no score |
+| `#00c950` | Green — passing / Homework legend |
+| `#f0b100` | Amber — borderline |
+| `#fb2c36` | Red — failing / Quizzes + Tests legend |
+| `#45454b` | Ungraded / no score |
 
 ---
 
@@ -71,7 +70,7 @@ Dark is the default theme; light is opt-in via `data-theme="light"` on
 | --- | --- |
 | `#f7f6fb` | Page / main background, body, avatar circle, tag chips, privacy note |
 | `#efeef8` | Sidebar, all boxes — course cards, assignment rows, pills, chart panel |
-| `#e6e4f1` | Nav hover / active nav item, elevated floating layers *(derived: popover, tooltips, active filter-tab fill)* |
+| `#e6e4f1` | Nav hover / active nav item, elevated floating layers (popover, tooltips, active filter-tab fill) |
 | `#eae8f4` | Course card hover |
 | `#ddd9ea` | Progress-bar tracks |
 | `#eef1fa` | Demo-mode pill background |
@@ -82,7 +81,7 @@ Dark is the default theme; light is opt-in via `data-theme="light"` on
 | --- | --- |
 | `rgba(60,55,90,0.15)` | Course cards, pills, assignment rows, tab strip, avatar circle |
 | `rgba(60,55,90,0.11)` | Sidebar right edge, chart panel, privacy note, divider |
-| `rgba(60,55,90,0.08)` | *(derived)* Softest hairline |
+| `rgba(60,55,90,0.08)` | Softest hairline |
 
 ### Text
 
@@ -99,7 +98,7 @@ Dark is the default theme; light is opt-in via `data-theme="light"` on
 
 | Color | Usage |
 | --- | --- |
-| `#7d7ab3` | Links, Refresh, active tab underline, demo pill border + text |
+| `#7d7ab3` | Links, Refresh, demo pill text |
 | `#63609a` | Link hover |
 
 ### Grade colors (pastel)
@@ -131,84 +130,72 @@ Mail tag chips use a stronger 22% mix of the same formula.
 
 ## Token map
 
-App-level tokens live in `src/index.css`. The dark block overrides the
-design-system defaults; the `[data-theme='light']` block restates every token.
+App-level tokens live in `src/index.css`. The dark block restates the
+design-system defaults and adds the purpose tokens; the
+`[data-theme='light']` block restates every token for the pastel theme.
 
 | Token | Dark | Light | Role |
 | --- | --- | --- | --- |
-| `--color-canvas` | `#101214` | `#f7f6fb` | Page background |
-| `--color-canvas-soft` | `#0d0f11` | `#efeef8` | Alternating marketing band |
-| `--color-surface-card` | `#17191c` | `#efeef8` | All boxes (cards, rows, pills, chart panel, privacy note) |
-| `--color-surface-sidebar` | `#17191c` | `#efeef8` | Sidebar background |
-| `--color-surface-strong` | `#17191c` | `#f7f6fb` | Tag chips, inline inputs |
-| `--color-surface-dark` | `#17191c` | `#efeef8` | DS featured surfaces |
-| `--color-surface-dark-elevated` | `#1d2024` | `#e6e4f1` | Popover, tooltips, active filter tab |
-| `--color-surface-demo` | `#10161c` | `#eef1fa` | Demo-mode pill background |
-| `--color-nav-active` | `#17191c` | `#e6e4f1` | Sidebar nav hover/active fill |
-| `--color-card-hover` | `#17191c` | `#eae8f4` | Course-card hover fill |
-| `--color-progress-track` | `#17191c` | `#ddd9ea` | Progress/score bar tracks |
-| `--color-avatar-bg` | `#17191c` | `#f7f6fb` | Avatar / period circle |
-| `--color-hairline-strong` | `rgba(255,255,255,0.18)` | `rgba(60,55,90,0.15)` | Box borders (cards, pills, rows, tab strip, avatar) |
-| `--color-hairline` | `rgba(255,255,255,0.12)` | `rgba(60,55,90,0.11)` | Panel borders (sidebar edge, chart panel, privacy note, divider) |
-| `--color-hairline-soft` | `rgba(255,255,255,0.08)` | `rgba(60,55,90,0.08)` | Softest lines |
+| `--color-canvas` | `#111113` | `#f7f6fb` | Page background |
+| `--color-canvas-soft` | `#0d0e10` | `#efeef8` | Alternating marketing band |
+| `--color-surface-card` | `#18191b` | `#efeef8` | All boxes (cards, rows, pills, privacy note) |
+| `--color-surface-sidebar` | `#111113` | `#efeef8` | Sidebar background |
+| `--color-surface-strong` | `#18191b` | `#f7f6fb` | Tag chips, inline inputs |
+| `--color-surface-dark` | `#1c1d20` | `#efeef8` | DS featured surfaces |
+| `--color-surface-dark-elevated` | `#202125` | `#e6e4f1` | Popover, tooltips, active filter tab |
+| `--color-surface-demo` | accent @ 14% | `#eef1fa` | Demo-mode pill background |
+| `--color-nav-active` | `#18191b` | `#e6e4f1` | Sidebar nav active fill |
+| `--color-card-hover` | `#18191b` | `#eae8f4` | Course-card hover fill (unused — shadow only) |
+| `--color-progress-track` | `#202125` | `#ddd9ea` | Progress/score bar tracks |
+| `--color-avatar-bg` | `#202125` | `#f7f6fb` | Avatar / period circle |
+| `--color-hairline-strong` | `rgba(255,255,255,0.14)` | `rgba(60,55,90,0.15)` | Box borders (cards, pills, rows, tab strip, avatar) |
+| `--color-hairline` | `rgba(255,255,255,0.08)` | `rgba(60,55,90,0.11)` | Panel borders (sidebar edge, privacy note, divider) |
+| `--color-hairline-soft` | `rgba(255,255,255,0.06)` | `rgba(60,55,90,0.08)` | Softest lines |
 | `--color-ink` | `#ffffff` | `#2e2b3a` | Headings, names, grades, active nav |
-| `--color-body-strong` | `#f2f3f5` | `#35323f` | Base body text |
-| `--color-body` | `#c7cbd1` | `#605c72` | Nav items, checkbox labels, Feedback |
-| `--color-text-pill` | `#e6e8ea` | `#413e4f` | Pill button labels |
-| `--color-text-updated` | `#b7bcc2` | `#605c72` | "Last updated" |
-| `--color-text-meta` | `#9aa1a8` | `#7c788c` | Teacher/room meta, inactive tabs, legend labels |
-| `--color-muted` | `#8b9096` | `#918da1` | Dates, deltas, ⋮ icon |
-| `--color-text-privacy` | `#8b9096` | `#7c788c` | Privacy note |
-| `--color-text-disclaimer` | `#6b7178` | `#918da1` | Footer disclaimer |
-| `--color-muted-soft` | `#6b7178` | `#918da1` | Softest DS text |
+| `--color-body-strong` | `#ffffff` | `#35323f` | Base body text |
+| `--color-body` | `#a1a1aa` | `#605c72` | Nav items, checkbox labels, Feedback |
+| `--color-text-pill` | `#ffffff` | `#413e4f` | Pill button labels |
+| `--color-text-updated` | `#a1a1aa` | `#605c72` | "Last updated" |
+| `--color-text-meta` | `#a1a1aa` | `#7c788c` | Teacher/room meta, inactive tabs, legend labels |
+| `--color-muted` | `#71717a` | `#918da1` | Dates, deltas, ⋮ icon |
+| `--color-text-privacy` | `#71717a` | `#7c788c` | Privacy note |
+| `--color-text-disclaimer` | `#71717a` | `#918da1` | Footer disclaimer |
+| `--color-muted-soft` | `#45454b` | `#918da1` | Softest DS text |
 | `--color-trend-stroke` | `#ffffff` | `#413e4f` | Grade-over-time line + dots |
-| `--color-text-link` | `#7db4f5` | `#7d7ab3` | Accent: links, Refresh, tab underline, demo pill |
-| `--color-text-link-hover` | `#a7cdfa` | `#63609a` | Link hover |
-| `--color-grade-good` | `#39ff6a` | `#6cc79a` | Passing / homework-type |
-| `--color-grade-mid` | `#ffc400` | `#f0c46a` | Borderline |
-| `--color-grade-bad` | `#ff2d55` | `#ec8b8b` | Failing / assessment-type |
-| `--color-grade-none` | `#54585d` | `#cfcbdc` | Ungraded / no score |
+| `--color-text-link` | `#4da8ff` | `#7d7ab3` | Accent: links, Refresh, demo pill |
+| `--color-text-link-hover` | `#4da8ff` | `#63609a` | Link hover |
+| `--color-grade-good` | `#00c950` | `#6cc79a` | Passing / homework-type |
+| `--color-grade-mid` | `#f0b100` | `#f0c46a` | Borderline |
+| `--color-grade-bad` | `#fb2c36` | `#ec8b8b` | Failing / assessment-type |
+| `--color-grade-none` | `#45454b` | `#cfcbdc` | Ungraded / no score |
 
 ---
 
 ## Colors defined, element unchanged
 
-The retheme changed color values only — no layout or structure. A few guide
-entries name elements/states the current design doesn't render; their tokens
-exist and take effect automatically if those elements are ever added:
+The theming changes color values only — no layout or structure. A few tokens
+name elements/states the current design doesn't render; they exist and take
+effect automatically if those elements are ever added:
 
-- **Active tab underline** — tabs keep the pill-container style (active tab =
-  elevated fill); `--color-text-link` is ready for an underline treatment.
-- **Chart panel surface/border** — the grade chart renders unboxed on the
-  canvas; `--color-surface-card` + `--color-hairline` are the panel colors.
-- **Nav hover fill** — only the *active* nav item gets `--color-nav-active`;
-  hover changes text color only, as before.
 - **Course card hover** (`--color-card-hover`) — cards hover with a shadow
   only; the fill is unused.
-- **Demo pill border** — the demo pill is borderless; background
-  `--color-surface-demo` + accent text only.
+- **Nav hover fill** — only the *active* nav item gets `--color-nav-active`;
+  hover changes text color only.
 
 ---
 
 ## Not yet specified — using placeholders
 
-These colors exist in the product but aren't covered by the guide yet.
-Current placeholder values are noted; specify them to replace.
-
 1. **Primary CTA button** (landing "Get started", dialogs): dark keeps the
    DS white pill / black text (`#ffffff` / `#000000`); light uses ink
    (`#2e2b3a`) with white text.
 2. **Overview chart categorical palette** — one line per category:
-   `#3987e5 #d95926 #199e70 #9085e9 #d55181` (unchanged). The guide's
-   green/red legend colors are used for category *chips*, but 3+ chart lines
-   need distinguishable hues. Keep, or supply a new 5-color set?
+   `#3987e5 #d95926 #199e70 #9085e9 #d55181` (both themes). The grade
+   green/red pair colors category *chips*; 3+ chart lines need
+   distinguishable hues.
 3. **Semantic states**: warning `#f0a94e`, error `#eb8e90`, success
    `#16a34a`, preview/attachment purple `#a855f7` (Mail tag chips) — same in
    both themes.
-4. **Elevated floating surfaces** (account-menu popover, chart tooltips):
-   derived `#1d2024` dark / `#e6e4f1` light.
-5. **Dark-mode course-card hover**: only light mode (`#eae8f4`) is specified
-   (and unused for now — cards hover with a shadow only).
-6. **Dialog backdrop scrim**: `rgba(0,0,0,0.65)` both themes.
-7. **Focus rings / selection**: browser defaults (accent-tinted via
+4. **Dialog backdrop scrim**: `rgba(0,0,0,0.65)` both themes.
+5. **Focus rings / selection**: browser defaults (accent-tinted via
    `accent-color` on checkboxes).
