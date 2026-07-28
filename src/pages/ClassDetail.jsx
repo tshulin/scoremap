@@ -188,12 +188,16 @@ function ClassDetail() {
                 activeType={filter === 'All' ? null : filter}
               />
 
-              {/* toggles + calculators (Pin chart deliberately omitted) */}
-              <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 }}>
-                <Check label="Hypothetical mode" checked={hypothetical} onChange={scenario.toggleHypothetical} />
-                {hypothetical && <PillButton onClick={scenario.reset}>↺ Reset</PillButton>}
-                <PillButton onClick={() => setTargetOpen(true)}>🎯 Target calculator</PillButton>
-                <PillButton onClick={() => setBoundsOpen(true)}>📐 Max / min grade</PillButton>
+              {/* toggles left, calculators right (Pin chart deliberately omitted) */}
+              <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <Check label="Hypothetical mode" checked={hypothetical} onChange={scenario.toggleHypothetical} />
+                  {hypothetical && <PillButton onClick={scenario.reset}>↺ Reset</PillButton>}
+                </div>
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <PillButton onClick={() => setTargetOpen(true)}>🎯 Target calculator</PillButton>
+                  <PillButton onClick={() => setBoundsOpen(true)}>📐 Max / min grade</PillButton>
+                </div>
               </div>
 
               <AssignmentList

@@ -65,10 +65,11 @@ function DashboardPage() {
     );
 
   // ---- small building blocks ----
+  // Same box as the Documents page's date/category chips.
   function Chip({ children, tone = 'neutral' }) {
     const tones = {
       neutral: { background: 'var(--color-surface-strong)', border: '1px solid var(--color-hairline)', color: 'var(--color-body)' },
-      new: { background: 'var(--color-tint-good)', border: '1px solid transparent', color: 'var(--color-grade-good)', fontWeight: 600 },
+      new: { background: 'var(--color-tint-good)', border: '1px solid transparent', color: 'var(--color-grade-good)' },
     };
     return (
       <span
@@ -79,7 +80,9 @@ function DashboardPage() {
           padding: '4px 10px',
           borderRadius: 'var(--radius-sm)',
           fontSize: 13,
+          fontWeight: 600,
           lineHeight: 1.2,
+          whiteSpace: 'nowrap',
           ...tones[tone],
         }}
       >
@@ -247,11 +250,12 @@ function DashboardPage() {
                       {periodNum}
                     </div>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.3px', color: 'var(--color-ink)', marginBottom: 4 }}>
+                      <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.3px', color: 'var(--color-ink)', marginBottom: 6 }}>
                         {c.name}
                       </div>
-                      <div style={{ fontSize: 14, color: 'var(--color-text-meta)' }}>
-                        {c.teacher} <span style={{ color: 'var(--color-text-meta)' }}>·</span> {c.room}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                        <Chip>{c.teacher}</Chip>
+                        <Chip>{c.room}</Chip>
                       </div>
                     </div>
                   </div>

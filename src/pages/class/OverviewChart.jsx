@@ -16,10 +16,13 @@ import { useCursorTooltip } from './useCursorTooltip.js';
 const CAT_COLORS = ['#3987e5', '#d95926', '#199e70', '#9085e9', '#d55181'];
 const CUMULATIVE = '__cumulative__';
 
+// Geometry is shared with GradeChart (same viewBox, same paddings) so
+// switching between the Assignments and Overview tabs keeps the plot frame
+// perfectly in place — only the lines change.
 const W = 1000;
-const H = 280;
-const padL = 46;
-const padR = 16;
+const H = 260;
+const padL = 40;
+const padR = 8;
 const padT = 14;
 const padB = 34;
 
@@ -217,7 +220,14 @@ function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES
           {dates.map(
             (d, i) =>
               labeled.has(i) && (
-                <text key={d} x={xAt(i)} y={H - 10} textAnchor="middle" fontSize="12" fill="var(--color-muted)">
+                <text
+                  key={d}
+                  x={xAt(i)}
+                  y={H - 10}
+                  textAnchor={i === dates.length - 1 ? 'end' : 'middle'}
+                  fontSize="12"
+                  fill="var(--color-muted)"
+                >
                   {shortDate(d)}
                 </text>
               ),
