@@ -50,17 +50,17 @@ body {
   --color-text-disclaimer: #71717a;
   --color-trend-stroke: #ffffff;
 
-  /* Accent */
-  --color-text-link: #4da8ff;
-  --color-text-link-hover: #4da8ff;
-  --color-text-link-secondary: #7c94ff;
-  --color-accent-link-bright: #47c2ff;
+  /* Accent — the style guide's pair on the original dark surfaces */
+  --color-text-link: #7db4f5;
+  --color-text-link-hover: #a7cdfa;
+  --color-text-link-secondary: #7db4f5;
+  --color-accent-link-bright: #a7cdfa;
 
-  /* Grade bands */
-  --color-grade-good: #00c950;
-  --color-grade-mid: #f0b100;
-  --color-grade-bad: #fb2c36;
-  --color-grade-none: #45454b;
+  /* Grade bands (neon, per the style guide) */
+  --color-grade-good: #39ff6a;
+  --color-grade-mid: #ffc400;
+  --color-grade-bad: #ff2d55;
+  --color-grade-none: #54585d;
 
   /* 14% tints — chip/badge backgrounds derived from their foreground */
   --color-tint-good: color-mix(in srgb, var(--color-grade-good) 14%, transparent);
