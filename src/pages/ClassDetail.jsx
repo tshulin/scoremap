@@ -112,9 +112,11 @@ function ClassDetail() {
       <Sidebar />
 
       <main style={{ flex: 1, padding: '32px 40px 64px', boxSizing: 'border-box' }}>
-        <div style={{ maxWidth: 1160, margin: '0 auto' }}>
-          {/* top bar: class name · refresh pill (tabs beneath it) · grade */}
-          <TopBar
+        {/* top bar: class name · refresh pill (tabs beneath it) · grade.
+            Spans the graph's width — the course name's left edge lines up
+            with the y-axis numbers, the grade's right edge with the chart's
+            right edge. */}
+        <TopBar
             pillScope="gradebook"
             pillDelta={deltaLine}
             left={
@@ -176,8 +178,7 @@ function ClassDetail() {
                 </div>
               )
             }
-          />
-        </div>
+        />
 
         {tab === 'assignments' && (
           <>
