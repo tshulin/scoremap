@@ -127,22 +127,21 @@ function ClassDetail() {
             )}
           </div>
 
-          {/* sub-tabs — underline strip: active tab gets the accent underline */}
-          <div style={{ display: 'flex', alignItems: 'stretch', gap: 4, borderBottom: '1px solid var(--color-hairline-strong)', marginBottom: 20 }}>
+          {/* sub-tabs (Grade index joins in a later phase) */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: 4, borderRadius: 'var(--radius-lg)', background: 'var(--color-surface-card)', border: '1px solid var(--color-hairline-strong)', marginBottom: 20 }}>
             {TABS.map(([id, label]) => (
               <button
                 key={id}
                 onClick={() => setTab(id)}
                 style={{
-                  padding: '10px 16px',
+                  padding: '8px 16px',
+                  borderRadius: 'var(--radius-md)',
                   border: 'none',
-                  borderBottom: tab === id ? '2px solid var(--color-text-link)' : '2px solid transparent',
-                  marginBottom: -1,
                   cursor: 'pointer',
                   fontFamily: 'var(--font-sans)',
                   fontSize: 15,
                   fontWeight: 500,
-                  background: 'transparent',
+                  background: tab === id ? 'var(--color-surface-dark-elevated)' : 'transparent',
                   color: tab === id ? 'var(--color-ink)' : 'var(--color-text-meta)',
                 }}
               >

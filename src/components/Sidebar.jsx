@@ -97,7 +97,7 @@ function Sidebar() {
           marginBottom: 2,
           cursor: 'pointer',
           color: active || hov ? 'var(--color-ink)' : 'var(--color-body)',
-          background: active || hov ? 'var(--color-nav-active)' : 'transparent',
+          background: active ? 'var(--color-nav-active)' : 'transparent',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',

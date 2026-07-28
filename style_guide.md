@@ -171,6 +171,25 @@ design-system defaults; the `[data-theme='light']` block restates every token.
 
 ---
 
+## Colors defined, element unchanged
+
+The retheme changed color values only — no layout or structure. A few guide
+entries name elements/states the current design doesn't render; their tokens
+exist and take effect automatically if those elements are ever added:
+
+- **Active tab underline** — tabs keep the pill-container style (active tab =
+  elevated fill); `--color-text-link` is ready for an underline treatment.
+- **Chart panel surface/border** — the grade chart renders unboxed on the
+  canvas; `--color-surface-card` + `--color-hairline` are the panel colors.
+- **Nav hover fill** — only the *active* nav item gets `--color-nav-active`;
+  hover changes text color only, as before.
+- **Course card hover** (`--color-card-hover`) — cards hover with a shadow
+  only; the fill is unused.
+- **Demo pill border** — the demo pill is borderless; background
+  `--color-surface-demo` + accent text only.
+
+---
+
 ## Not yet specified — using placeholders
 
 These colors exist in the product but aren't covered by the guide yet.
@@ -188,8 +207,8 @@ Current placeholder values are noted; specify them to replace.
    both themes.
 4. **Elevated floating surfaces** (account-menu popover, chart tooltips):
    derived `#1d2024` dark / `#e6e4f1` light.
-5. **Dark-mode course-card hover**: only light mode (`#eae8f4`) is specified;
-   dark currently hovers with a shadow only.
+5. **Dark-mode course-card hover**: only light mode (`#eae8f4`) is specified
+   (and unused for now — cards hover with a shadow only).
 6. **Dialog backdrop scrim**: `rgba(0,0,0,0.65)` both themes.
 7. **Focus rings / selection**: browser defaults (accent-tinted via
    `accent-color` on checkboxes).
