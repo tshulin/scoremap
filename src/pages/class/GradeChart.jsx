@@ -17,7 +17,13 @@ const padB = 34;
 // work in the selected category keep their dots and hover.
 function GradeChart({ series, activeDates = null, activeType = null }) {
   const [hover, setHover] = React.useState(null);
+  // The focus dot's resting index: keeps the last hovered node so the dot can
+  // slide between nodes (and fade out in place) instead of teleporting.
+  const [dotIndex, setDotIndex] = React.useState(null);
+  // Cursor position in container px — the tooltip follows it (GradeCompass).
+  const [mouse, setMouse] = React.useState({ x: 0, y: 0, flipX: false, flipY: false });
   React.useEffect(() => setHover(null), [activeDates]);
+  React.useEffect(() => setDotIndex(null), [series.length]);
   if (series.length < 2) return null;
 
   const hoverable = (i) => !activeDates || activeDates.has(series[i].date);
@@ -62,6 +68,13 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
       }
     }
     setHover(best);
+    if (best != null) setDotIndex(best);
+    setMouse({
+      x: evt.clientX - rect.left,
+      y: evt.clientY - rect.top,
+      flipX: evt.clientX - rect.left > rect.width * 0.55,
+      flipY: evt.clientY - rect.top > rect.height * 0.55,
+    });
   };
 
   const linePath = grades
@@ -105,10 +118,24 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
                 key={p.date}
                 cx={xAt(i)}
                 cy={yAt(p.grade)}
-                r={hover === i ? 4.5 : 2.6}
+                r={2.6}
                 fill="var(--color-trend-stroke)"
               />
             ),
+        )}
+        {/* focus dot — slides along the line to the hovered node, fades out
+            in place when the cursor leaves (mirrors GradeCompass's chart
+            highlight) */}
+        {dotIndex != null && dotIndex < series.length && (
+          <g
+            style={{
+              transform: `translate(${xAt(dotIndex)}px, ${yAt(series[dotIndex].grade)}px)`,
+              transition: 'transform 180ms cubic-bezier(0.25, 1, 0.5, 1), opacity 150ms ease',
+              opacity: hover != null ? 1 : 0,
+            }}
+          >
+            <circle r="4.5" fill="var(--color-trend-stroke)" />
+          </g>
         )}
         {series.map(
           (p, i) =>
@@ -123,10 +150,13 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
       {hovered && (
         <div
           style={{
+            // Trails the cursor with a soft 80ms lag, like the reference
+            // app's layerchart tooltip; flips to stay inside the chart.
             position: 'absolute',
-            left: `${(xAt(hover) / W) * 100}%`,
-            top: `${(yAt(hovered.grade) / H) * 100}%`,
-            transform: 'translate(-50%, calc(-100% - 10px))',
+            left: mouse.x + 14,
+            top: mouse.y + 14,
+            transform: `${mouse.flipX ? 'translateX(calc(-100% - 28px))' : ''} ${mouse.flipY ? 'translateY(calc(-100% - 28px))' : ''}`.trim() || 'none',
+            transition: 'left 80ms linear, top 80ms linear',
             background: 'var(--color-surface-dark-elevated)',
             border: '1px solid var(--color-hairline-strong)',
             borderRadius: 'var(--radius-md)',

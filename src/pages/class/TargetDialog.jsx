@@ -5,6 +5,7 @@
 // that value and the remaining rows re-solve, so you can play "what if I bomb
 // this one" and watch the others rise. All math in src/calc/multiTarget.
 import React from 'react';
+import GradeNumber from '../../components/GradeNumber.jsx';
 import { inferScale, solveUniformTarget } from '../../calc/index';
 import { Chip, Dialog, ScoreInput, assessmentLike, fmt2, shortDate } from './ui.jsx';
 
@@ -150,7 +151,7 @@ function TargetDialog({ onClose, effective, categories, scale }) {
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
                       {!isLocked && needed !== undefined && (
                         <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-ink)' }}>
-                          needs {fmt2(needed)}{a.pointsPossible !== undefined ? `/${fmt2(a.pointsPossible)}` : ''}
+                          needs <GradeNumber value={needed} suffix={a.pointsPossible !== undefined ? `/${fmt2(a.pointsPossible)}` : ''} />
                         </span>
                       )}
                       {a.extraCredit && !isLocked && (
@@ -201,14 +202,14 @@ function TargetDialog({ onClose, effective, categories, scale }) {
             ) : result && 'allLocked' in result ? (
               <span>
                 With those scores the class lands at{' '}
-                <strong>{fmt2(result.resultingGrade)}%</strong>{' '}
+                <strong><GradeNumber value={result.resultingGrade} /></strong>{' '}
                 <span style={{ color: 'var(--color-muted)' }}>
                   ({result.resultingGrade >= targetPct ? 'meets' : 'misses'} the {fmt2(targetPct)}% target)
                 </span>
               </span>
             ) : result ? (
               <span>
-                Average <strong>{fmt2(result.uniformPct)}%</strong> on the unlocked
+                Average <strong><GradeNumber value={result.uniformPct} /></strong> on the unlocked
                 {result.perAssignment.length === 1 ? ' assignment' : ' assignments'} to finish at{' '}
                 {fmt2(targetPct)}%.
                 {result.uniformPct > 100 && (

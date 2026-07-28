@@ -8,6 +8,7 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import Sidebar from '../components/Sidebar.jsx';
 import TopBar from '../components/TopBar.jsx';
+import GradeNumber from '../components/GradeNumber.jsx';
 import { DeltaValue } from '../components/RefreshDelta.jsx';
 import { useAssignments, useClass, useSyncChanges } from '../data/SyncProvider.jsx';
 // The grade engine runs right here in the browser — the server only supplies
@@ -162,7 +163,7 @@ function ClassDetail() {
                 <div style={{ whiteSpace: 'nowrap' }}>
                   <div style={{ fontSize: 'clamp(24px, 2.8vw, 36px)', fontWeight: 600, letterSpacing: '-0.5px', color: 'var(--color-ink)' }}>
                     {computedGrade != null
-                      ? `${resolveLetter(computedGrade, scale)} ${fmt2(computedGrade)}%`
+                      ? <GradeNumber prefix={`${resolveLetter(computedGrade, scale)} `} value={computedGrade} />
                       : '—'}
                   </div>
                   <div style={{ fontSize: 13, color: 'var(--color-muted)' }}>
@@ -171,7 +172,7 @@ function ClassDetail() {
                 </div>
               ) : (
                 <div style={{ fontSize: 'clamp(24px, 2.8vw, 36px)', fontWeight: 600, letterSpacing: '-0.5px', color: 'var(--color-ink)', whiteSpace: 'nowrap' }}>
-                  {GRADE}
+                  {cls && cls.pct != null ? <GradeNumber prefix={`${cls.grade} `} value={cls.pct} /> : GRADE}
                 </div>
               )
             }

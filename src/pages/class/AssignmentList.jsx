@@ -55,7 +55,7 @@ function ImpactChip({ impact }) {
 function ScoreBar({ pct }) {
   return (
     <div style={{ width: '58.333%', alignSelf: 'flex-end', height: 8, borderRadius: 'var(--radius-pill)', background: 'var(--color-progress-track)', overflow: 'hidden' }}>
-      <div style={{ width: `${pct != null ? Math.min(pct, 100) : 0}%`, height: '100%', background: bandColor(pct ?? 0), borderRadius: 'var(--radius-pill)' }} />
+      <div style={{ width: `${pct != null ? Math.min(pct, 100) : 0}%`, height: '100%', background: bandColor(pct ?? 0), borderRadius: 'var(--radius-pill)', transition: 'width 400ms cubic-bezier(0.22, 1, 0.36, 1), background 400ms ease' }} />
     </div>
   );
 }

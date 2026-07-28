@@ -184,6 +184,7 @@ function MailDetail() {
       {(downloadError || bodyError) && (
         <div
           role="alert"
+          className="gm-fade-in"
           style={{
             margin: '0 0 24px',
             padding: '12px 16px',

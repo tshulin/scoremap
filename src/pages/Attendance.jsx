@@ -164,6 +164,7 @@ function Attendance() {
           {(unreadableAbsences > 0 || meta.attendance.message) && (
             <div
               role="alert"
+              className="gm-fade-in"
               style={{
                 margin: '0 auto 24px',
                 maxWidth: 640,

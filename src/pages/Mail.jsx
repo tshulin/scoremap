@@ -92,6 +92,7 @@ function Mail() {
           {!meta.mail.ok && meta.mail.message && (
             <div
               role="alert"
+              className="gm-fade-in"
               style={{
                 margin: '0 auto 24px',
                 maxWidth: 640,
@@ -112,6 +113,7 @@ function Mail() {
             <div style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
               {meta.mail.placeholder && (
                 <div
+                  className="gm-fade-in"
                   style={{
                     padding: '6px 14px',
                     borderRadius: 'var(--radius-pill)',
@@ -126,6 +128,7 @@ function Mail() {
               )}
               {mail.unreadableMessages > 0 && (
                 <div
+                  className="gm-fade-in"
                   style={{
                     padding: '6px 14px',
                     borderRadius: 'var(--radius-pill)',

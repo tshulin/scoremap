@@ -5,6 +5,7 @@
 // search). Entering remaining points for an empty category (Finals) pulls its
 // weight into the renormalized grade — exactly "how much can finals hurt me".
 import React from 'react';
+import GradeNumber from '../../components/GradeNumber.jsx';
 import { gradeBounds, inferScale, isCalculable, resolveLetter } from '../../calc/index';
 import { scoreBandColor as bandColor } from '../../lib/grades.js';
 import { Check, Dialog, ScoreInput, fmt2 } from './ui.jsx';
@@ -166,7 +167,7 @@ function BoundsDialog({ onClose, baseAssignments, effective, hypothetical, categ
             <span>
               With nothing left to grade, the class stays at{' '}
               <strong style={{ color: bandColor(result.min) }}>
-                {fmt2(result.min)}% ({resolveLetter(result.min, letterScale)})
+                <GradeNumber value={result.min} suffix={`% (${resolveLetter(result.min, letterScale)})`} />
               </strong>
               .
             </span>
@@ -174,11 +175,11 @@ function BoundsDialog({ onClose, baseAssignments, effective, hypothetical, categ
             <span>
               Your final grade lands between{' '}
               <strong style={{ color: bandColor(result.min) }}>
-                {fmt2(result.min)}% ({resolveLetter(result.min, letterScale)})
+                <GradeNumber value={result.min} suffix={`% (${resolveLetter(result.min, letterScale)})`} />
               </strong>{' '}
               and{' '}
               <strong style={{ color: bandColor(result.max) }}>
-                {fmt2(result.max)}% ({resolveLetter(result.max, letterScale)})
+                <GradeNumber value={result.max} suffix={`% (${resolveLetter(result.max, letterScale)})`} />
               </strong>
               .
             </span>
