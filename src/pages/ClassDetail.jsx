@@ -38,10 +38,12 @@ const TABS = [
 ];
 
 // Header type: slightly compact (a step below the old 34px/36px) so the
-// sticky blocks stay narrow and the assignment lane can run wider. Long
-// names step down further, then ellipsize at the width cap.
-const nameFontSize = (name) => (name.length > 24 ? 16 : name.length > 16 ? 20 : 'clamp(22px, 2.2vw, 28px)');
+// sticky blocks stay narrow and the assignment lane can run wider.
+const NAME_FONT = 'clamp(22px, 2.2vw, 28px)';
 const GRADE_FONT = 'clamp(22px, 2.4vw, 30px)';
+// A too-long course name scales down only as far as this fraction of full
+// size; past that it ellipsizes instead of shrinking further.
+const NAME_SCALE_MIN = 0.6;
 
 function ClassDetail() {
   const { classId } = useParams();
@@ -69,35 +71,54 @@ function ClassDetail() {
   const gradePillRef = React.useRef(null);
   const ghostRef = React.useRef(null);
   const [pillMaxW, setPillMaxW] = React.useState(0);
-  // Height of the course-name text (block minus its 8px paddings): the
-  // switcher's grid cell reserves this much on top, so it sits exactly
-  // where the old in-flow header put it (h1, then 10px, then switcher).
-  const [nameH, setNameH] = React.useState(41);
+  // Height of a FULL-SIZE course-name line, measured from the ghosts (never
+  // the live h1): the switcher's grid cell reserves this much on top, so the
+  // switcher stays at the same place even when a long name's font has to
+  // scale down to fit.
+  const [nameH, setNameH] = React.useState(34);
+  // How much the current course name must shrink to fit the block's width
+  // cap — 1 when it fits at full size, and only ever the exact ratio needed
+  // (never below NAME_SCALE_MIN; ellipsis takes over past that).
+  const [nameScale, setNameScale] = React.useState(1);
   React.useLayoutEffect(() => {
     const measure = () => {
-      const n = namePillRef.current ? namePillRef.current.getBoundingClientRect() : null;
       const live = Math.max(
-        n ? n.width : 0,
+        namePillRef.current ? namePillRef.current.getBoundingClientRect().width : 0,
         gradePillRef.current ? gradePillRef.current.getBoundingClientRect().width : 0,
       );
       // +10 so live NumberFlow rendering never edges past the ghost text;
-      // capped at the name block's own 48% width limit.
+      // everything capped at the name block's own 48% width limit (of the
+      // main content box, matching the block's CSS maxWidth).
       let reserved = 0;
       if (ghostRef.current) {
-        for (const el of ghostRef.current.children) {
-          reserved = Math.max(reserved, el.getBoundingClientRect().width + 10);
-        }
         const main = ghostRef.current.closest('main');
-        if (main) reserved = Math.min(reserved, main.clientWidth * 0.48);
+        const mainStyle = main ? getComputedStyle(main) : null;
+        const contentW = main
+          ? main.clientWidth - parseFloat(mainStyle.paddingLeft) - parseFloat(mainStyle.paddingRight)
+          : 0;
+        const cap = contentW ? contentW * 0.48 : Infinity;
+        const ghosts = ghostRef.current.children;
+        for (const el of ghosts) {
+          reserved = Math.max(reserved, Math.min(el.getBoundingClientRect().width + 10, cap));
+        }
+        // Name ghosts (all at full size) come first, one per class.
+        if (ghosts.length > 0 && classes.length > 0) {
+          setNameH(Math.round(ghosts[0].getBoundingClientRect().height));
+          const i = classes.findIndex((c) => c.id === classId);
+          if (i >= 0) {
+            const textW = ghosts[i].getBoundingClientRect().width - 32;
+            const availW = cap - 32;
+            setNameScale(textW > availW ? Math.max(NAME_SCALE_MIN, availW / textW) : 1);
+          }
+        }
       }
       setPillMaxW(Math.ceil(Math.max(live, reserved)));
-      if (n) setNameH(Math.round(n.height - 16));
     };
     measure();
     const ro = new ResizeObserver(measure);
     [namePillRef, gradePillRef, ghostRef].forEach((r) => r.current && ro.observe(r.current));
     return () => ro.disconnect();
-  }, [classes]);
+  }, [classes, classId]);
 
   // Sub-tab state is local — no routing changes.
   const [tab, setTab] = React.useState('assignments');
@@ -205,7 +226,7 @@ function ClassDetail() {
             <h1
               style={{
                 margin: 0,
-                fontSize: nameFontSize(CLASS_NAME),
+                fontSize: nameScale < 1 ? `calc(${NAME_FONT} * ${nameScale.toFixed(3)})` : NAME_FONT,
                 fontWeight: 600,
                 letterSpacing: '-0.7px',
                 lineHeight: 1.2,
@@ -251,8 +272,10 @@ function ClassDetail() {
           </div>
         </div>
 
-        {/* hidden ghosts: every class's name and grade at header type, so the
-            lane can be reserved for the widest one (see measure() above) */}
+        {/* hidden ghosts: every class's name (always at FULL size) and grade
+            at header type. They reserve the lane for the widest class, anchor
+            the switcher's fixed offset, and tell measure() how much the
+            current name must scale to fit. */}
         <div
           ref={ghostRef}
           aria-hidden="true"
@@ -261,7 +284,7 @@ function ClassDetail() {
           {classes.map((c) => (
             <span
               key={`ghost-name-${c.id}`}
-              style={{ display: 'inline-block', padding: '0 16px', fontFamily: 'var(--font-sans)', fontSize: nameFontSize(c.name), fontWeight: 600, letterSpacing: '-0.7px' }}
+              style={{ display: 'inline-block', padding: '0 16px', fontFamily: 'var(--font-sans)', fontSize: NAME_FONT, fontWeight: 600, letterSpacing: '-0.7px', lineHeight: 1.2 }}
             >
               {c.name}
             </span>
