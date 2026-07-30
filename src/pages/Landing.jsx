@@ -13,14 +13,16 @@
  * `window.Landing = Landing` line and add `export default Landing`.
  */
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   TopNav, HeroBand, BrowserMockup, Button, Badge,
   FeatureCard,
 } from '../lib/ds.js';
+import PrivacyDialog from '../components/PrivacyDialog.jsx';
 
 function Landing() {
   const navigate = useNavigate();
+  const [privacyOpen, setPrivacyOpen] = React.useState(false);
 
   function DashboardPreview() {
     const rows = [
@@ -92,8 +94,16 @@ function Landing() {
             Daily attendance breakdown, missed periods, report cards, documents, and mail — all in one place.
           </FeatureCard>
           <FeatureCard title="Private login">
-            Your device connects directly to StudentVUE. We never see your password or your grades.{' '}
-            <Link to="/privacy">Learn more ↗</Link>
+            Your password, login info, and grades are only seen by StudentVUE and you.{' '}
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setPrivacyOpen(true);
+              }}
+            >
+              Learn more ↗
+            </a>
           </FeatureCard>
         </div>
       </div>
@@ -110,6 +120,8 @@ function Landing() {
           © 2026 Grademax. Not affiliated with Edupoint or StudentVUE.
         </div>
       </div>
+
+      {privacyOpen && <PrivacyDialog onClose={() => setPrivacyOpen(false)} />}
     </div>
   );
 }

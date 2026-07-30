@@ -11,6 +11,41 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useClasses, useSession, useSignOut } from '../data/SyncProvider.jsx';
 import { SunIcon, MoonIcon, LogOutIcon } from '../lib/icons.jsx';
+import PrivacyDialog from './PrivacyDialog.jsx';
+
+// Module-level (not inside Sidebar): a component defined inside the render
+// function gets a new identity every render, so React remounts its DOM node —
+// which kills in-flight CSS transitions (the sun/moon rotate swap) and resets
+// the gm-press-pop click feedback.
+function IconButton({ label, onClick, className, onAnimationEnd, children }) {
+  const [hov, setHov] = React.useState(false);
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      className={className}
+      onAnimationEnd={onAnimationEnd}
+      aria-label={label}
+      title={label}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 30,
+        height: 30,
+        flexShrink: 0,
+        border: 'none',
+        borderRadius: 'var(--radius-sm)',
+        background: hov ? 'var(--color-hairline)' : 'transparent',
+        color: 'var(--color-body)',
+        cursor: 'pointer',
+      }}
+    >
+      {children}
+    </button>
+  );
+}
 
 function Sidebar() {
   const classes = useClasses();
@@ -19,14 +54,16 @@ function Sidebar() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
-  const [menuOpen, setMenuOpen] = React.useState(false);
+  const [privacyOpen, setPrivacyOpen] = React.useState(false);
+  // True while the theme button plays its click-feedback pop (gm-press-pop);
+  // cleared on animationend so every click re-triggers it.
+  const [themePop, setThemePop] = React.useState(false);
   const [theme, setTheme] = React.useState(
     () => (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) || 'dark',
   );
 
-  // Deliberately leaves the menu open (GradeCompass does the same): the
-  // sun/moon icon rotates through the swap and the flip is visible in place.
   const toggleTheme = () => {
+    setThemePop(true);
     const next = theme === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
     try {
@@ -69,41 +106,9 @@ function Sidebar() {
   );
 
   const handleLogout = async () => {
-    setMenuOpen(false);
     await signOut();
     navigate('/login');
   };
-
-  function MenuRow({ icon, label, onClick }) {
-    const [hov, setHov] = React.useState(false);
-    return (
-      <button
-        onClick={onClick}
-        onMouseEnter={() => setHov(true)}
-        onMouseLeave={() => setHov(false)}
-        role="menuitem"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          width: '100%',
-          padding: '9px 10px',
-          border: 'none',
-          borderRadius: 'var(--radius-sm)',
-          background: hov ? 'var(--color-hairline)' : 'transparent',
-          color: 'var(--color-ink)',
-          fontFamily: 'var(--font-sans)',
-          fontSize: 14,
-          fontWeight: 500,
-          cursor: 'pointer',
-          textAlign: 'left',
-        }}
-      >
-        <span style={{ display: 'inline-flex', color: 'var(--color-body)' }}>{icon}</span>
-        {label}
-      </button>
-    );
-  }
 
   // Derive the active section + class straight from the URL.
   let section = 'grades';
@@ -175,7 +180,7 @@ function Sidebar() {
 
       <button
         type="button"
-        onClick={() => navigate('/privacy')}
+        onClick={() => setPrivacyOpen(true)}
         style={{
           width: '100%',
           background: 'var(--color-surface-card)',
@@ -191,70 +196,48 @@ function Sidebar() {
           cursor: 'pointer',
         }}
       >
-        Your password and grades are private and stored on-device.
+        Your password, login info, and grades are only seen by StudentVUE and you.
       </button>
 
       <NavItem label="Feedback" />
-      <div style={{ position: 'relative', marginTop: 4 }}>
-        {menuOpen && (
-          <>
-            {/* click-away overlay */}
-            <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
-            <div
-              role="menu"
-              className="gm-pop-in"
-              style={{
-                position: 'absolute',
-                bottom: 'calc(100% + 6px)',
-                left: 8,
-                right: 8,
-                zIndex: 41,
-                background: 'var(--color-surface-dark-elevated)',
-                border: '1px solid var(--color-hairline-strong)',
-                borderRadius: 'var(--radius-lg)',
-                boxShadow: 'var(--shadow-soft-drop)',
-                padding: 6,
-              }}
-            >
-              <MenuRow
-                icon={themeIcon}
-                label={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-                onClick={toggleTheme}
-              />
-              <MenuRow icon={<LogOutIcon size={16} />} label="Log Out" onClick={handleLogout} />
-            </div>
-          </>
-        )}
-        <div
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 4,
+          padding: '10px 8px 10px 12px',
+          borderTop: '1px solid var(--color-hairline)',
+          marginTop: 4,
+        }}
+      >
+        <span
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '10px 12px',
-            borderTop: '1px solid var(--color-hairline)',
+            flex: 1,
+            minWidth: 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            fontSize: 14,
+            fontWeight: 500,
+            color: 'var(--color-ink)',
           }}
         >
-          <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-ink)' }}>{session.studentName}</span>
-          <button
-            onClick={() => setMenuOpen((o) => !o)}
-            aria-label="Account menu"
-            aria-haspopup="true"
-            aria-expanded={menuOpen}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              color: 'var(--color-muted)',
-              cursor: 'pointer',
-              fontSize: 18,
-              lineHeight: 1,
-              padding: '2px 6px',
-              borderRadius: 'var(--radius-sm)',
-            }}
-          >
-            ⋮
-          </button>
-        </div>
+          {session.studentName}
+        </span>
+        <IconButton
+          label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          onClick={toggleTheme}
+          className={themePop ? 'gm-press-pop' : undefined}
+          onAnimationEnd={() => setThemePop(false)}
+        >
+          {themeIcon}
+        </IconButton>
+        <IconButton label="Log out" onClick={handleLogout}>
+          <LogOutIcon size={16} />
+        </IconButton>
       </div>
+
+      {privacyOpen && <PrivacyDialog onClose={() => setPrivacyOpen(false)} />}
     </aside>
   );
 }
