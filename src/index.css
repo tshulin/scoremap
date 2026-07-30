@@ -160,6 +160,18 @@ body {
   animation: gm-press-pop 300ms ease;
 }
 
+/* Chart draw-in: the series (line, area fill, dots) sweeps in left→right via
+   a clip reveal when a class page or the overview opens, and again after a
+   refresh. Axes and gridlines stay put — only the data draws itself. */
+@keyframes gm-chart-draw {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+.gm-chart-draw {
+  animation: gm-chart-draw 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 a {
   color: var(--color-text-link);
   text-decoration: none;
