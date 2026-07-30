@@ -146,6 +146,20 @@ body {
   animation: gm-pop-in 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Click feedback for icon buttons (sidebar theme toggle): squish down and
+   spring back with a small overshoot. Re-triggered per click by toggling the
+   class off on animationend. */
+@keyframes gm-press-pop {
+  0% { transform: scale(1); }
+  35% { transform: scale(0.8); }
+  70% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+.gm-press-pop {
+  animation: gm-press-pop 300ms ease;
+}
+
 a {
   color: var(--color-text-link);
   text-decoration: none;
