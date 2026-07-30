@@ -7,16 +7,18 @@ import React from 'react';
 import { scoreBandColor as bandColor } from '../../lib/grades.js';
 import { Chip, ScoreInput, TextInputSmall, assessmentLike, fmt2, signed } from './ui.jsx';
 
+// Compact cards: the list lives in the narrowed lane between the sticky
+// name/grade pills, so each card keeps a tighter padding and wrap basis.
 const rowCard = {
   background: 'var(--color-surface-card)',
   border: '1px solid var(--color-hairline-strong)',
   borderRadius: 'var(--radius-xl)',
-  padding: '20px 24px',
+  padding: '12px 16px',
   boxSizing: 'border-box',
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  gap: 24,
+  gap: 16,
   flexWrap: 'wrap',
 };
 
@@ -259,7 +261,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
             {uncounted && <Chip tone="warn">pick a category to include this</Chip>}
           </div>
         </div>
-        <div style={{ flex: '1 1 420px', maxWidth: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>
+        <div style={{ flex: '1 1 220px', maxWidth: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 10 }}>
           <div style={metricRow}>
             <ImpactChip impact={impact} />
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, textAlign: 'right' }}>
@@ -316,7 +318,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
     return (
       <div key={`${a.title}-${i}`} style={rowCard}>
         <div style={{ minWidth: 0, flex: '1 1 240px' }}>
-          <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)', marginBottom: 10 }}>{a.title}</div>
+          <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-ink)', marginBottom: 8 }}>{a.title}</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
             {editable && categoryOptions.length > 0 ? (
               <CategorySelect
@@ -351,7 +353,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
             )}
           </div>
         </div>
-        <div style={{ flex: '1 1 420px', maxWidth: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>
+        <div style={{ flex: '1 1 220px', maxWidth: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 10 }}>
           <div style={metricRow}>
             <ImpactChip impact={impact} />
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textAlign: 'right' }}>
@@ -382,7 +384,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
         </div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {/* one click, one blank row — edited in place like everything else */}
         {hypothetical && (
           <button
@@ -391,7 +393,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
               ...rowCard,
               border: '1px dashed var(--color-hairline-strong)',
               justifyContent: 'center',
-              padding: '16px 24px',
+              padding: '12px 16px',
               cursor: 'pointer',
               color: 'var(--color-body)',
               fontFamily: 'var(--font-sans)',
@@ -418,7 +420,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
           hiddenRows.map((d) => (
             <div key={`hidden-${d.category}`} style={{ ...rowCard, opacity: 0.9 }}>
               <div style={{ minWidth: 0, flex: '1 1 240px' }}>
-                <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--color-ink)', marginBottom: 10 }}>
+                <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-ink)', marginBottom: 8 }}>
                   Point discrepancy in {d.category}
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>

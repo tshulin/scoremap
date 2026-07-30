@@ -7,10 +7,10 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import Sidebar from '../components/Sidebar.jsx';
-import TopBar from '../components/TopBar.jsx';
+import SyncPill from '../components/SyncPill.jsx';
 import GradeNumber from '../components/GradeNumber.jsx';
 import { DeltaValue } from '../components/RefreshDelta.jsx';
-import { useAssignments, useClass, useSyncChanges } from '../data/SyncProvider.jsx';
+import { useAssignments, useClass, useClasses, useSyncChanges } from '../data/SyncProvider.jsx';
 // The grade engine runs right here in the browser — the server only supplies
 // the assignment data.
 import {
@@ -37,6 +37,12 @@ const TABS = [
   ['index', 'Grade index'],
 ];
 
+// Header type: slightly compact (a step below the old 34px/36px) so the
+// sticky blocks stay narrow and the assignment lane can run wider. Long
+// names step down further, then ellipsize at the width cap.
+const nameFontSize = (name) => (name.length > 24 ? 16 : name.length > 16 ? 20 : 'clamp(22px, 2.2vw, 28px)');
+const GRADE_FONT = 'clamp(22px, 2.4vw, 30px)';
+
 function ClassDetail() {
   const { classId } = useParams();
   const cls = useClass(classId);
@@ -51,6 +57,47 @@ function ClassDetail() {
   const { hypothetical, effective } = scenario;
   // Per-class letter scale: portal letters observed on sync, overridable.
   const { scale } = useGradeIndex(classId);
+
+  // Sticky-header geometry. Both header blocks hug their own text (the name
+  // block sizes to the course name, GradeCompass-style). The assignment lane,
+  // however, is reserved against the WIDEST header block any of the student's
+  // classes could need (hidden ghost spans below measure them all), so every
+  // class page shows assignments at the same width; the live blocks only
+  // widen it further in edge cases (e.g. the hypothetical sub-line).
+  const classes = useClasses();
+  const namePillRef = React.useRef(null);
+  const gradePillRef = React.useRef(null);
+  const ghostRef = React.useRef(null);
+  const [pillMaxW, setPillMaxW] = React.useState(0);
+  // Height of the course-name text (block minus its 8px paddings): the
+  // switcher's grid cell reserves this much on top, so it sits exactly
+  // where the old in-flow header put it (h1, then 10px, then switcher).
+  const [nameH, setNameH] = React.useState(41);
+  React.useLayoutEffect(() => {
+    const measure = () => {
+      const n = namePillRef.current ? namePillRef.current.getBoundingClientRect() : null;
+      const live = Math.max(
+        n ? n.width : 0,
+        gradePillRef.current ? gradePillRef.current.getBoundingClientRect().width : 0,
+      );
+      // +10 so live NumberFlow rendering never edges past the ghost text;
+      // capped at the name block's own 48% width limit.
+      let reserved = 0;
+      if (ghostRef.current) {
+        for (const el of ghostRef.current.children) {
+          reserved = Math.max(reserved, el.getBoundingClientRect().width + 10);
+        }
+        const main = ghostRef.current.closest('main');
+        if (main) reserved = Math.min(reserved, main.clientWidth * 0.48);
+      }
+      setPillMaxW(Math.ceil(Math.max(live, reserved)));
+      if (n) setNameH(Math.round(n.height - 16));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    [namePillRef, gradePillRef, ghostRef].forEach((r) => r.current && ro.observe(r.current));
+    return () => ro.disconnect();
+  }, [classes]);
 
   // Sub-tab state is local — no routing changes.
   const [tab, setTab] = React.useState('assignments');
@@ -112,73 +159,174 @@ function ClassDetail() {
       <Sidebar />
 
       <main style={{ flex: 1, padding: '32px 40px 64px', boxSizing: 'border-box' }}>
-        {/* top bar: class name · refresh pill (tabs beneath it) · grade.
-            Spans the graph's width — the course name's left edge lines up
-            with the y-axis numbers, the grade's right edge with the chart's
-            right edge. */}
-        <TopBar
-            pillScope="gradebook"
-            pillDelta={deltaLine}
-            left={
+        {/* GradeCompass pinned header, copied from their class page: the
+            name and grade blocks carry the PAGE background (bg-background),
+            no border or shadow — invisible at rest, so the unscrolled page
+            looks exactly like the plain-text header. On scroll the row pins
+            flush to the top and content simply vanishes behind the
+            page-colored blocks (rounded on the bottom corners only, like
+            their rounded-br-xl / rounded-bl-xl). Each block hugs its own
+            text, so the highlight is exactly as wide as the course name;
+            negative side margins keep the text at the same position the
+            bare header had while letting the background bleed past it. */}
+        <div
+          style={{
+            position: 'sticky',
+            // Pins 8px down so the blocks (pulled up 8px by their negative
+            // top margin, putting the text where the padding-less header
+            // used to sit) end up flush with the viewport top when stuck.
+            top: 8,
+            zIndex: 20,
+            // Zero height: the blocks overflow this box, so the row pins
+            // without reserving vertical space — the header band below sets
+            // the flow height, exactly like the old TopBar grid.
+            height: 0,
+            overflow: 'visible',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            gap: 16,
+            pointerEvents: 'none',
+          }}
+        >
+          <div
+            ref={namePillRef}
+            style={{
+              pointerEvents: 'auto',
+              boxSizing: 'border-box',
+              maxWidth: '48%',
+              marginTop: -8,
+              marginLeft: -16,
+              padding: '8px 16px',
+              background: 'var(--color-canvas)',
+              borderRadius: '0 0 var(--radius-lg) 0',
+            }}
+          >
+            <h1
+              style={{
+                margin: 0,
+                fontSize: nameFontSize(CLASS_NAME),
+                fontWeight: 600,
+                letterSpacing: '-0.7px',
+                lineHeight: 1.2,
+                color: 'var(--color-ink)',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {CLASS_NAME}
+            </h1>
+          </div>
+          <div
+            ref={gradePillRef}
+            style={{
+              pointerEvents: 'auto',
+              boxSizing: 'border-box',
+              marginTop: -8,
+              marginRight: -16,
+              padding: '8px 16px',
+              background: 'var(--color-canvas)',
+              borderRadius: '0 0 0 var(--radius-lg)',
+              textAlign: 'right',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {hypothetical ? (
               <div>
-                <h1 style={{ margin: 0, fontSize: 'clamp(24px, 2.6vw, 34px)', fontWeight: 600, letterSpacing: '-0.7px', lineHeight: 1.2, color: 'var(--color-ink)' }}>
-                  {CLASS_NAME}
-                </h1>
-                {/* compact section switcher, flush with the course name's left edge */}
-                <nav
-                  aria-label="Class sections"
+                <div style={{ fontSize: GRADE_FONT, fontWeight: 600, letterSpacing: '-0.5px', color: 'var(--color-ink)' }}>
+                  {computedGrade != null
+                    ? <GradeNumber prefix={`${resolveLetter(computedGrade, scale)} `} value={computedGrade} />
+                    : '—'}
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--color-muted)' }}>
+                  hypothetical · official: {GRADE || '—'}
+                </div>
+              </div>
+            ) : (
+              <div style={{ fontSize: GRADE_FONT, fontWeight: 600, letterSpacing: '-0.5px', color: 'var(--color-ink)' }}>
+                {cls && cls.pct != null ? <GradeNumber prefix={`${cls.grade} `} value={cls.pct} /> : GRADE}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* hidden ghosts: every class's name and grade at header type, so the
+            lane can be reserved for the widest one (see measure() above) */}
+        <div
+          ref={ghostRef}
+          aria-hidden="true"
+          style={{ position: 'absolute', visibility: 'hidden', height: 0, overflow: 'hidden', pointerEvents: 'none', whiteSpace: 'nowrap' }}
+        >
+          {classes.map((c) => (
+            <span
+              key={`ghost-name-${c.id}`}
+              style={{ display: 'inline-block', padding: '0 16px', fontFamily: 'var(--font-sans)', fontSize: nameFontSize(c.name), fontWeight: 600, letterSpacing: '-0.7px' }}
+            >
+              {c.name}
+            </span>
+          ))}
+          {classes.map((c) => (
+            <span
+              key={`ghost-grade-${c.id}`}
+              style={{ display: 'inline-block', padding: '0 16px', fontFamily: 'var(--font-sans)', fontSize: GRADE_FONT, fontWeight: 600, letterSpacing: '-0.5px' }}
+            >
+              {c.pct != null ? `${c.grade} ${c.pct}%` : '—'}
+            </span>
+          ))}
+        </div>
+
+        {/* header band, same grid as the old TopBar: the switcher (offset by
+            the course name's height, as if the h1 were still above it) and
+            SyncPill's in-flow spacer share one row, so everything below
+            starts at the same height it did before the sticky header. */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr auto 1fr',
+            alignItems: 'start',
+            columnGap: 24,
+            marginBottom: 8,
+          }}
+        >
+          <div style={{ minWidth: 0, justifySelf: 'start', paddingTop: nameH + 10 }}>
+            {/* compact section switcher — scrolls away under the name block */}
+            <nav
+              aria-label="Class sections"
+              style={{
+                display: 'inline-flex',
+                gap: 2,
+                padding: 3,
+                borderRadius: 'var(--radius-pill)',
+                background: 'var(--color-surface-card)',
+                border: '1px solid var(--color-hairline-strong)',
+              }}
+            >
+              {TABS.map(([id, label]) => (
+                <button
+                  key={id}
+                  onClick={() => setTab(id)}
                   style={{
-                    display: 'inline-flex',
-                    gap: 2,
-                    padding: 3,
-                    marginTop: 10,
+                    padding: '4px 10px',
                     borderRadius: 'var(--radius-pill)',
-                    background: 'var(--color-surface-card)',
-                    border: '1px solid var(--color-hairline-strong)',
+                    border: 'none',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: 12,
+                    fontWeight: 500,
+                    background: tab === id ? 'var(--color-surface-dark-elevated)' : 'transparent',
+                    color: tab === id ? 'var(--color-ink)' : 'var(--color-text-meta)',
                   }}
                 >
-                  {TABS.map(([id, label]) => (
-                    <button
-                      key={id}
-                      onClick={() => setTab(id)}
-                      style={{
-                        padding: '4px 10px',
-                        borderRadius: 'var(--radius-pill)',
-                        border: 'none',
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap',
-                        fontFamily: 'var(--font-sans)',
-                        fontSize: 12,
-                        fontWeight: 500,
-                        background: tab === id ? 'var(--color-surface-dark-elevated)' : 'transparent',
-                        color: tab === id ? 'var(--color-ink)' : 'var(--color-text-meta)',
-                      }}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </nav>
-              </div>
-            }
-            right={
-              hypothetical ? (
-                <div style={{ whiteSpace: 'nowrap' }}>
-                  <div style={{ fontSize: 'clamp(24px, 2.8vw, 36px)', fontWeight: 600, letterSpacing: '-0.5px', color: 'var(--color-ink)' }}>
-                    {computedGrade != null
-                      ? <GradeNumber prefix={`${resolveLetter(computedGrade, scale)} `} value={computedGrade} />
-                      : '—'}
-                  </div>
-                  <div style={{ fontSize: 13, color: 'var(--color-muted)' }}>
-                    hypothetical · official: {GRADE || '—'}
-                  </div>
-                </div>
-              ) : (
-                <div style={{ fontSize: 'clamp(24px, 2.8vw, 36px)', fontWeight: 600, letterSpacing: '-0.5px', color: 'var(--color-ink)', whiteSpace: 'nowrap' }}>
-                  {cls && cls.pct != null ? <GradeNumber prefix={`${cls.grade} `} value={cls.pct} /> : GRADE}
-                </div>
-              )
-            }
-        />
+                  {label}
+                </button>
+              ))}
+            </nav>
+          </div>
+          <SyncPill scope="gradebook" delta={deltaLine} avoid={namePillRef} />
+          <div />
+        </div>
 
         {tab === 'assignments' && (
           <>
@@ -206,7 +354,15 @@ function ClassDetail() {
               </div>
             </div>
 
-            <div style={{ maxWidth: 1160, margin: '0 auto' }}>
+            {/* centered lane no wider than the space between the sticky
+                pills (small gap each side), so a card scrolling up is never
+                covered by the name or grade pill */}
+            <div
+              style={{
+                maxWidth: pillMaxW ? `max(360px, calc(100% - ${(pillMaxW + 12) * 2}px))` : 1160,
+                margin: '0 auto',
+              }}
+            >
               <AssignmentList
                 assignments={ASSIGNMENTS}
                 categories={categories}
