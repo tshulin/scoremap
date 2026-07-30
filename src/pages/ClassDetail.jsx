@@ -334,7 +334,11 @@ function ClassDetail() {
                 and added hypotheticals visibly reshape the line. The chart runs
                 the full main width (GradeCompass-style); the cards below keep
                 the readable cap. */}
+            {/* keyed by class so switching classes remounts the chart and
+                replays the left→right draw-in (refreshes replay it via the
+                sync timestamp inside) */}
             <GradeChart
+              key={classId}
               series={series}
               activeDates={activeDates}
               activeType={filter === 'All' ? null : filter}
@@ -377,7 +381,10 @@ function ClassDetail() {
         )}
 
         {tab === 'overview' && (
+          // keyed by class: switching classes remounts the tab (replaying the
+          // chart draw-in) and drops the previous class's what-if overrides
           <OverviewTab
+            key={classId}
             assignments={effective}
             categories={categories}
             hiddenRows={hiddenRows}

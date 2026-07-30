@@ -6,6 +6,7 @@
 // cumulative line follows.
 import React from 'react';
 import { gradeSeries } from '../../calc/index';
+import { useSession } from '../../data/SyncProvider.jsx';
 import { fmt2, shortDate, todayIso, weekdayDate } from './ui.jsx';
 import { useCursorTooltip } from './useCursorTooltip.js';
 
@@ -30,6 +31,11 @@ const padB = 34;
 const NO_OVERRIDES = new Map();
 
 function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES }) {
+  // Remounting the draw group replays the left→right sweep: opening the tab
+  // mounts it, a refresh changes the key, and ClassDetail keys the tab by
+  // class. Legend toggles and what-if edits don't replay it.
+  const session = useSession();
+  const drawKey = session.lastUpdated ?? 'init';
   const weighted = !!(categories && categories.length > 0);
   const [hidden, setHidden] = React.useState(() => new Set());
   const [hover, setHover] = React.useState(null);
@@ -211,29 +217,31 @@ function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES
           {hover != null && (
             <line x1={xAt(hover)} y1={padT} x2={xAt(hover)} y2={H - padB} stroke="var(--color-hairline-strong)" strokeWidth="1" />
           )}
-          {visibleLines.map((l) => {
-            const solid = l.dashedFrom != null ? l.points.slice(0, l.dashedFrom + 1) : l.points;
-            const dashed = l.dashedFrom != null ? l.points.slice(l.dashedFrom) : [];
-            return (
-              <g key={l.key}>
-                {solid.length > 1 && (
-                  <path d={pathFor(solid)} fill="none" stroke={l.color} strokeWidth={l.width} strokeLinejoin="round" strokeLinecap="round" />
-                )}
-                {dashed.length > 1 && (
-                  <path d={pathFor(dashed)} fill="none" stroke={l.color} strokeWidth={l.width} strokeDasharray="5 4" strokeLinejoin="round" strokeLinecap="round" />
-                )}
-                {l.points.map((p) => (
-                  <circle
-                    key={p.date}
-                    cx={xAt(dateIndex.get(p.date))}
-                    cy={yAt(p.grade)}
-                    r={hoverDate === p.date ? 4.5 : 3}
-                    fill={l.color}
-                  />
-                ))}
-              </g>
-            );
-          })}
+          <g key={drawKey} className="gm-chart-draw">
+            {visibleLines.map((l) => {
+              const solid = l.dashedFrom != null ? l.points.slice(0, l.dashedFrom + 1) : l.points;
+              const dashed = l.dashedFrom != null ? l.points.slice(l.dashedFrom) : [];
+              return (
+                <g key={l.key}>
+                  {solid.length > 1 && (
+                    <path d={pathFor(solid)} fill="none" stroke={l.color} strokeWidth={l.width} strokeLinejoin="round" strokeLinecap="round" />
+                  )}
+                  {dashed.length > 1 && (
+                    <path d={pathFor(dashed)} fill="none" stroke={l.color} strokeWidth={l.width} strokeDasharray="5 4" strokeLinejoin="round" strokeLinecap="round" />
+                  )}
+                  {l.points.map((p) => (
+                    <circle
+                      key={p.date}
+                      cx={xAt(dateIndex.get(p.date))}
+                      cy={yAt(p.grade)}
+                      r={hoverDate === p.date ? 4.5 : 3}
+                      fill={l.color}
+                    />
+                  ))}
+                </g>
+              );
+            })}
+          </g>
           {dates.map(
             (d, i) =>
               labeled.has(i) && (

@@ -3,6 +3,7 @@
 // score changes the "past" — inherent to a derived series, and how
 // GradeCompass behaved too. Renders only with 2+ points.
 import React from 'react';
+import { useSession } from '../../data/SyncProvider.jsx';
 import { fmt2, shortDate, signed, weekdayDate } from './ui.jsx';
 import { useCursorTooltip } from './useCursorTooltip.js';
 
@@ -21,6 +22,11 @@ const padB = 34;
 // line keeps its shape (the grade history doesn't change), but only dates with
 // work in the selected category keep their dots and hover.
 function GradeChart({ series, activeDates = null, activeType = null }) {
+  // Remounting the draw group replays the left→right sweep: the key changes
+  // when a refresh lands (ClassDetail keys the whole chart by class, which
+  // covers switching classes). Hypothetical edits don't replay it.
+  const session = useSession();
+  const drawKey = session.lastUpdated ?? 'init';
   const [hover, setHover] = React.useState(null);
   // The focus dot's resting index: keeps the last hovered node so the dot can
   // slide between nodes (and fade out in place) instead of teleporting.
@@ -125,20 +131,22 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
             </text>
           </g>
         ))}
-        <path d={areaPath} fill="url(#gradeFill)" />
-        <path d={linePath} fill="none" stroke="var(--color-trend-stroke)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-        {series.map(
-          (p, i) =>
-            hoverable(i) && (
-              <circle
-                key={p.date}
-                cx={xAt(i)}
-                cy={yAt(p.grade)}
-                r={2.6}
-                fill="var(--color-trend-stroke)"
-              />
-            ),
-        )}
+        <g key={drawKey} className="gm-chart-draw">
+          <path d={areaPath} fill="url(#gradeFill)" />
+          <path d={linePath} fill="none" stroke="var(--color-trend-stroke)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+          {series.map(
+            (p, i) =>
+              hoverable(i) && (
+                <circle
+                  key={p.date}
+                  cx={xAt(i)}
+                  cy={yAt(p.grade)}
+                  r={2.6}
+                  fill="var(--color-trend-stroke)"
+                />
+              ),
+          )}
+        </g>
         {/* focus dot — slides along the line to the hovered node, fades out
             in place when the cursor leaves (mirrors GradeCompass's chart
             highlight) */}
