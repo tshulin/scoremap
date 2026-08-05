@@ -22,8 +22,10 @@ const SyncContext = createContext(null);
 // Read once per mount, not per render.
 const restored = () => (api.hasToken() ? api.recallSnapshot() : null);
 
-// A boot sync is skipped when the mirror is at most this old.
-const AUTO_SYNC_MIN_AGE_MS = 60_000;
+// A boot sync is skipped when the mirror is at most this old — just enough to
+// keep held-down F5 from burning the relay's per-minute connection budget;
+// any human-paced revisit refreshes.
+const AUTO_SYNC_MIN_AGE_MS = 15_000;
 
 // Per-class grade movement between the previous completed sync and the
 // latest one: [{ id, name, delta }] for every class whose percentage moved.
