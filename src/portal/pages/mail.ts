@@ -17,7 +17,7 @@ import { portalUrl, validate } from './shared';
 
 // Synergy Mail is a knockout app, not a scraped grid: PXP2_Messages.aspx is a
 // shell whose bundle calls this JSON service. The Bearer value is the literal
-// constant the portal seeds into ST.Authorization — the real credential is the
+// constant the portal seeds into ST.Authorization - the real credential is the
 // session cookie. PORTAL=3 identifies StudentVUE (ST.CurrentWebPortal).
 const SERVICE = 'st_api/ST.Messaging';
 const PORTAL = 3;
@@ -26,7 +26,7 @@ const DOWNLOAD_PAGE = 'FileDownload.aspx';
 const ATTACHMENT_DB_ID = 3;
 
 // One list call, and nothing else. Each body is its own round trip, so the
-// mailbox deliberately loads none of them up front — a body is fetched only when
+// mailbox deliberately loads none of them up front - a body is fetched only when
 // the student actually opens that message (fetchMailMessage). Prefetching the
 // visible ones bought inline previews on the list at a cost of eight extra
 // requests per sync, which was more than the rest of the sync combined; every

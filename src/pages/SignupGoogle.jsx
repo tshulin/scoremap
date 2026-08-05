@@ -1,5 +1,5 @@
 /**
- * SignupGoogle — "Create a password" explainer (route: /signup/google).
+ * SignupGoogle - "Create a password" explainer (route: /signup/google).
  *
  * Where "with Google" leads: Scoremap can't federate Google sign-in into
  * StudentVUE, so it explains the student must create a StudentVUE password.

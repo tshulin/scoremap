@@ -1,7 +1,7 @@
 // Per-class letter cutoffs, learned from the portal's own letters. The portal
 // applies each teacher's scale server-side and only shows results, so we
-// OBSERVE (percentage, letter) pairs on every successful sync — the course
-// mark and each category's — and keep the extremes per letter. Each new synced
+// OBSERVE (percentage, letter) pairs on every successful sync - the course
+// mark and each category's - and keep the extremes per letter. Each new synced
 // grade tightens the inferred scale automatically; student overrides live in
 // the same store and win over everything (src/calc/letters does the math).
 // localStorage, keyed by class id; in-memory fallback when storage is blocked.
@@ -46,7 +46,7 @@ export function harvestFromClasses(classes) {
   let changed = false;
   for (const cls of classes ?? []) {
     const incoming = [];
-    if (cls.grade && cls.grade !== '—' && cls.pct != null) {
+    if (cls.grade && cls.grade !== 'N/A' && cls.pct != null) {
       incoming.push({ pct: cls.pct, letter: cls.grade });
     }
     for (const cat of cls.categories ?? []) {

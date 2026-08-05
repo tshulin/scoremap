@@ -1,8 +1,8 @@
-// SyncProvider — owns the signed-in session and the synced data.
+// SyncProvider - owns the signed-in session and the synced data.
 //
 // Status: 'signedOut' | 'syncing' | 'ready' | 'error'. On mount, a saved
 // sign-in (api.js) paints the mirrored snapshot immediately and refreshes it
-// with a background sync — the auto sign-in: stale grades first, fresh grades
+// with a background sync - the auto sign-in: stale grades first, fresh grades
 // animate in when the sync lands (NumberFlow, the chart sweep, the change
 // ticker are all keyed on the data). A 401 clears the sign-in and drops back
 // to signedOut; anything else keeps the cached data on screen with an error.
@@ -22,7 +22,7 @@ const SyncContext = createContext(null);
 // Read once per mount, not per render.
 const restored = () => (api.hasToken() ? api.recallSnapshot() : null);
 
-// A boot sync is skipped when the mirror is at most this old — just enough to
+// A boot sync is skipped when the mirror is at most this old - just enough to
 // keep held-down F5 from burning the relay's per-minute connection budget;
 // any human-paced revisit refreshes.
 const AUTO_SYNC_MIN_AGE_MS = 15_000;
@@ -61,7 +61,7 @@ export function SyncProvider({ children }) {
   }, []);
 
   // A scoped sync merges over what the app already holds, and runSync is a
-  // stable callback — so it reads the current snapshot from a ref rather than
+  // stable callback - so it reads the current snapshot from a ref rather than
   // closing over a stale `data`.
   const latest = useRef(cached || emptySnapshot);
   const store = useCallback((snapshot) => {
@@ -76,7 +76,7 @@ export function SyncProvider({ children }) {
     try {
       const fresh = await syncStudentVue(knownStudent, { scope, previous: latest.current });
       if (!alive.current) return fresh;
-      // Deltas only when this sync actually re-fetched the gradebook — a
+      // Deltas only when this sync actually re-fetched the gradebook - a
       // mail/attendance-scoped refresh reuses the merged classes untouched
       // and must not overwrite the last real comparison.
       if (!scope || scope.includes('gradebook')) {
@@ -157,7 +157,7 @@ function useSync() {
 export const useSession = () => useSync().session;
 export const useClasses = () => useSync().classes;
 export const useSemesters = () => useSync().semesters;
-// { list: [{ id, name, delta }], baseline } — grade movement since the
+// { list: [{ id, name, delta }], baseline } - grade movement since the
 // previous sync; baseline is false until there has been a second sync.
 export const useSyncChanges = () => useSync().changes;
 export const useAttendance = () => useSync().attendance;

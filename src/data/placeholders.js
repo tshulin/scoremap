@@ -1,5 +1,5 @@
 // Sample data so the Grades and Attendance UIs can be built and demoed before the
-// term provides real data — and so the day real data arrives, it drops straight in
+// term provides real data - and so the day real data arrives, it drops straight in
 // with no UI work. Gated behind VITE_PLACEHOLDER_DATA (off by default) and always
 // flagged in the UI as sample, because invented grades that look real are the worst
 // outcome here. Real data wins automatically: the fallbacks in api.js only fire when
@@ -111,7 +111,7 @@ const AP_BIOLOGY = {
   ],
 };
 
-// Nothing graded yet — the empty state, which must not render as 0%.
+// Nothing graded yet - the empty state, which must not render as 0%.
 const CERAMICS = {
   courseId: 'SAMPLE-3',
   name: 'Ceramics',

@@ -17,7 +17,7 @@ export interface PortalSession {
 	jar: CookieJar;
 }
 
-// A portal domain is a hostname plus an optional base path — some districts
+// A portal domain is a hostname plus an optional base path - some districts
 // share a server under a path ("studentvue.geneseeisd.org/wpa").
 export function validatePortalDomain(domain: string): string {
 	if (!isPortalDomain(domain)) {
@@ -65,7 +65,7 @@ export async function login(
 	const fields = formInputs(page.body);
 	if (!fields.has('__VIEWSTATE')) {
 		throw new PortalShapeError(
-			`Login page did not render a WebForms form (HTTP ${page.status} from ${page.finalUrl}) — check the domain.`
+			`Login page did not render a WebForms form (HTTP ${page.status} from ${page.finalUrl}). Check the domain.`
 		);
 	}
 

@@ -55,7 +55,7 @@ describe('solveUniformTarget (unweighted)', () => {
 			})
 		);
 
-		// Locking the small one at 80% pushes the rest above 100 — shown, not clamped.
+		// Locking the small one at 80% pushes the rest above 100 - shown, not clamped.
 		expect(result.uniformPct).toBeCloseTo(105);
 		expect(result.perAssignment).toEqual([{ id: big.id, pointsNeeded: expect.closeTo(105) }]);
 		expect(

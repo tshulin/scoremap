@@ -1,5 +1,5 @@
 /**
- * ClassDetail — one class's grade page (route: /grades/:classId): derived
+ * ClassDetail - one class's grade page (route: /grades/:classId): derived
  * grade-over-time chart, assignment list with hypothetical editing/adding,
  * and the category breakdown. A thin shell: all math lives in src/calc/,
  * scenario state in pages/class/useScenario, rendering in pages/class/.
@@ -11,7 +11,7 @@ import SyncPill from '../components/SyncPill.jsx';
 import GradeNumber from '../components/GradeNumber.jsx';
 import { DeltaValue } from '../components/RefreshDelta.jsx';
 import { useAssignments, useClass, useClasses, useSyncChanges } from '../data/SyncProvider.jsx';
-// The grade engine runs right here in the browser — the server only supplies
+// The grade engine runs right here in the browser - the server only supplies
 // the assignment data.
 import {
   assignmentImpacts,
@@ -51,7 +51,7 @@ function ClassDetail() {
   const ASSIGNMENTS = useAssignments(classId);
 
   const CLASS_NAME = cls ? cls.name : 'Class';
-  const GRADE = cls ? (cls.pct != null ? `${cls.grade} ${cls.pct}%` : '—') : '';
+  const GRADE = cls ? (cls.pct != null ? `${cls.grade} ${cls.pct}%` : 'N/A') : '';
   const categories = cls ? cls.categories : undefined;
 
   const baseRaws = React.useMemo(() => ASSIGNMENTS.filter((a) => a.raw).map((a) => a.raw), [ASSIGNMENTS]);
@@ -77,7 +77,7 @@ function ClassDetail() {
   // scale down to fit.
   const [nameH, setNameH] = React.useState(34);
   // How much the current course name must shrink to fit the block's width
-  // cap — 1 when it fits at full size, and only ever the exact ratio needed
+  // cap - 1 when it fits at full size, and only ever the exact ratio needed
   // (never below NAME_SCALE_MIN; ellipsis takes over past that).
   const [nameScale, setNameScale] = React.useState(1);
   React.useLayoutEffect(() => {
@@ -120,7 +120,7 @@ function ClassDetail() {
     return () => ro.disconnect();
   }, [classes, classId]);
 
-  // Sub-tab state is local — no routing changes.
+  // Sub-tab state is local - no routing changes.
   const [tab, setTab] = React.useState('assignments');
   const [targetOpen, setTargetOpen] = React.useState(false);
   const [boundsOpen, setBoundsOpen] = React.useState(false);
@@ -156,7 +156,7 @@ function ClassDetail() {
     [effective, categories],
   );
   const series = React.useMemo(() => gradeSeries(effective, categories), [effective, categories]);
-  // Dates that have work in the filtered category — the chart keeps its line
+  // Dates that have work in the filtered category - the chart keeps its line
   // but only these dates keep their dots.
   const activeDates = React.useMemo(() => {
     if (filter === 'All') return null;
@@ -167,7 +167,7 @@ function ClassDetail() {
     );
   }, [filter, effective]);
   // Hidden points are a property of the synced data (portal category totals
-  // vs. the assignments it listed) — computed from the real rows, never the
+  // vs. the assignments it listed) - computed from the real rows, never the
   // scenario, or every edit/added hypothetical would masquerade as a
   // portal discrepancy.
   const hiddenRows = React.useMemo(
@@ -182,7 +182,7 @@ function ClassDetail() {
       <main style={{ flex: 1, padding: '32px 40px 64px', boxSizing: 'border-box' }}>
         {/* GradeCompass pinned header, copied from their class page: the
             name and grade blocks carry the PAGE background (bg-background),
-            no border or shadow — invisible at rest, so the unscrolled page
+            no border or shadow - invisible at rest, so the unscrolled page
             looks exactly like the plain-text header. On scroll the row pins
             flush to the top and content simply vanishes behind the
             page-colored blocks (rounded on the bottom corners only, like
@@ -199,7 +199,7 @@ function ClassDetail() {
             top: 8,
             zIndex: 20,
             // Zero height: the blocks overflow this box, so the row pins
-            // without reserving vertical space — the header band below sets
+            // without reserving vertical space - the header band below sets
             // the flow height, exactly like the old TopBar grid.
             height: 0,
             overflow: 'visible',
@@ -258,10 +258,10 @@ function ClassDetail() {
                 <div style={{ fontSize: GRADE_FONT, fontWeight: 600, letterSpacing: '-0.5px', color: 'var(--color-ink)' }}>
                   {computedGrade != null
                     ? <GradeNumber prefix={`${resolveLetter(computedGrade, scale)} `} value={computedGrade} />
-                    : '—'}
+                    : 'N/A'}
                 </div>
                 <div style={{ fontSize: 13, color: 'var(--color-muted)' }}>
-                  hypothetical · official: {GRADE || '—'}
+                  hypothetical · official: {GRADE || 'N/A'}
                 </div>
               </div>
             ) : (
@@ -294,7 +294,7 @@ function ClassDetail() {
               key={`ghost-grade-${c.id}`}
               style={{ display: 'inline-block', padding: '0 16px', fontFamily: 'var(--font-sans)', fontSize: GRADE_FONT, fontWeight: 600, letterSpacing: '-0.5px' }}
             >
-              {c.pct != null ? `${c.grade} ${c.pct}%` : '—'}
+              {c.pct != null ? `${c.grade} ${c.pct}%` : 'N/A'}
             </span>
           ))}
         </div>
@@ -313,14 +313,14 @@ function ClassDetail() {
           }}
         >
           <div style={{ minWidth: 0, justifySelf: 'start', paddingTop: nameH + 10 }}>
-            {/* compact section switcher — scrolls away under the name block */}
+            {/* compact section switcher - scrolls away under the name block */}
             <nav
               aria-label="Class sections"
               style={{
                 display: 'inline-flex',
                 gap: 2,
                 padding: 3,
-                borderRadius: 'var(--radius-pill)',
+                borderRadius: 'var(--radius-lg)',
                 background: 'var(--color-surface-card)',
                 border: '1px solid var(--color-hairline-strong)',
               }}
@@ -331,7 +331,7 @@ function ClassDetail() {
                   onClick={() => setTab(id)}
                   style={{
                     padding: '4px 10px',
-                    borderRadius: 'var(--radius-pill)',
+                    borderRadius: 'var(--radius-md)',
                     border: 'none',
                     cursor: 'pointer',
                     whiteSpace: 'nowrap',
@@ -353,7 +353,7 @@ function ClassDetail() {
 
         {tab === 'assignments' && (
           <>
-            {/* grade over time, derived from the effective assignments — edits
+            {/* grade over time, derived from the effective assignments - edits
                 and added hypotheticals visibly reshape the line. The chart runs
                 the full main width (GradeCompass-style); the cards below keep
                 the readable cap. */}
@@ -381,12 +381,14 @@ function ClassDetail() {
               </div>
             </div>
 
-            {/* centered lane no wider than the space between the sticky
-                pills (small gap each side), so a card scrolling up is never
-                covered by the name or grade pill */}
+            {/* Wider centered lane, close to the GradeCompass card proportions.
+                It still responds to the sticky-header width on narrower screens. */}
             <div
               style={{
-                maxWidth: pillMaxW ? `max(360px, calc(100% - ${(pillMaxW + 12) * 2}px))` : 1160,
+                width: '100%',
+                maxWidth: pillMaxW
+                  ? `min(1080px, max(720px, calc(100% - ${pillMaxW + 32}px)))`
+                  : 1080,
                 margin: '0 auto',
               }}
             >

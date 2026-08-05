@@ -1,18 +1,18 @@
 // The single scenario state every grade feature reads: real assignments plus
 // per-assignment edits plus added hypotheticals, exposed as one `effective`
-// list. Session-only on purpose — stale fake assignments mixed into freshly
+// list. Session-only on purpose - stale fake assignments mixed into freshly
 // synced real data is the worst failure mode here.
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { todayIso } from './ui.jsx';
 
 export function useScenario(baseAssignments) {
   const [hypothetical, setHypothetical] = useState(false);
-  // { [assignmentId]: { earned, possible, category, date, notForGrade } } — score fields as
+  // { [assignmentId]: { earned, possible, category, date, notForGrade } } - score fields as
   // input strings; category/date as committed values. Applies to real AND
   // added rows, so every assignment is editable the same way.
   const [edits, setEdits] = useState({});
   // Added hypotheticals, ids "hypo-1", "hypo-2", … Born blank: no score, no
-  // category — the row itself is the editor, there is nothing to decide first.
+  // category - the row itself is the editor, there is nothing to decide first.
   const [added, setAdded] = useState([]);
   const seq = useRef(1);
 

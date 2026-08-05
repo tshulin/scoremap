@@ -15,13 +15,13 @@ export const shortDate = (iso) => {
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-// "Wednesday, 3/4/2026" — chart tooltip format.
+// "Wednesday, 3/4/2026" - chart tooltip format.
 export const weekdayDate = (iso) => {
   const [y, m, d] = iso.split('-').map(Number);
   return `${WEEKDAYS[new Date(y, m - 1, d).getDay()]}, ${m}/${d}/${y}`;
 };
 
-// Local calendar date — toISOString() is UTC and flips to tomorrow in the
+// Local calendar date - toISOString() is UTC and flips to tomorrow in the
 // evening (US timezones), which would misplace added assignments on the chart.
 export const todayIso = () => {
   const now = new Date();
@@ -29,7 +29,7 @@ export const todayIso = () => {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 };
 
-export function Chip({ children, tone = 'neutral' }) {
+export function Chip({ children, tone = 'neutral', style }) {
   const tones = {
     neutral: { background: 'var(--color-surface-strong)', border: '1px solid var(--color-hairline)', color: 'var(--color-body)' },
     assignment: { background: 'var(--color-tint-good)', border: '1px solid transparent', color: 'var(--color-grade-good)' },
@@ -38,7 +38,7 @@ export function Chip({ children, tone = 'neutral' }) {
     warn: { background: 'var(--color-tint-mid)', border: '1px solid transparent', color: 'var(--color-grade-mid)' },
   };
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 600, lineHeight: 1.2, ...tones[tone] }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 600, lineHeight: 1.2, ...tones[tone], ...style }}>
       {children}
     </span>
   );
@@ -85,7 +85,7 @@ export function ScoreInput({ value, placeholder, onChange, label, width = 64 }) 
   );
 }
 
-// Plain fixed-position overlay — no portal, no library (per the plan). The
+// Plain fixed-position overlay - no portal, no library (per the plan). The
 // backdrop click and the ✕ both close; content clicks stay inside.
 export function Dialog({ title, onClose, children, maxWidth = 720 }) {
   return (

@@ -1,4 +1,4 @@
-// App routing — routes come straight from the handoff README.
+// App routing - routes come straight from the handoff README.
 //   /                → Landing
 //   /signup          → GetStarted
 //   /signup/google   → SignupGoogle
@@ -23,6 +23,7 @@ import Documents from './pages/Documents.jsx';
 import GpaCalculator from './pages/GpaCalculator.jsx';
 import Mail from './pages/Mail.jsx';
 import MailDetail from './pages/MailDetail.jsx';
+import Feedback from './pages/Feedback.jsx';
 
 function RequireAuth({ children }) {
   const { status } = useSyncStatus();
@@ -44,6 +45,7 @@ export default function App() {
       <Route path="/gpa-calculator" element={<RequireAuth><GpaCalculator /></RequireAuth>} />
       <Route path="/mail" element={<RequireAuth><Mail /></RequireAuth>} />
       <Route path="/mail/:mailId" element={<RequireAuth><MailDetail /></RequireAuth>} />
+      <Route path="/feedback" element={<RequireAuth><Feedback /></RequireAuth>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

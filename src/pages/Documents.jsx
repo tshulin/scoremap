@@ -1,5 +1,5 @@
 /**
- * Documents — the student's document center (route: /documents).
+ * Documents - the student's document center (route: /documents).
  *
  * The list comes from the backend's /api/documents via the sync layer; clicking
  * a document fetches it through /api/documents/:docToken and opens it in the
@@ -163,7 +163,7 @@ function Documents() {
             </div>
           )}
 
-          {/* category filter — one tab per category present */}
+          {/* category filter - one tab per category present */}
           {categories.length > 0 && (
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
               <div
@@ -192,7 +192,7 @@ function Documents() {
             </div>
           )}
 
-          {/* document list — narrower than the full content width */}
+          {/* document list - narrower than the full content width */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 820, margin: '0 auto' }}>
             {visible.length === 0 && (
               <div style={{ textAlign: 'center', color: 'var(--color-muted)', fontSize: 15, padding: '48px 0' }}>

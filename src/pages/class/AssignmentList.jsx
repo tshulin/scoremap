@@ -1,19 +1,25 @@
 // The assignment list: category filter (owned by ClassDetail so the chart can
-// follow it), per-assignment impact chips, the hidden-points pseudo-rows, and —
-// in hypothetical mode — fully inline editing. Every row, not-for-grade
+// follow it), per-assignment impact chips, the hidden-points pseudo-rows, and -
+// in hypothetical mode - fully inline editing. Every row, not-for-grade
 // included, is edited in place; "+ New assignment" drops in a blank row that
 // looks like every other assignment. Rows are ordered newest first.
 import React from 'react';
 import { scoreBandColor as bandColor } from '../../lib/grades.js';
-import { Chip, ScoreInput, TextInputSmall, assessmentLike, fmt2, signed } from './ui.jsx';
+import { Chip, ScoreInput, TextInputSmall, fmt2, signed } from './ui.jsx';
+import {
+  categoryChipStyle,
+  categoryColorFor,
+  makeCategoryColorMap,
+  sortCategoryNames,
+} from './categoryColors.js';
 
-// Compact cards: the list lives in the narrowed lane between the sticky
-// name/grade pills, so each card keeps a tighter padding and wrap basis.
+// Assignment cards use a roomy but still compact layout, close to the
+// GradeCompass proportions while preserving Scoremap's spacing system.
 const rowCard = {
   background: 'var(--color-surface-card)',
   border: '1px solid var(--color-hairline-strong)',
   borderRadius: 'var(--radius-xl)',
-  padding: '12px 16px',
+  padding: '16px 20px',
   boxSizing: 'border-box',
   display: 'flex',
   justifyContent: 'space-between',
@@ -44,10 +50,15 @@ const metricRow = {
 
 function ImpactChip({ impact }) {
   if (impact === undefined) return null;
+  const color = impact > 0.005
+    ? 'var(--color-grade-good)'
+    : impact < -0.005
+      ? 'var(--color-grade-bad)'
+      : 'var(--color-muted)';
   return (
     <span
       title="How much this assignment moved the class grade"
-      style={{ fontSize: 15, fontWeight: 600, color: impact < -0.005 ? 'var(--color-grade-bad)' : 'var(--color-muted)' }}
+      style={{ fontSize: 15, fontWeight: 600, color }}
     >
       {signed(impact)}
     </span>
@@ -62,24 +73,19 @@ function ScoreBar({ pct }) {
   );
 }
 
-// The category chip's tone, as a style — the select wears it too, so the
+// The category chip's tone, as a style - the select wears it too, so the
 // colored highlight survives the swap from chip to dropdown.
-const categoryTone = (name) => {
+const categoryTone = (name, colors) => {
   if (!name) {
     return { background: 'var(--color-surface-strong)', border: '1px solid var(--color-hairline)', color: 'var(--color-body)' };
   }
-  return assessmentLike(name)
-    ? { background: 'var(--color-tint-bad)', border: '1px solid transparent', color: 'var(--color-grade-bad)' }
-    : { background: 'var(--color-tint-good)', border: '1px solid transparent', color: 'var(--color-grade-good)' };
+  return categoryChipStyle(name, colors);
 };
 
 // Options open on the native popup, which won't show the tinted chip
-// background — but Chromium does honor per-option colors, so the category
+// background - but Chromium does honor per-option colors, so the category
 // names stay color-coded inside the list as well.
-const optionColor = (name) =>
-  assessmentLike(name) ? 'var(--color-grade-bad)' : 'var(--color-grade-good)';
-
-function CategorySelect({ value, options, onChange, label }) {
+function CategorySelect({ value, options, colors, onChange, label }) {
   return (
     <select
       value={value}
@@ -92,14 +98,14 @@ function CategorySelect({ value, options, onChange, label }) {
         fontSize: 13,
         fontWeight: 600,
         cursor: 'pointer',
-        ...categoryTone(value),
+        ...categoryTone(value, colors),
       }}
     >
       <option value="" style={{ color: 'var(--color-body)', background: 'var(--color-surface-card)' }}>
-        select category
+        Select category
       </option>
       {options.map((name) => (
-        <option key={name} value={name} style={{ color: optionColor(name), background: 'var(--color-surface-card)' }}>
+        <option key={name} value={name} style={{ color: categoryColorFor(name, colors), background: 'var(--color-surface-card)' }}>
           {name}
         </option>
       ))}
@@ -126,13 +132,13 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
   const weighted = !!(categories && categories.length > 0);
 
   // Dropdown options: the class's weight categories, or whatever categories the
-  // portal data actually uses. A class with none gets no dropdown — there is
+  // portal data actually uses. A class with none gets no dropdown - there is
   // nothing to pick from.
   const categoryOptions = React.useMemo(
     () =>
-      weighted
+      sortCategoryNames(weighted
         ? categories.map((c) => c.name)
-        : [...new Set(assignments.map((a) => a.type).filter((t) => t !== 'Uncategorized'))],
+        : assignments.map((a) => a.type).filter((t) => t !== 'Uncategorized')),
     [weighted, categories, assignments],
   );
 
@@ -145,7 +151,9 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
   const typeOfReal = (a) => (a.raw ? effType(a.raw.id, a.type) : a.type);
   const typeOfAdded = (a) => effType(a.id, 'Uncategorized');
 
-  const types = [...new Set([...assignments.map(typeOfReal), ...added.map(typeOfAdded)])];
+  const types = sortCategoryNames([...assignments.map(typeOfReal), ...added.map(typeOfAdded)])
+    .filter((type) => type !== 'Uncategorized');
+  const categoryColors = makeCategoryColorMap(types, categoryOptions);
   const visible = assignments.filter((a) => filter === 'All' || typeOfReal(a) === filter);
   const visibleAdded = added.filter((a) => filter === 'All' || typeOfAdded(a) === filter);
 
@@ -202,7 +210,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
         <ScoreInput
           value={edit.earned ?? (raw.pointsEarned !== undefined ? String(raw.pointsEarned) : '')}
-          placeholder="—"
+          placeholder="N/A"
           label={`${a.title} points earned`}
           onChange={(v) => setEdit(raw.id, 'earned', v)}
         />
@@ -211,7 +219,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
             <span style={{ color: 'var(--color-muted)', fontSize: 16 }}>/</span>
             <ScoreInput
               value={edit.possible ?? (raw.pointsPossible !== undefined ? String(raw.pointsPossible) : '')}
-              placeholder="—"
+              placeholder="N/A"
               label={`${a.title} points possible`}
               onChange={(v) => setEdit(raw.id, 'possible', v)}
             />
@@ -226,7 +234,6 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
     const impact = impactById.get(a.id);
     const pct = rowPct(eff);
     const edit = edits[a.id] || {};
-    const uncounted = weighted && !eff.category;
     return (
       <div key={a.id} style={rowCard}>
         <div style={{ minWidth: 0, flex: '1 1 240px' }}>
@@ -237,17 +244,18 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
               label="Hypothetical assignment name"
               onChange={(v) => updateAssignment(a.id, { name: v })}
             />
-            <Chip tone="info">Hypothetical</Chip>
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
             {categoryOptions.length > 0 && (
               <CategorySelect
                 value={eff.category || ''}
                 options={categoryOptions}
+                colors={categoryColors}
                 label={`${eff.name} category`}
                 onChange={(v) => setEdit(a.id, 'category', v)}
               />
             )}
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+            <Chip tone="info">Hypothetical</Chip>
             <DateInput value={eff.date} label={`${eff.name} date`} onChange={(v) => setEdit(a.id, 'date', v)} />
             <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--color-body)' }}>
               <input
@@ -258,7 +266,6 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
               />
               Extra credit
             </label>
-            {uncounted && <Chip tone="warn">pick a category to include this</Chip>}
           </div>
         </div>
         <div style={{ flex: '1 1 220px', maxWidth: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 10 }}>
@@ -267,7 +274,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, textAlign: 'right' }}>
               <ScoreInput
                 value={edit.earned ?? (a.pointsEarned !== undefined ? String(a.pointsEarned) : '')}
-                placeholder="—"
+                placeholder="N/A"
                 label={`${eff.name} points earned`}
                 onChange={(v) => setEdit(a.id, 'earned', v)}
               />
@@ -276,7 +283,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
                   <span style={{ color: 'var(--color-muted)', fontSize: 16 }}>/</span>
                   <ScoreInput
                     value={edit.possible ?? (a.pointsPossible !== undefined ? String(a.pointsPossible) : '')}
-                    placeholder="—"
+                    placeholder="N/A"
                     label={`${eff.name} points possible`}
                     onChange={(v) => setEdit(a.id, 'possible', v)}
                   />
@@ -284,7 +291,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
               )}
             </span>
             <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)', textAlign: 'right' }}>
-              {pct != null ? `${pct}%` : '—'}
+              {pct != null ? `${pct}%` : 'N/A'}
             </span>
             <button
               onClick={() => removeAssignment(a.id)}
@@ -324,12 +331,13 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
               <CategorySelect
                 value={(eff && eff.category) || ''}
                 options={categoryOptions}
+                colors={categoryColors}
                 label={`${a.title} category`}
                 onChange={(v) => setEdit(raw.id, 'category', v)}
               />
-            ) : (
-              <Chip tone={assessmentLike(type) ? 'assessment' : 'assignment'}>{type}</Chip>
-            )}
+            ) : type !== 'Uncategorized' ? (
+              <Chip style={categoryChipStyle(type, categoryColors)}>{type}</Chip>
+            ) : null}
             {a.scaled && <Chip>Scaled</Chip>}
             {a.extraCredit && <Chip>Extra credit</Chip>}
             {a.notForGrade &&
@@ -361,7 +369,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
               {scoreCell(raw, a)}
             </span>
             <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)', textAlign: 'right' }}>
-              {pct != null ? `${pct}%` : '—'}
+              {pct != null ? `${pct}%` : 'N/A'}
             </span>
           </div>
           <ScoreBar pct={pct} />
@@ -372,20 +380,20 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
 
   return (
     <>
-      {/* filter — one tab per category present in the data */}
+      {/* filter - one tab per category present in the data */}
       {types.length > 1 && (
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: 4, borderRadius: 'var(--radius-lg)', background: 'var(--color-surface-card)', border: '1px solid var(--color-hairline-strong)', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '100%' }}>
             <FilterTab id="All" />
             {types.map((t) => (
-              <FilterTab key={t} id={t} dot={assessmentLike(t) ? 'var(--color-grade-bad)' : 'var(--color-grade-good)'} />
+              <FilterTab key={t} id={t} dot={categoryColorFor(t, categoryColors)} />
             ))}
           </div>
         </div>
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {/* one click, one blank row — edited in place like everything else */}
+        {/* one click, one blank row - edited in place like everything else */}
         {hypothetical && (
           <button
             onClick={() => addAssignment()}
@@ -393,7 +401,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
               ...rowCard,
               border: '1px dashed var(--color-hairline-strong)',
               justifyContent: 'center',
-              padding: '12px 16px',
+              padding: '16px 20px',
               cursor: 'pointer',
               color: 'var(--color-body)',
               fontFamily: 'var(--font-sans)',
@@ -415,7 +423,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
         {rows.map((r) => (r.kind === 'added' ? renderAdded(r.a) : renderReal(r.a, r.i)))}
 
         {/* hidden points: the portal's category totals include work it never
-            listed as assignments. Not editable — it isn't ours to invent. */}
+            listed as assignments. It is not editable because it is not ours to invent. */}
         {filter === 'All' &&
           hiddenRows.map((d) => (
             <div key={`hidden-${d.category}`} style={{ ...rowCard, opacity: 0.9 }}>

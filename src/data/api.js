@@ -1,15 +1,15 @@
 // Data client. The browser signs in to StudentVUE and scrapes the PXP2 portal
-// ITSELF — TLS terminates here (subtls) and runs over the blind relay, which only
+// ITSELF - TLS terminates here (subtls) and runs over the blind relay, which only
 // ever sees ciphertext. This module wraps the portal client (src/portal) behind
 // the same surface the app already used, returning the same domain shapes.
 //
 // Session model: the portal cookie jar is kept in memory and mirrored to
-// sessionStorage; the credentials are saved in localStorage — on this device
-// only, never sent anywhere but StudentVUE — so the app can sign back in by
+// sessionStorage; the credentials are saved in localStorage - on this device
+// only, never sent anywhere but StudentVUE - so the app can sign back in by
 // itself: on the next visit, and again whenever the ~20-min portal session
 // expires mid-use. A saved sign-in is replayed until the portal rejects it;
 // AUTH_FAILED clears everything and the app returns to the login page with a
-// notice. Relay/portal outages never clear it — a dead relay must not log
+// notice. Relay/portal outages never clear it - a dead relay must not log
 // anyone out.
 import { createRelayFetch } from '../transport/fetchShim';
 import { CookieJar } from '../portal/http';
@@ -93,13 +93,13 @@ export function isTestSession() {
 
 // The saved sign-in. Plaintext by design: any obfuscation a bundled app could
 // apply is decodable by the same code that would read it, so it would only
-// pretend. The honest mitigations are elsewhere — the password never leaves
+// pretend. The honest mitigations are elsewhere - the password never leaves
 // the browser unencrypted, and signing out erases it.
 export function rememberCredentials({ domain, username, password }) {
   try {
     localStorage.setItem(CREDS_KEY, JSON.stringify({ domain, username, password }));
   } catch {
-    /* storage unavailable — auto sign-in just won't survive this tab */
+    /* storage unavailable - auto sign-in just won't survive this tab */
   }
 }
 
@@ -149,7 +149,7 @@ function restore() {
 
 // Who is signed in, kept next to the session so a reload still knows the name
 // even if that sync's student-info request is the one that fails. Only the two
-// fields the chrome shows — never the portrait or the perm ID.
+// fields the chrome shows - never the portrait or the perm ID.
 export function rememberStudent(student) {
   if (!student || !student.name) return;
   try {
@@ -174,7 +174,7 @@ export function recallStudent() {
 // dashboard while that runs. The "Last updated" pill keeps its age honest.
 //
 // It holds grades and messages, so it lives exactly as long as the saved
-// sign-in does — clearToken() erases both.
+// sign-in does - clearToken() erases both.
 export function rememberSnapshot(snapshot) {
   // An unsynced snapshot has nothing worth restoring, and writing it would
   // overwrite a good one during sign-out.
@@ -211,10 +211,10 @@ export function recallSnapshot() {
   }
 }
 
-// authFailed: the portal rejected the saved sign-in — leave a notice (with the
+// authFailed: the portal rejected the saved sign-in - leave a notice (with the
 // non-secret fields, for prefill) for the login page. The notice deliberately
 // survives ordinary clears (the provider's 401 handler runs clearToken() right
-// after the one that set it); it goes away only when its story ends — a
+// after the one that set it); it goes away only when its story ends - a
 // completed sign-in or an explicit sign-out (clearAuthNotice).
 export function clearToken({ authFailed = false } = {}) {
   const creds = authFailed ? recallCredentials() : null;
@@ -271,7 +271,7 @@ function currentSession() {
 // the former backend's PortalErrorCode enum; status 401 sends the app to sign-in.
 // Matched by instanceof, never by class NAME: the production bundle is minified
 // and esbuild mangles class names, which silently turned every entry of the old
-// name-keyed table into INTERNAL — auth failures showed a generic error instead
+// name-keyed table into INTERNAL - auth failures showed a generic error instead
 // of signing the student out.
 const ERROR_MAP = [
   [AuthError, 'AUTH_FAILED', 401],
@@ -296,7 +296,7 @@ function mapError(e) {
 // share one login, not race four. Resolves null only when nothing is saved.
 // AUTH_FAILED here is the moment the saved sign-in "stops working": everything
 // is cleared (with the login-page notice) before the 401 surfaces. Any other
-// failure — relay down, portal 5xx — leaves the credentials alone.
+// failure - relay down, portal 5xx - leaves the credentials alone.
 let loginInFlight = null;
 function ensureSession() {
   const s = currentSession();
@@ -358,7 +358,7 @@ async function withSession(fn) {
 
 export async function login({ domain, username, password }) {
   if (DEMO) return DEMO_STUDENT;
-  // A fresh sign-in never inherits the previous session — in particular, a real
+  // A fresh sign-in never inherits the previous session - in particular, a real
   // login must drop a lingering test-session marker, or the sync layer keeps
   // serving the sample snapshot to a genuinely signed-in student.
   clearToken();
@@ -367,7 +367,7 @@ export async function login({ domain, username, password }) {
     try {
       localStorage.setItem(TEST_SESSION_KEY, 'true');
     } catch {
-      /* storage unavailable — the session just won't survive a reload */
+      /* storage unavailable - the session just won't survive a reload */
     }
     clearAuthNotice();
     return TEST_STUDENT;
@@ -417,8 +417,8 @@ export async function getAttendance() {
 }
 
 // Returns { gradebook, placeholder }. Real grades always win. Only when the portal
-// has no gradebook to give — NO_ACTIVE_GRADING_PERIOD (out of term) or PARSE_FAILED
-// (parser not written yet) — AND VITE_PLACEHOLDER_DATA is on do we serve
+// has no gradebook to give - NO_ACTIVE_GRADING_PERIOD (out of term) or PARSE_FAILED
+// (parser not written yet) - AND VITE_PLACEHOLDER_DATA is on do we serve
 // SAMPLE_GRADEBOOK, flagged as sample. Once the parser lands and the term is active,
 // this fallback is never reached.
 export async function getGradebook() {

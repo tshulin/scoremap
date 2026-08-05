@@ -1,10 +1,10 @@
 /**
- * MailDetail — a single message, Gmail-style reading pane (route: /mail/:mailId).
+ * MailDetail - a single message, Gmail-style reading pane (route: /mail/:mailId).
  *
  * Resolves the message from the synced mailbox (useMail). Links open in a new
  * tab; attachments download through the portal (or the generated test-account
  * PDFs) and open in the browser's viewer, same flow as Documents. Keeps the app
- * sidebar and drops all of Gmail's chrome the app doesn't need — just a clean
+ * sidebar and drops all of Gmail's chrome the app doesn't need - just a clean
  * read view in the Scoremap style.
  */
 import React, { useEffect, useRef, useState } from 'react';

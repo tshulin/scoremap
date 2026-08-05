@@ -3,7 +3,7 @@
 The single source of truth for Scoremap's color system. Every color in the app
 is a CSS custom property defined in `src/index.css` (app tokens, both themes)
 layered over `_ds/…/tokens/colors.css` (design-system defaults). Components
-never hardcode hex values — they reference tokens, so retheming is a
+never hardcode hex values - they reference tokens, so retheming is a
 token-file edit.
 
 Dark is the default theme and uses the **original Scoremap dark palette**
@@ -20,9 +20,9 @@ persisted in `localStorage.grademax-theme`).
 | Color | Usage |
 | --- | --- |
 | `#111113` | Page / main content background, body, sidebar |
-| `#18191b` | All boxes — course cards, assignment rows, pills, tag chips, nav active fill |
+| `#18191b` | All boxes - course cards, assignment rows, pills, tag chips, nav active fill |
 | `#1c1d20` | Featured/elevated DS card |
-| `#202125` | Elevated floating layers — popover, chart tooltips, active filter-tab fill, progress-bar tracks, avatar circle |
+| `#202125` | Elevated floating layers - popover, chart tooltips, active filter-tab fill, progress-bar tracks, avatar circle |
 | `#0d0e10` | Alternating soft band on marketing pages (`--color-canvas-soft`) |
 | accent @ 14% | Demo-mode pill background (derived via `color-mix`) |
 
@@ -54,9 +54,9 @@ persisted in `localStorage.grademax-theme`).
 
 | Color | Usage |
 | --- | --- |
-| `#39ff6a` | Green — passing / Homework legend |
-| `#ffc400` | Amber — borderline |
-| `#ff2d55` | Red — failing / Quizzes + Tests legend |
+| `#39ff6a` | Green - passing / Homework legend |
+| `#ffc400` | Amber - borderline |
+| `#ff2d55` | Red - failing / Quizzes + Tests legend |
 | `#54585d` | Ungraded / no score |
 
 ---
@@ -68,7 +68,7 @@ persisted in `localStorage.grademax-theme`).
 | Color | Usage |
 | --- | --- |
 | `#f7f6fb` | Page / main background, body, avatar circle, tag chips, privacy note |
-| `#efeef8` | Sidebar, all boxes — course cards, assignment rows, pills, chart panel |
+| `#efeef8` | Sidebar, all boxes - course cards, assignment rows, pills, chart panel |
 | `#e6e4f1` | Nav hover / active nav item, elevated floating layers (popover, tooltips, active filter-tab fill) |
 | `#eae8f4` | Course card hover |
 | `#ddd9ea` | Progress-bar tracks |
@@ -104,14 +104,14 @@ persisted in `localStorage.grademax-theme`).
 
 | Color | Usage |
 | --- | --- |
-| `#6cc79a` | Green — passing / Homework legend |
-| `#f0c46a` | Amber — borderline |
-| `#ec8b8b` | Red — failing / Quizzes + Tests legend |
+| `#6cc79a` | Green - passing / Homework legend |
+| `#f0c46a` | Amber - borderline |
+| `#ec8b8b` | Red - failing / Quizzes + Tests legend |
 | `#cfcbdc` | Ungraded / no score |
 
 ---
 
-## Tints (derived — never hand-picked)
+## Tints (derived - never hand-picked)
 
 Colored chip/badge backgrounds are 14% tints of their foreground color,
 computed with `color-mix` so they track both themes automatically:
@@ -144,7 +144,7 @@ design-system defaults and adds the purpose tokens; the
 | `--color-surface-dark-elevated` | `#202125` | `#e6e4f1` | Popover, tooltips, active filter tab |
 | `--color-surface-demo` | accent @ 14% | `#eef1fa` | Demo-mode pill background |
 | `--color-nav-active` | `#18191b` | `#e6e4f1` | Sidebar nav active fill |
-| `--color-card-hover` | `#18191b` | `#eae8f4` | Course-card hover fill (unused — shadow only) |
+| `--color-card-hover` | `#18191b` | `#eae8f4` | Course-card hover fill (unused - shadow only) |
 | `--color-progress-track` | `#202125` | `#ddd9ea` | Progress/score bar tracks |
 | `--color-avatar-bg` | `#202125` | `#f7f6fb` | Avatar / period circle |
 | `--color-hairline-strong` | `rgba(255,255,255,0.14)` | `rgba(60,55,90,0.15)` | Box borders (cards, pills, rows, tab strip, avatar) |
@@ -172,28 +172,28 @@ design-system defaults and adds the purpose tokens; the
 
 ## Colors defined, element unchanged
 
-The theming changes color values only — no layout or structure. A few tokens
+The theming changes color values only - no layout or structure. A few tokens
 name elements/states the current design doesn't render; they exist and take
 effect automatically if those elements are ever added:
 
-- **Course card hover** (`--color-card-hover`) — cards hover with a shadow
+- **Course card hover** (`--color-card-hover`) - cards hover with a shadow
   only; the fill is unused.
-- **Nav hover fill** — only the *active* nav item gets `--color-nav-active`;
+- **Nav hover fill** - only the *active* nav item gets `--color-nav-active`;
   hover changes text color only.
 
 ---
 
-## Not yet specified — using placeholders
+## Not yet specified - using placeholders
 
 1. **Primary CTA button** (landing "Get started", dialogs): dark keeps the
    DS white pill / black text (`#ffffff` / `#000000`); light uses ink
    (`#2e2b3a`) with white text.
-2. **Overview chart categorical palette** — one line per category:
+2. **Overview chart categorical palette** - one line per category:
    `#3987e5 #d95926 #199e70 #9085e9 #d55181` (both themes). The grade
    green/red pair colors category *chips*; 3+ chart lines need
    distinguishable hues.
 3. **Semantic states**: warning `#f0a94e`, error `#eb8e90`, success
-   `#16a34a`, preview/attachment purple `#a855f7` (Mail tag chips) — same in
+   `#16a34a`, preview/attachment purple `#a855f7` (Mail tag chips) - same in
    both themes.
 4. **Dialog backdrop scrim**: `rgba(0,0,0,0.65)` both themes.
 5. **Focus rings / selection**: browser defaults (accent-tinted via

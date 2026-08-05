@@ -1,18 +1,18 @@
-// SyncPill — the "Last updated … · Refresh" pill shown at the top of every
+// SyncPill - the "Last updated … · Refresh" pill shown at the top of every
 // logged-in page, now backed by the real sync state. Also the one place that
 // flags demo mode and the backend's sample gradebook so invented grades never
 // look real.
 //
 // The pill is position:absolute against the document, at the horizontal
 // center of the content area (viewport minus the sidebar), so it occupies the
-// same spot on every page — switching tabs never moves it — while still
+// same spot on every page - switching tabs never moves it - while still
 // scrolling away with the content. Pages with a header in TopBar's `left`
-// slot pass `avoid` — a ref to that element — and the pill shifts right only
+// slot pass `avoid` - a ref to that element - and the pill shifts right only
 // when that element would actually overlap the centered pill.
 //
 // `scope` names the resource this page displays ('gradebook' | 'attendance' |
 // 'documents' | 'mail'), and Refresh re-fetches only that one. Omitting it
-// re-syncs everything, which is four times the requests — pass it.
+// re-syncs everything, which is four times the requests - pass it.
 import React from 'react';
 import { useSession, useSyncMeta, useSyncStatus } from '../data/SyncProvider.jsx';
 
@@ -40,7 +40,7 @@ function SyncPill({ note, scope, below, delta, avoid }) {
       setSpacerHeight(wrap.offsetHeight);
       const el = avoid?.current;
       if (!el) return;
-      // The left edge the pill would have unshifted — computed from the
+      // The left edge the pill would have unshifted - computed from the
       // viewport, not read back from the DOM, so the shift can't feed itself.
       const centeredLeft = (window.innerWidth + SIDEBAR_WIDTH - wrap.offsetWidth) / 2;
       const leftRect = el.getBoundingClientRect();
@@ -71,7 +71,7 @@ function SyncPill({ note, scope, below, delta, avoid }) {
       ? 'Updating…'
       : failed
         ? session.lastUpdated
-          ? `Couldn't update — showing ${fmtTime(session.lastUpdated)}`
+          ? `Couldn't update. Showing ${fmtTime(session.lastUpdated)}`
           : "Couldn't update"
         : session.lastUpdated
           ? `Last updated ${fmtTime(session.lastUpdated)}`
@@ -143,7 +143,7 @@ function SyncPill({ note, scope, below, delta, avoid }) {
               fontWeight: 600,
             }}
           >
-            Demo mode — everything here is sample data.
+            Demo mode. Everything here is sample data.
           </div>
         )}
         {!session.demo && meta.gradebook.placeholder && (
@@ -158,7 +158,7 @@ function SyncPill({ note, scope, below, delta, avoid }) {
               fontWeight: 600,
             }}
           >
-            Sample gradebook — real grades appear once the term starts.
+            Sample gradebook. Real grades appear once the term starts.
           </div>
         )}
         {!session.demo && meta.attendance.placeholder && (
@@ -173,7 +173,7 @@ function SyncPill({ note, scope, below, delta, avoid }) {
               fontWeight: 600,
             }}
           >
-            Sample attendance — real absences appear once they’re recorded.
+            Sample attendance. Real absences appear once they’re recorded.
           </div>
         )}
         {note}

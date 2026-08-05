@@ -3,7 +3,7 @@ import { assignment, category, graded } from '../../test/helpers/grades';
 import { courseGrade } from './grade';
 import { assignmentImpacts, hiddenPoints } from './impact';
 
-describe('assignmentImpacts — unweighted', () => {
+describe('assignmentImpacts - unweighted', () => {
 	it('reports how much each assignment moved the grade', () => {
 		const first = graded(10, 10, { date: '2025-09-01' });
 		const second = graded(0, 10, { date: '2025-09-02' });
@@ -63,7 +63,7 @@ describe('assignmentImpacts — unweighted', () => {
 	});
 });
 
-describe('assignmentImpacts — weighted', () => {
+describe('assignmentImpacts - weighted', () => {
 	const categories = [category('Homework', 40), category('Tests', 60)];
 
 	it('measures impact through the category weighting', () => {

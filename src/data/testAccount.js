@@ -1,9 +1,9 @@
-// Built-in test account — sign in with username "test" / password "test" at
+// Built-in test account - sign in with username "test" / password "test" at
 // the "Hustler's University" district (hustler-uni-psv.edupoint.com) to get a
 // fully populated fake student. Unlike VITE_DEMO (a build-time switch that
 // refuses to ship), this works in ANY build, including production: it exists so
 // features can be exercised on the deployed site without a real StudentVUE
-// account. No network is involved — login, sync, and document downloads are
+// account. No network is involved - login, sync, and document downloads are
 // short-circuited in api.js / studentvue.js when these credentials are used.
 //
 // The dataset is deliberately ample and spread across the grade bands:
@@ -181,12 +181,12 @@ const HISTORY = {
       percentage: 55,
       assignments: [
         { id: 'TEST-4-1', name: 'Map Activity: Empires', pointsEarned: 15, pointsPossible: 20, extraCredit: false, notForGrade: false, date: '2026-08-18' },
-        { id: 'TEST-4-2', name: 'Reading Notes Ch 1', pointsEarned: 0, pointsPossible: 10, extraCredit: false, notForGrade: false, date: '2026-08-24', comments: 'Missing — not turned in.' },
+        { id: 'TEST-4-2', name: 'Reading Notes Ch 1', pointsEarned: 0, pointsPossible: 10, extraCredit: false, notForGrade: false, date: '2026-08-24', comments: 'Missing. Not turned in.' },
         { id: 'TEST-4-3', name: 'Unit 1 Quiz', pointsEarned: 12, pointsPossible: 20, extraCredit: false, notForGrade: false, date: '2026-08-27' },
         { id: 'TEST-4-4', name: 'Primary Source Analysis', pointsEarned: 18, pointsPossible: 25, extraCredit: false, notForGrade: false, date: '2026-09-02' },
         { id: 'TEST-4-5', name: 'Reading Notes Ch 2', pointsEarned: 5, pointsPossible: 10, extraCredit: false, notForGrade: false, date: '2026-09-09' },
         { id: 'TEST-4-6', name: 'Unit 1 Test', pointsEarned: 58, pointsPossible: 100, extraCredit: false, notForGrade: false, date: '2026-09-15' },
-        { id: 'TEST-4-7', name: 'Reading Notes Ch 3', pointsEarned: 0, pointsPossible: 10, extraCredit: false, notForGrade: false, date: '2026-09-22', comments: 'Missing — not turned in.' },
+        { id: 'TEST-4-7', name: 'Reading Notes Ch 3', pointsEarned: 0, pointsPossible: 10, extraCredit: false, notForGrade: false, date: '2026-09-22', comments: 'Missing. Not turned in.' },
         { id: 'TEST-4-8', name: 'Timeline Project', pointsEarned: 30, pointsPossible: 50, extraCredit: false, notForGrade: false, date: '2026-09-25' },
         { id: 'TEST-4-9', name: 'Unit 2 Quiz', pointsEarned: 9, pointsPossible: 20, extraCredit: false, notForGrade: false, date: '2026-09-30' },
         { id: 'TEST-4-10', name: 'Reading Notes Ch 4', pointsEarned: 10, pointsPossible: 10, extraCredit: false, notForGrade: false, date: '2026-10-06' },
@@ -228,14 +228,14 @@ export const TEST_ATTENDANCE = AttendanceSchema.parse({
 });
 
 export const TEST_DOCUMENTS = [
-  { docToken: 'TESTDOC-01', title: 'Report Card — Q4 2025-2026', category: 'Report Card', uploadDate: '2026-06-05' },
-  { docToken: 'TESTDOC-02', title: 'Report Card — Q3 2025-2026', category: 'Report Card', uploadDate: '2026-03-20' },
-  { docToken: 'TESTDOC-03', title: 'Report Card — Q2 2025-2026', category: 'Report Card', uploadDate: '2025-12-19' },
-  { docToken: 'TESTDOC-04', title: 'Report Card — Q1 2025-2026', category: 'Report Card', uploadDate: '2025-10-17' },
-  { docToken: 'TESTDOC-05', title: 'Progress Report — September 2026', category: 'Progress Report', uploadDate: '2026-09-18' },
+  { docToken: 'TESTDOC-01', title: 'Report Card: Q4 2025-2026', category: 'Report Card', uploadDate: '2026-06-05' },
+  { docToken: 'TESTDOC-02', title: 'Report Card: Q3 2025-2026', category: 'Report Card', uploadDate: '2026-03-20' },
+  { docToken: 'TESTDOC-03', title: 'Report Card: Q2 2025-2026', category: 'Report Card', uploadDate: '2025-12-19' },
+  { docToken: 'TESTDOC-04', title: 'Report Card: Q1 2025-2026', category: 'Report Card', uploadDate: '2025-10-17' },
+  { docToken: 'TESTDOC-05', title: 'Progress Report: September 2026', category: 'Progress Report', uploadDate: '2026-09-18' },
   { docToken: 'TESTDOC-06', title: 'Unofficial Transcript', category: 'Transcript', uploadDate: '2026-08-14' },
-  { docToken: 'TESTDOC-07', title: 'MAP Growth Family Report — Spring 2026', category: 'MAP Growth Family Report', uploadDate: '2026-05-12' },
-  { docToken: 'TESTDOC-08', title: 'MAP Growth Family Report — Fall 2025', category: 'MAP Growth Family Report', uploadDate: '2025-10-02' },
+  { docToken: 'TESTDOC-07', title: 'MAP Growth Family Report: Spring 2026', category: 'MAP Growth Family Report', uploadDate: '2026-05-12' },
+  { docToken: 'TESTDOC-08', title: 'MAP Growth Family Report: Fall 2025', category: 'MAP Growth Family Report', uploadDate: '2025-10-02' },
   { docToken: 'TESTDOC-09', title: 'Immunization Record', category: 'Health', uploadDate: '2025-08-20' },
   { docToken: 'TESTDOC-10', title: 'Class Schedule 2026-2027', category: 'Schedule', uploadDate: '2026-08-10' },
 ].map((d) => DocumentMetaSchema.parse(d));
@@ -323,7 +323,7 @@ export const TEST_MAIL = [
     date: '2025-04-17',
     body: [
       'Hi everyone,',
-      "We're looking for volunteers to help at upcoming school events. Sign up using the link below — all grade levels welcome.",
+      "We're looking for volunteers to help at upcoming school events. Sign up using the link below. All grade levels are welcome.",
       'Thanks,\nA. Delgado',
     ],
     links: [{ label: 'Volunteer Sign-Up', url: 'https://example.com/volunteer-signup' }],
@@ -352,7 +352,7 @@ export const TEST_MAIL = [
     date: '2025-04-14',
     body: [
       'Students,',
-      'A mini college fair with out-of-state schools will be held tomorrow during lunch at FHS. Stop by to meet admissions reps — the list of attending colleges is attached.',
+      'A mini college fair with out-of-state schools will be held tomorrow during lunch at FHS. Stop by to meet admissions reps. The list of attending colleges is attached.',
       'Best,\nA. Delgado',
     ],
     links: [],
@@ -368,7 +368,7 @@ export const TEST_MAIL = [
 // printable ASCII (the em dashes above) is normalized or dropped.
 const pdfText = (s) =>
   s
-    .replace(/[—–]/g, '-')
+    .replace(/[\u2013\u2014]/g, '-')
     .replace(/[\\()]/g, (c) => '\\' + c)
     .replace(/[^\x20-\x7e]/g, '');
 
@@ -415,7 +415,7 @@ export function testDocumentContent(docToken) {
     'This is a generated sample document for the Scoremap test account.',
     'It is not a real school record.',
   ]);
-  const fileName = `${doc.title.replace(/[—–]/g, '-').replace(/[^A-Za-z0-9-]+/g, '_')}.pdf`;
+  const fileName = `${doc.title.replace(/[\u2013\u2014]/g, '-').replace(/[^A-Za-z0-9-]+/g, '_')}.pdf`;
   return { bytes, mimeType: 'application/pdf', fileName };
 }
 
