@@ -19,10 +19,16 @@ import {
   FeatureCard,
 } from '../lib/ds.js';
 import PrivacyDialog from '../components/PrivacyDialog.jsx';
+import { hasToken } from '../data/api.js';
 
 function Landing() {
   const navigate = useNavigate();
   const [privacyOpen, setPrivacyOpen] = React.useState(false);
+
+  // A saved sign-in skips the pitch — straight to the grades.
+  React.useEffect(() => {
+    if (hasToken()) navigate('/dashboard', { replace: true });
+  }, [navigate]);
 
   function DashboardPreview() {
     const rows = [

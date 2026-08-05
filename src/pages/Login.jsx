@@ -14,6 +14,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { TextInput, Button } from '../lib/ds.js';
 import { useSignIn } from '../data/SyncProvider.jsx';
+import { hasToken, recallAuthNotice } from '../data/api.js';
 import { extractPortalDomain } from '../portal/domainInput';
 import { DISTRICTS } from '../data/districts.js';
 import { TEST_DISTRICT } from '../data/testAccount.js';
@@ -73,12 +74,26 @@ function DistrictSelect({ value, onChange }) {
 function Login() {
   const navigate = useNavigate();
   const signIn = useSignIn();
-  const [username, setUsername] = React.useState('');
+  // If an automatic sign-in just died, say why and prefill the non-secret
+  // fields — the student only re-enters the password.
+  const [notice] = React.useState(() => recallAuthNotice());
+  const [username, setUsername] = React.useState(notice ? notice.username || '' : '');
   const [password, setPassword] = React.useState('');
-  const [domainText, setDomainText] = React.useState('');
+  const [domainText, setDomainText] = React.useState(notice ? notice.domain || '' : '');
   const [agreed, setAgreed] = React.useState(false);
   const [pending, setPending] = React.useState(false);
-  const [error, setError] = React.useState('');
+  const [error, setError] = React.useState(
+    notice
+      ? 'Your saved sign-in stopped working — StudentVUE rejected it, usually after a password change. Enter your password to sign back in.'
+      : '',
+  );
+
+  // Already signed in (saved sign-in or live session) — the dashboard is where
+  // this account belongs; the form is for connecting a different one, which
+  // starts with signing out.
+  React.useEffect(() => {
+    if (!notice && hasToken()) navigate('/dashboard', { replace: true });
+  }, [navigate, notice]);
 
   // Single source of truth is the text field; the dropdown reflects it when
   // the (normalized) text is a known district and writes into it on change.
@@ -198,8 +213,8 @@ function Login() {
               >
                 Grademax signs in to StudentVUE from inside your browser: your password is
                 encrypted here and sent straight to StudentVUE, so our relay only ever passes
-                along data it can't read. Your password is never sent to our servers, stored, or
-                logged.
+                along data it can't read. It's never sent to our servers or logged — to keep
+                you signed in, it's saved only on this device, and signing out erases it.
               </div>
             </div>
 

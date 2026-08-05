@@ -16,7 +16,15 @@ import { DEMO, DEMO_STUDENT } from './demo.js';
 import { emptySnapshot } from './snapshot.js';
 import { harvestFromClasses } from './gradeIndexStore.js';
 import { SAMPLE_ATTENDANCE, SAMPLE_GRADEBOOK } from './placeholders.js';
-import { TEST_STUDENT, TEST_GRADEBOOK, TEST_ATTENDANCE, TEST_DOCUMENTS, TEST_MAIL } from './testAccount.js';
+import {
+  TEST_STUDENT,
+  TEST_GRADEBOOK,
+  TEST_ATTENDANCE,
+  TEST_DOCUMENTS,
+  TEST_MAIL,
+  TEST_USERNAME,
+  TEST_DISTRICT,
+} from './testAccount.js';
 import { GradebookSchema } from '../domain/index';
 
 const slug = (name) =>
@@ -244,6 +252,8 @@ function testSnapshot() {
       ...emptySnapshot.session,
       studentName: TEST_STUDENT.name,
       grade: TEST_STUDENT.grade,
+      username: TEST_USERNAME,
+      domain: TEST_DISTRICT.domain,
       semester: mapped.semester,
       lastUpdated: new Date(),
       demo: true,
@@ -345,6 +355,11 @@ export async function sync(knownStudent, { scope = ALL_RESOURCES, previous = nul
     data.session = { ...data.session, studentName: info.name, grade: info.grade };
     api.rememberStudent(info);
   }
+
+  // The account behind the data, for the chrome and for prefilling the login
+  // form if the saved sign-in ever stops working.
+  const creds = api.recallCredentials();
+  if (creds) data.session = { ...data.session, username: creds.username, domain: creds.domain };
 
   const { gradebook, attendance, documents, mail } = results;
 

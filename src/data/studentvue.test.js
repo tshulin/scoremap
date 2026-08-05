@@ -14,6 +14,7 @@ const api = vi.hoisted(() => ({
   isTestSession: vi.fn(() => false),
   recallStudent: vi.fn(() => null),
   rememberStudent: vi.fn(),
+  recallCredentials: vi.fn(() => null),
 }));
 
 vi.mock('./api.js', () => api);
@@ -203,5 +204,15 @@ describe('student identity', () => {
     // No name to show, but the sync still resolves rather than throwing.
     expect(data.session.studentName).toBe('');
     expect(api.rememberStudent).not.toHaveBeenCalled();
+  });
+
+  // The login form prefills from these if the saved sign-in ever stops working.
+  it('stamps the saved account into the session', async () => {
+    api.recallCredentials.mockReturnValue({ domain: 'ca-x-psv.edupoint.com', username: 'ada', password: 'pw' });
+
+    const data = await sync(STUDENT);
+
+    expect(data.session.username).toBe('ada');
+    expect(data.session.domain).toBe('ca-x-psv.edupoint.com');
   });
 });
