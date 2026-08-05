@@ -1,4 +1,4 @@
-/* App-level globals + the Grademax color theme (see style_guide.md).
+/* App-level globals + the Scoremap color theme (see style_guide.md).
    The design-system stylesheet (imported first in main.jsx) ships the token
    names and dark defaults; the :root block here re-colors them to the style
    guide, and the [data-theme='light'] block restates every token for light.
@@ -9,7 +9,7 @@ body {
   font-family: var(--font-sans);
 }
 
-/* ---- Dark theme (default) — the original Grademax dark palette ----
+/* ---- Dark theme (default) — the original Scoremap dark palette ----
    Values match the design-system defaults (_ds/tokens/colors.css); the
    purpose tokens map them onto the same knobs the light theme drives, so
    components stay theme-agnostic. */

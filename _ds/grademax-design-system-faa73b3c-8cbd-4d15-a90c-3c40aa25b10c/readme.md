@@ -1,19 +1,19 @@
-# Grademax Design System
+# Scoremap Design System
 
-## What is Grademax
+## What is Scoremap
 
-Grademax is a grade-tracking web app: it syncs with a school's **StudentVUE**
+Scoremap is a grade-tracking web app: it syncs with a school's **StudentVUE**
 account and gives students a faster, clearer way to see and calculate their
 grades — current standing per class, per-assignment breakdowns, and a
 "what-if" calculator to simulate the effect of a future test or missing
 assignment on a final grade.
 
-There is no existing Grademax codebase, Figma file, or logo attached to this
+There is no existing Scoremap codebase, Figma file, or logo attached to this
 project. This design system was built from scratch, using a written visual
 brand guide as the **visual style direction only** — colors, type scale,
 spacing, radii, and component shapes, not literal screens or copy. All
 product surfaces (hero, screens, copy, iconography) were designed fresh
-around Grademax's actual product — grades, classes, GPA, StudentVUE — not
+around Scoremap's actual product — grades, classes, GPA, StudentVUE — not
 copied from any other company's real screens.
 
 **Color correction (current):** the theme is dark — flat black canvas
@@ -31,21 +31,21 @@ foundations below for the corrected palette description.
   today — see Typography below.
 - A written brand/visual-style brief (pasted text, not attached as a file)
   describing colors, type scale, spacing, radii, and component shapes. Used
-  as style reference; component names below are Grademax's own, not that
+  as style reference; component names below are Scoremap's own, not that
   brief's literal names.
 - Real expo.dev screenshots (homepage, docs, pricing, a product-tour
   section), attached later as ground truth for a color-theme correction —
   the site is dark-themed with flat black backgrounds and white pill CTAs,
   not the light/gradient theme the original written brief described. Used
-  only for color values and button/badge shape; Grademax's own copy,
+  only for color values and button/badge shape; Scoremap's own copy,
   layout, and product content were not changed to match Expo's.
-- No Figma file, GitHub repo, or existing Grademax product screenshots were
+- No Figma file, GitHub repo, or existing Scoremap product screenshots were
   provided. If any of those exist, attach them and this system should be
   reconciled against them.
 
 ## Intentional additions
 
-Because no component/screen source defined Grademax's actual product
+Because no component/screen source defined Scoremap's actual product
 inventory, the following were authored from scratch to fit the product:
 
 - **Grade-band colors** (`--color-grade-good` / `-mid` / `-bad`) — a
@@ -53,12 +53,12 @@ inventory, the following were authored from scratch to fit the product:
   A+–A−, B+–B−, and C+-and-below respectively.
 - **Full component set** (Button, TopNav, TextInput, Badge, FeatureCard,
   WorkflowStepCard, TestimonialCard, HeroBand, CtaBand, Footer) — sized to
-  what Grademax's web app and marketing site actually need. Components
-  present in the reference brief that don't apply to Grademax (code blocks,
+  what Scoremap's web app and marketing site actually need. Components
+  present in the reference brief that don't apply to Scoremap (code blocks,
   IDE mockups, ecosystem/partner-logo tiles, pricing tiers) were **omitted**
   rather than force-fit.
-- **Grademax wordmark** — no logo was provided. Every place a mark would
-  appear renders the plain Inter SemiBold wordmark "Grademax" instead. Do
+- **Scoremap wordmark** — no logo was provided. Every place a mark would
+  appear renders the plain Inter SemiBold wordmark "Scoremap" instead. Do
   not invent a logomark; ask the user for one if needed.
 
 ## Index
@@ -80,14 +80,14 @@ inventory, the following were authored from scratch to fit the product:
 
 **Full component list:** Button, TopNav, TextInput, Badge, FeatureCard,
 WorkflowStepCard, TestimonialCard, HeroBand, BrowserMockup, CtaBand, Footer.
-- `ui_kits/web-app/` — Grademax web app: Landing, Login, Dashboard, Class
+- `ui_kits/web-app/` — Scoremap web app: Landing, Login, Dashboard, Class
   Detail, What-If Calculator — one interactive `index.html`.
 - `SKILL.md` — portable skill file for using this system elsewhere.
 
 ## Content fundamentals
 
 **Voice:** calm, editorial, confident — matter-of-fact rather than hypey.
-Grademax talks about grades the way a good teacher explains a rubric: plainly,
+Scoremap talks about grades the way a good teacher explains a rubric: plainly,
 without pressure or gamification.
 
 - **Second person, direct:** "See your grade before your teacher posts it."
@@ -100,7 +100,7 @@ without pressure or gamification.
 - **Numbers do the talking.** Lean on the actual percentage/letter grade
   rather than adjectives — "91.4% · A−" carries more than "Great job!"
 - **Short, declarative sentences.** Hero: "The smarter way to see your
-  grades." Subhead adds one clause of mechanism: "Grademax reads your
+  grades." Subhead adds one clause of mechanism: "Scoremap reads your
   StudentVUE data and tells you what you actually need to know."
   Never stack more than two sentences of marketing copy in a row.
 - **Buttons are verbs, lowercase-first:** "Connect StudentVUE", "See my
@@ -127,7 +127,7 @@ without pressure or gamification.
   (-0.5px at 22px up to -1.92px at 64px) — confident, not shouty. Body text
   runs at 400. No serif, no secondary display face.
 - **Imagery:** no photography. The one recurring image motif is a **browser
-  window mockup** showing an actual Grademax screen (dashboard or what-if
+  window mockup** showing an actual Scoremap screen (dashboard or what-if
   calculator) as hero chrome — real product UI standing in for illustration.
   The mockup card is a dark elevated surface, not a light card. No stock
   photos, no hand-drawn illustration, no icon-heavy hero art.
@@ -185,15 +185,15 @@ gap right now, not a style choice.
 
 ## Known gaps / caveats
 
-- No Grademax logo — plain wordmark used everywhere. **Please attach a
+- No Scoremap logo — plain wordmark used everywhere. **Please attach a
   logo if you have one.**
-- No real Grademax screenshots, Figma, or codebase — every UI-kit screen is
+- No real Scoremap screenshots, Figma, or codebase — every UI-kit screen is
   an original design in this visual style, not a recreation of an existing
-  product. If a real Grademax product exists, attach it so this system can
+  product. If a real Scoremap product exists, attach it so this system can
   be reconciled against the real thing.
 - No icon set — see Iconography above.
 - Only a working subset of the provided Inter files is wired in (18pt,
   5 styles). The full family (24pt/28pt optical sizes, Thin–Black weights)
   is sitting in `uploads/` if a future component needs it.
 - JetBrains Mono (present in the reference brief) was intentionally left
-  out — Grademax has no code/IDE surface to justify a monospace family.
+  out — Scoremap has no code/IDE surface to justify a monospace family.

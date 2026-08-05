@@ -1,10 +1,10 @@
-// Grademax design-system entry.
+// Scoremap design-system entry.
 //
 // The design references read components off a global published by the compiled
-// bundle (`window.GrademaxDesignSystem_faa73b`). Rather than vendoring/rewriting
+// bundle (`window.ScoremapDesignSystem_faa73b`). Rather than vendoring/rewriting
 // that bundle, we load it for its side effects and re-export the components as
 // named ES exports, so pages can do the README's "mechanical swap":
-//   const { Button } = window.GrademaxDesignSystem_faa73b;   // before
+//   const { Button } = window.ScoremapDesignSystem_faa73b;   // before
 //   import { Button } from '../lib/ds.js';                    // after
 //
 // Import order matters: ./reactGlobal must run first so `window.React` exists
@@ -12,7 +12,7 @@
 import './reactGlobal.js';
 import '../../_ds/grademax-design-system-faa73b3c-8cbd-4d15-a90c-3c40aa25b10c/_ds_bundle.js';
 
-const ns = window.GrademaxDesignSystem_faa73b || {};
+const ns = window.ScoremapDesignSystem_faa73b || {};
 
 if (ns.__errors && ns.__errors.length) {
   // Surface any component that failed to evaluate inside the bundle.

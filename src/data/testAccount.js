@@ -412,7 +412,7 @@ export function testDocumentContent(docToken) {
     `Category: ${doc.category}`,
     `Issued: ${doc.uploadDate}`,
     '',
-    'This is a generated sample document for the Grademax test account.',
+    'This is a generated sample document for the Scoremap test account.',
     'It is not a real school record.',
   ]);
   const fileName = `${doc.title.replace(/[—–]/g, '-').replace(/[^A-Za-z0-9-]+/g, '_')}.pdf`;
@@ -429,7 +429,7 @@ export function testMailAttachmentContent(token) {
       `From: ${message.sender.name}`,
       `Sent: ${message.date}`,
       '',
-      'This is a generated sample attachment for the Grademax test account.',
+      'This is a generated sample attachment for the Scoremap test account.',
       'It is not a real school document.',
     ]);
     return { bytes, mimeType: 'application/pdf', fileName: attachment.name };

@@ -153,7 +153,7 @@ export async function fetchMailMessage(
 	isSystemMessage = false,
 	options: FetchFollowOptions = {}
 ): Promise<MailMessage> {
-	// markAsRead stays false: reading mail in Grademax must not silently change
+	// markAsRead stays false: reading mail in Scoremap must not silently change
 	// the unread state of the student's real inbox.
 	const result = await callMessaging(
 		session,

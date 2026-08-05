@@ -5,7 +5,7 @@
  * tab; attachments download through the portal (or the generated test-account
  * PDFs) and open in the browser's viewer, same flow as Documents. Keeps the app
  * sidebar and drops all of Gmail's chrome the app doesn't need — just a clean
- * read view in the Grademax style.
+ * read view in the Scoremap style.
  */
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';

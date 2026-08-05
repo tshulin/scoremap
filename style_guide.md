@@ -1,12 +1,12 @@
-# Grademax Color Style Guide
+# Scoremap Color Style Guide
 
-The single source of truth for Grademax's color system. Every color in the app
+The single source of truth for Scoremap's color system. Every color in the app
 is a CSS custom property defined in `src/index.css` (app tokens, both themes)
 layered over `_ds/…/tokens/colors.css` (design-system defaults). Components
 never hardcode hex values — they reference tokens, so retheming is a
 token-file edit.
 
-Dark is the default theme and uses the **original Grademax dark palette**
+Dark is the default theme and uses the **original Scoremap dark palette**
 (the design-system defaults). Light is the pastel palette and is opt-in via
 `data-theme="light"` on `<html>` (toggled from the sidebar account menu,
 persisted in `localStorage.grademax-theme`).

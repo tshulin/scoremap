@@ -1,8 +1,8 @@
-/* @ds-bundle: {"format":4,"namespace":"GrademaxDesignSystem_faa73b","components":[{"name":"Badge","sourcePath":"components/badges/Badge.jsx"},{"name":"Button","sourcePath":"components/buttons/Button.jsx"},{"name":"FeatureCard","sourcePath":"components/cards/FeatureCard.jsx"},{"name":"TestimonialCard","sourcePath":"components/cards/TestimonialCard.jsx"},{"name":"WorkflowStepCard","sourcePath":"components/cards/WorkflowStepCard.jsx"},{"name":"TextInput","sourcePath":"components/forms/TextInput.jsx"},{"name":"BrowserMockup","sourcePath":"components/marketing/BrowserMockup.jsx"},{"name":"CtaBand","sourcePath":"components/marketing/CtaBand.jsx"},{"name":"Footer","sourcePath":"components/marketing/Footer.jsx"},{"name":"HeroBand","sourcePath":"components/marketing/HeroBand.jsx"},{"name":"TopNav","sourcePath":"components/navigation/TopNav.jsx"}],"sourceHashes":{"components/badges/Badge.jsx":"1356c07d57c5","components/buttons/Button.jsx":"10f890a5e477","components/cards/FeatureCard.jsx":"3f21983ba052","components/cards/TestimonialCard.jsx":"20d99a3da502","components/cards/WorkflowStepCard.jsx":"fdd114d5af4a","components/forms/TextInput.jsx":"520fde212dfc","components/marketing/BrowserMockup.jsx":"b7f25b5804a5","components/marketing/CtaBand.jsx":"27308dcc02d7","components/marketing/Footer.jsx":"7bc806996685","components/marketing/HeroBand.jsx":"c86bc78a886d","components/navigation/TopNav.jsx":"47f8fd5d958e","ui_kits/web-app/AppShell.jsx":"abbd8900f425","ui_kits/web-app/ClassDetail.jsx":"9936f950160e","ui_kits/web-app/Dashboard.jsx":"db805efd8316","ui_kits/web-app/Landing.jsx":"8280f9db38a8","ui_kits/web-app/Login.jsx":"0280ffe47fc4","ui_kits/web-app/WhatIfCalculator.jsx":"0cd06186b69b"},"inlinedExternals":[],"unexposedExports":[]} */
+/* @ds-bundle: {"format":4,"namespace":"ScoremapDesignSystem_faa73b","components":[{"name":"Badge","sourcePath":"components/badges/Badge.jsx"},{"name":"Button","sourcePath":"components/buttons/Button.jsx"},{"name":"FeatureCard","sourcePath":"components/cards/FeatureCard.jsx"},{"name":"TestimonialCard","sourcePath":"components/cards/TestimonialCard.jsx"},{"name":"WorkflowStepCard","sourcePath":"components/cards/WorkflowStepCard.jsx"},{"name":"TextInput","sourcePath":"components/forms/TextInput.jsx"},{"name":"BrowserMockup","sourcePath":"components/marketing/BrowserMockup.jsx"},{"name":"CtaBand","sourcePath":"components/marketing/CtaBand.jsx"},{"name":"Footer","sourcePath":"components/marketing/Footer.jsx"},{"name":"HeroBand","sourcePath":"components/marketing/HeroBand.jsx"},{"name":"TopNav","sourcePath":"components/navigation/TopNav.jsx"}],"sourceHashes":{"components/badges/Badge.jsx":"1356c07d57c5","components/buttons/Button.jsx":"10f890a5e477","components/cards/FeatureCard.jsx":"3f21983ba052","components/cards/TestimonialCard.jsx":"20d99a3da502","components/cards/WorkflowStepCard.jsx":"fdd114d5af4a","components/forms/TextInput.jsx":"520fde212dfc","components/marketing/BrowserMockup.jsx":"b7f25b5804a5","components/marketing/CtaBand.jsx":"27308dcc02d7","components/marketing/Footer.jsx":"7bc806996685","components/marketing/HeroBand.jsx":"c86bc78a886d","components/navigation/TopNav.jsx":"47f8fd5d958e","ui_kits/web-app/AppShell.jsx":"abbd8900f425","ui_kits/web-app/ClassDetail.jsx":"9936f950160e","ui_kits/web-app/Dashboard.jsx":"db805efd8316","ui_kits/web-app/Landing.jsx":"8280f9db38a8","ui_kits/web-app/Login.jsx":"0280ffe47fc4","ui_kits/web-app/WhatIfCalculator.jsx":"0cd06186b69b"},"inlinedExternals":[],"unexposedExports":[]} */
 
 (() => {
 
-const __ds_ns = (window.GrademaxDesignSystem_faa73b = window.GrademaxDesignSystem_faa73b || {});
+const __ds_ns = (window.ScoremapDesignSystem_faa73b = window.ScoremapDesignSystem_faa73b || {});
 
 const __ds_scope = {};
 
@@ -75,7 +75,7 @@ Object.assign(__ds_scope, { Badge });
 // components/buttons/Button.jsx
 try { (() => {
 /**
- * Button — Grademax's single CTA family.
+ * Button — Scoremap's single CTA family.
  * variant: 'primary' | 'secondary' | 'tertiary' | 'nav'
  * size: 'md' | 'sm'
  */
@@ -365,7 +365,7 @@ Object.assign(__ds_scope, { TextInput });
 try { (() => {
 /**
  * BrowserMockup — the brand's one recurring image motif: a plain browser-
- * chrome frame around a real Grademax screen (used inside HeroBand). Not a
+ * chrome frame around a real Scoremap screen (used inside HeroBand). Not a
  * generic device bezel — flat, 16px radius, hairline border, no skeuomorphism.
  */
 function BrowserMockup({
@@ -487,7 +487,7 @@ function Footer({
       fontSize: 'var(--text-caption-size)',
       color: 'var(--color-muted)'
     }
-  }, "\xA9 2026 Grademax. Not affiliated with Edupoint or StudentVUE."));
+  }, "\xA9 2026 Scoremap. Not affiliated with Edupoint or StudentVUE."));
 }
 Object.assign(__ds_scope, { Footer });
 })(); } catch (e) { __ds_ns.__errors.push({ path: "components/marketing/Footer.jsx", error: String((e && e.message) || e) }); }
@@ -498,7 +498,7 @@ try { (() => {
  * HeroBand — marketing hero. Flat black canvas (reference-corrected: no
  * gradient wash — the real expo.dev hero is completely flat), eyebrow pill,
  * white display headline + light-gray subhead + single primary CTA, then a
- * browser-window mockup of the actual Grademax dashboard beneath it (the
+ * browser-window mockup of the actual Scoremap dashboard beneath it (the
  * brand's one recurring image motif — real product UI as chrome, not
  * illustration).
  */
@@ -587,7 +587,7 @@ function TopNav({
       letterSpacing: '-0.3px',
       color: 'var(--color-ink)'
     }
-  }, "Grademax"), variant === 'marketing' && /*#__PURE__*/React.createElement("div", {
+  }, "Scoremap"), variant === 'marketing' && /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       gap: 28
@@ -627,7 +627,7 @@ function AppShell({
   const {
     TopNav,
     Button
-  } = window.GrademaxDesignSystem_faa73b;
+  } = window.ScoremapDesignSystem_faa73b;
   const items = ['Dashboard', 'Calculator'];
   return /*#__PURE__*/React.createElement("div", {
     style: {
@@ -731,7 +731,7 @@ function ClassDetail({
   const {
     Badge,
     Button
-  } = window.GrademaxDesignSystem_faa73b;
+  } = window.ScoremapDesignSystem_faa73b;
   const c = classInfo || {
     name: 'AP Biology',
     teacher: 'Ms. Alvarez',
@@ -930,7 +930,7 @@ function Dashboard({
   const {
     Badge,
     Button
-  } = window.GrademaxDesignSystem_faa73b;
+  } = window.ScoremapDesignSystem_faa73b;
   return /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: 'var(--font-sans)'
@@ -1014,7 +1014,7 @@ window.DASHBOARD_CLASSES = DASHBOARD_CLASSES;
 // ui_kits/web-app/Landing.jsx
 try { (() => {
 /**
- * Landing — Grademax marketing homepage. Composed from HeroBand, FeatureCard,
+ * Landing — Scoremap marketing homepage. Composed from HeroBand, FeatureCard,
  * WorkflowStepCard, TestimonialCard, CtaBand, Footer, TopNav.
  * Loaded via <script type="text/babel" src>, not a module — exposes itself as window.Landing.
  */
@@ -1032,7 +1032,7 @@ function Landing({
     TestimonialCard,
     CtaBand,
     Footer
-  } = window.GrademaxDesignSystem_faa73b;
+  } = window.ScoremapDesignSystem_faa73b;
   function DashboardPreview() {
     const rows = [{
       name: 'AP Biology',
@@ -1113,7 +1113,7 @@ function Landing({
       tone: "outline"
     }, "Built for StudentVUE"),
     headline: "The smarter way to see your grades.",
-    subhead: "Grademax reads your StudentVUE data and tells you what you actually need to know.",
+    subhead: "Scoremap reads your StudentVUE data and tells you what you actually need to know.",
     cta: /*#__PURE__*/React.createElement(Button, {
       variant: "primary",
       onClick: onGetStarted
@@ -1146,7 +1146,7 @@ function Landing({
   }, "Sign in with your district credentials \u2014 read-only, nothing is changed on your account."), /*#__PURE__*/React.createElement(WorkflowStepCard, {
     step: 2,
     label: "See every class at a glance"
-  }, "Grademax pulls your current grade, per-assignment breakdown, and category weights."), /*#__PURE__*/React.createElement(WorkflowStepCard, {
+  }, "Scoremap pulls your current grade, per-assignment breakdown, and category weights."), /*#__PURE__*/React.createElement(WorkflowStepCard, {
     step: 3,
     label: "Run the numbers"
   }, "Simulate a future test or missing assignment and see the effect on your final grade instantly."))), /*#__PURE__*/React.createElement("div", {
@@ -1167,7 +1167,7 @@ function Landing({
     }
   }, /*#__PURE__*/React.createElement(FeatureCard, {
     title: "Live sync, not screenshots"
-  }, "Grademax reads your StudentVUE data the moment it updates \u2014 no manual refreshing, no stale numbers."), /*#__PURE__*/React.createElement(FeatureCard, {
+  }, "Scoremap reads your StudentVUE data the moment it updates \u2014 no manual refreshing, no stale numbers."), /*#__PURE__*/React.createElement(FeatureCard, {
     title: "What-if calculator",
     dark: true
   }, "See exactly what score you need on the final to land the grade you want, before it's too late to matter.")), /*#__PURE__*/React.createElement("div", {
@@ -1218,7 +1218,7 @@ function Login({
   const {
     TextInput,
     Button
-  } = window.GrademaxDesignSystem_faa73b;
+  } = window.ScoremapDesignSystem_faa73b;
   const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
   return /*#__PURE__*/React.createElement("div", {
@@ -1242,7 +1242,7 @@ function Login({
       marginBottom: 6,
       textAlign: 'center'
     }
-  }, "Grademax"), /*#__PURE__*/React.createElement("div", {
+  }, "Scoremap"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 'var(--text-display-sm-size)',
       fontWeight: 'var(--text-display-sm-weight)',
@@ -1259,7 +1259,7 @@ function Login({
       marginBottom: 32,
       lineHeight: 1.5
     }
-  }, "Sign in with your district credentials. Read-only \u2014 Grademax never changes anything on your account."), /*#__PURE__*/React.createElement("div", {
+  }, "Sign in with your district credentials. Read-only \u2014 Scoremap never changes anything on your account."), /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       flexDirection: 'column',
@@ -1320,7 +1320,7 @@ function WhatIfCalculator({
   const {
     Button,
     Badge
-  } = window.GrademaxDesignSystem_faa73b;
+  } = window.ScoremapDesignSystem_faa73b;
   const c = classInfo || {
     name: 'AP Biology',
     pct: 94.2,

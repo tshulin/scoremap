@@ -1,6 +1,6 @@
 :root {
   /* ---- Brand / accent ----
-     Corrected per real expo.dev reference screenshots: Grademax's reference
+     Corrected per real expo.dev reference screenshots: Scoremap's reference
      brand is dark-themed, not light. Primary CTA is a solid white pill with
      black text — the inverse of the original (wrong) light-canvas/black-CTA
      spec. See readme.md "Visual foundations" for the full correction note. */
@@ -42,7 +42,7 @@
   --color-error: #eb8e90;
 
   /* ---- Intentional addition: grade bands ----
-     Grademax visualizes letter-grade tiers constantly (class rows, what-if
+     Scoremap visualizes letter-grade tiers constantly (class rows, what-if
      calculator, dashboard chips). Per user-supplied reference: three bands,
      not five — A+ through A− share one green, B+ through B− share one
      yellow, and everything C+ and below (C, D, F) shares one red. */

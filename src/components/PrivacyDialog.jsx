@@ -24,16 +24,16 @@ function PrivacyDialog({ onClose }) {
   return createPortal(
     <Dialog title="Your privacy" onClose={onClose} maxWidth={560}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <p style={paragraph}>Grademax is designed to keep students' information private.</p>
+        <p style={paragraph}>Scoremap is designed to keep students' information private.</p>
 
         <p style={paragraph}>
           Your password, login info, and grades are only ever viewed by StudentVUE and you —
-          Grademax can't read any of it.{' '}
+          Scoremap can't read any of it.{' '}
           <a href={LEARN_MORE_URL}>Learn more ↗</a>
         </p>
 
         <p style={paragraph}>
-          If you have questions or concerns about Grademax, you can contact us on{' '}
+          If you have questions or concerns about Scoremap, you can contact us on{' '}
           <a href="https://github.com/tshulin/grademax" target="_blank" rel="noreferrer">
             GitHub
           </a>
@@ -48,7 +48,7 @@ function PrivacyDialog({ onClose }) {
             lineHeight: 1.5,
           }}
         >
-          StudentVUE is a registered trademark of Edupoint Educational Systems LLC. Grademax is not
+          StudentVUE is a registered trademark of Edupoint Educational Systems LLC. Scoremap is not
           affiliated with or endorsed by Edupoint Educational Systems LLC.
         </p>
       </div>

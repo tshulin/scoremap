@@ -1,4 +1,4 @@
-# Grademax
+# Scoremap
 
 A cleaner way for students to see their StudentVUE grades, attendance, and
 documents — with live "what if" grade math.
@@ -87,5 +87,5 @@ VITE_DEMO=true npm run dev
 ---
 
 StudentVUE is a registered trademark of Edupoint Educational Systems LLC.
-Grademax is an independent, unofficial tool and is not affiliated with or
+Scoremap is an independent, unofficial tool and is not affiliated with or
 endorsed by Edupoint Educational Systems LLC.

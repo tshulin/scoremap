@@ -1,4 +1,4 @@
-// Small inline icons (Lucide-style, stroke = currentColor). Grademax ships no
+// Small inline icons (Lucide-style, stroke = currentColor). Scoremap ships no
 // icon set (see design-system readme "Iconography"); these are the few the app
 // needs, kept dependency-free.
 import React from 'react';
