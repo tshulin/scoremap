@@ -91,13 +91,13 @@ function Landing() {
       <div style={{ maxWidth: 'var(--container-max)', margin: '0 auto', padding: '0 32px 48px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
           <FeatureCard title="Grade chart">
-            See how your grade has changed over time — per-assignment impact, category breakdown, and new assignment tracking as scores post.
+            See how your grade has changed over time, including per-assignment impact, category breakdown, and new assignment tracking as scores post.
           </FeatureCard>
           <FeatureCard title="Grade calculator">
-            A hypothetical "what-if" mode: simulate scores and calculate exactly what you need on upcoming assignments or the final.
+            A hypothetical "what-if" mode that can simulate your scores and calculate exactly what you need on upcoming assignments or the final.
           </FeatureCard>
           <FeatureCard title="Attendance &amp; more">
-            Daily attendance breakdown, missed periods, report cards, documents, and mail — all in one place.
+            Scoremap includes daily attendance breakdown, missed periods, report cards, documents, and mail all in one place.
           </FeatureCard>
           <FeatureCard title="Private login">
             Your password, login info, and grades are only seen by StudentVUE and you.{' '}
