@@ -1,8 +1,8 @@
 /**
- * Landing — Grademax marketing homepage.
+ * Landing — Scoremap marketing homepage.
  *
- * React component. Composes the Grademax design-system components, which are
- * published on `window.GrademaxDesignSystem_faa73b` by the design-system
+ * React component. Composes the Scoremap design-system components, which are
+ * published on `window.ScoremapDesignSystem_faa73b` by the design-system
  * bundle (`_ds/.../_ds_bundle.js`). In a real React codebase these would be
  * replaced by named imports from the design-system package, e.g.
  *   import { TopNav, HeroBand, Button, ... } from '@grademax/design-system';
@@ -78,7 +78,7 @@ function Landing() {
       <HeroBand
         eyebrow={<Badge tone="outline">Built for StudentVUE</Badge>}
         headline="The smarter way to see your grades."
-        subhead="Grademax reads your StudentVUE data and tells you what you actually need to know."
+        subhead="Scoremap reads your StudentVUE data and tells you what you actually need to know."
         cta={<Button variant="primary" onClick={go('/login')}>Connect StudentVUE</Button>}
         mockup={
           <BrowserMockup>
@@ -123,7 +123,7 @@ function Landing() {
         }}
       >
         <div style={{ maxWidth: 'var(--container-max)', margin: '0 auto' }}>
-          © 2026 Grademax. Not affiliated with Edupoint or StudentVUE.
+          © 2026 Scoremap. Not affiliated with Edupoint or StudentVUE.
         </div>
       </div>
 

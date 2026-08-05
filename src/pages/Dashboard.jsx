@@ -2,11 +2,11 @@
  * Dashboard — logged-in "Grades" overview (route: /dashboard).
  *
  * Recreates the reference dashboard (left sidebar + full-width class rows with
- * grade + progress bar) in the Grademax design system. Built from DS tokens;
+ * grade + progress bar) in the Scoremap design system. Built from DS tokens;
  * the sidebar/rows are page-local layout (no cataloged DS shell yet).
  *
  * Design-system note: the reference has an icon per nav item and per row chip.
- * Grademax has no icon set (see design-system readme "Iconography"), so nav
+ * Scoremap has no icon set (see design-system readme "Iconography"), so nav
  * items are text-only and chips use text. Wire in Lucide/Heroicons here once an
  * icon set is attached.
  *
@@ -300,7 +300,7 @@ function DashboardPage() {
             <a href="#">Provide feedback</a>
           </div>
           <div style={{ textAlign: 'center', marginTop: 12, fontSize: 12, color: 'var(--color-text-disclaimer)' }}>
-            Grademax is not affiliated with or endorsed by Edupoint Educational Systems LLC.
+            Scoremap is not affiliated with or endorsed by Edupoint Educational Systems LLC.
           </div>
         </div>
       </main>

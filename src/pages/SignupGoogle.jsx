@@ -1,7 +1,7 @@
 /**
  * SignupGoogle — "Create a password" explainer (route: /signup/google).
  *
- * Where "with Google" leads: Grademax can't federate Google sign-in into
+ * Where "with Google" leads: Scoremap can't federate Google sign-in into
  * StudentVUE, so it explains the student must create a StudentVUE password.
  *
  * The password-help modal converts any page on a district's StudentVUE site
@@ -109,7 +109,7 @@ function SignupGoogle() {
         >
           <div>
             <div style={{ fontSize: 15, color: 'var(--color-muted)', marginBottom: 6 }}>
-              Sign up for Grademax
+              Sign up for Scoremap
             </div>
             <div
               style={{
@@ -124,8 +124,8 @@ function SignupGoogle() {
           </div>
 
           <p style={para}>
-            Grademax isn't able to use Sign in with Google to sign you in. You'll need to create a
-            password for StudentVUE that Grademax can sign you in with instead.
+            Scoremap isn't able to use Sign in with Google to sign you in. You'll need to create a
+            password for StudentVUE that Scoremap can sign you in with instead.
           </p>
           <p style={para}>
             You'll still be able to use Sign in with Google with StudentVUE afterwards.
@@ -133,7 +133,7 @@ function SignupGoogle() {
 
           <p style={para}>
             Note: If you've previously used platforms such as GradeCompass or SynergyPlus, you can
-            use the same StudentVUE password to log in to Grademax. You don't need to create a new
+            use the same StudentVUE password to log in to Scoremap. You don't need to create a new
             password.
           </p>
 
@@ -332,7 +332,7 @@ function SignupGoogle() {
           lineHeight: 1.5,
         }}
       >
-        StudentVUE is a registered trademark of Edupoint Educational Systems LLC. Grademax is not
+        StudentVUE is a registered trademark of Edupoint Educational Systems LLC. Scoremap is not
         affiliated with or endorsed by Edupoint Educational Systems LLC.
       </div>
     </div>

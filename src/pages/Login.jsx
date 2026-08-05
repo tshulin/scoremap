@@ -1,9 +1,9 @@
 /**
- * Login — Grademax "Sign in" page. Connects a StudentVUE account.
+ * Login — Scoremap "Sign in" page. Connects a StudentVUE account.
  *
  * Rebuilt from the previous app's sign-in screen (username, password, domain,
- * acknowledgement checkbox) in the Grademax design system. Composes the DS
- * components published on `window.GrademaxDesignSystem_faa73b`; the checkbox,
+ * acknowledgement checkbox) in the Scoremap design system. Composes the DS
+ * components published on `window.ScoremapDesignSystem_faa73b`; the checkbox,
  * domain-helper banner, and inline field help are built from DS tokens since
  * the system has no dedicated components for them yet.
  *
@@ -162,7 +162,7 @@ function Login() {
               marginBottom: 20,
             }}
           >
-            Grademax
+            Scoremap
           </div>
           <div
             style={{
@@ -174,7 +174,7 @@ function Login() {
               marginBottom: 8,
             }}
           >
-            Log in to Grademax
+            Log in to Scoremap
           </div>
           <div
             style={{
@@ -184,7 +184,7 @@ function Login() {
               marginBottom: 40,
             }}
           >
-            Never used Grademax before?{' '}
+            Never used Scoremap before?{' '}
             <Link to="/signup">Sign up</Link>
           </div>
 
@@ -211,7 +211,7 @@ function Login() {
                   marginTop: 8,
                 }}
               >
-                Grademax signs in to StudentVUE from inside your browser: your password is
+                Scoremap signs in to StudentVUE from inside your browser: your password is
                 encrypted here and sent straight to StudentVUE, so our relay only ever passes
                 along data it can't read. It's never sent to our servers or logged — to keep
                 you signed in, it's saved only on this device, and signing out erases it.
@@ -260,7 +260,7 @@ function Login() {
                   }}
                 >
                   Any web address from your StudentVUE portal works — with or without
-                  https://, straight from your grades page, whatever you have. Grademax
+                  https://, straight from your grades page, whatever you have. Scoremap
                   pulls the domain out of it.
                 </div>
               </div>
@@ -292,7 +292,7 @@ function Login() {
                 }}
               />
               <span>
-                I understand that Grademax is an independent, unofficial tool and is not affiliated with
+                I understand that Scoremap is an independent, unofficial tool and is not affiliated with
                 or endorsed by Edupoint Educational Systems LLC. Use of StudentVUE is subject to Edupoint
                 Educational Systems LLC's terms of service, and I am responsible for ensuring my use
                 complies with those terms.
@@ -338,7 +338,7 @@ function Login() {
           lineHeight: 1.5,
         }}
       >
-        StudentVUE is a registered trademark of Edupoint Educational Systems LLC. Grademax is not
+        StudentVUE is a registered trademark of Edupoint Educational Systems LLC. Scoremap is not
         affiliated with or endorsed by Edupoint Educational Systems LLC.
       </div>
     </div>

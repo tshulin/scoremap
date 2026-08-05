@@ -4,7 +4,7 @@
  * the current route to highlight the active item and routes on click, so pages
  * just render <Sidebar /> with no props.
  *
- * Design-system note: the reference has an icon per item; Grademax ships no
+ * Design-system note: the reference has an icon per item; Scoremap ships no
  * icon set (see design-system readme "Iconography"), so items are text-only.
  */
 import React from 'react';
@@ -163,7 +163,7 @@ function Sidebar() {
       }}
     >
       <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.4px', color: 'var(--color-ink)', padding: '0 12px', marginBottom: 24 }}>
-        Grademax
+        Scoremap
       </div>
 
       <nav style={{ flex: 1, overflowY: 'auto' }}>
