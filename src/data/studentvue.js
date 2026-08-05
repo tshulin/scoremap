@@ -1,4 +1,4 @@
-// StudentVUE sync layer — pulls everything the app shows from the in-browser
+// StudentVUE sync layer - pulls everything the app shows from the in-browser
 // portal client (src/data/api.js, which scrapes the PXP2 portal over the blind
 // relay) and maps its domain shapes to the page shapes.
 //
@@ -61,7 +61,7 @@ function mapAssignment(a) {
     ? `+${graded ? fmtNum(a.pointsEarned) : '?'}`
     : scaled
       ? `${fmtNum(a.unscaledPoints.pointsEarned)}/${fmtNum(a.unscaledPoints.pointsPossible)}`
-      : `${graded ? fmtNum(a.pointsEarned) : '—'}/${a.pointsPossible !== undefined ? fmtNum(a.pointsPossible) : '—'}`;
+      : `${graded ? fmtNum(a.pointsEarned) : 'N/A'}/${a.pointsPossible !== undefined ? fmtNum(a.pointsPossible) : 'N/A'}`;
 
   return {
     title: a.name,
@@ -74,7 +74,7 @@ function mapAssignment(a) {
     pct,
     extraCredit: a.extraCredit,
     notForGrade: a.notForGrade,
-    // The untouched domain assignment — src/calc/ computes over this.
+    // The untouched domain assignment - src/calc/ computes over this.
     raw: a,
   };
 }
@@ -103,7 +103,7 @@ function mapGradebook(rawGradebook) {
       periodNum: course.period.replace(/[^0-9]/g, ''),
       room: course.room,
       teacher: course.staff.name,
-      grade: graded ? mark.letter : '—',
+      grade: graded ? mark.letter : 'N/A',
       pct: graded ? round(mark.percentage, 2) : null,
       isNew: 0,
       // Weighted-category config for src/calc/; undefined = straight points.
@@ -174,7 +174,7 @@ function mapMailMessage(m) {
 
 // ---- demo snapshot (VITE_DEMO) ----
 // Built through the exact same mappings real data takes, so every feature works
-// identically in demo — the only difference is where the Gradebook came from.
+// identically in demo - the only difference is where the Gradebook came from.
 
 // Demo-only: refreshes after the first nudge a few class percentages so the
 // "changed since last refresh" UI has real deltas to show. Never runs for
@@ -214,17 +214,17 @@ function demoSnapshot() {
       demo: true,
     },
     meta: {
-      gradebook: { ok: true, placeholder: true, message: 'Demo mode — sample data.' },
+      gradebook: { ok: true, placeholder: true, message: 'Demo mode. Sample data.' },
       attendance: { ok: true, placeholder: true, message: '' },
       documents: { ok: true, message: '' },
-      mail: { ok: true, placeholder: true, message: 'Demo mode — sample messages.' },
+      mail: { ok: true, placeholder: true, message: 'Demo mode. Sample messages.' },
     },
   };
 }
 
 // ---- test-account snapshot (username "test" / password "test") ----
-// Same idea as the demo snapshot, but triggered by credentials at runtime —
-// including production builds — so features can be exercised on the deployed
+// Same idea as the demo snapshot, but triggered by credentials at runtime -
+// including production builds - so features can be exercised on the deployed
 // site without a real StudentVUE account. Data flows through the exact same
 // mappings real data takes.
 
@@ -259,10 +259,10 @@ function testSnapshot() {
       demo: true,
     },
     meta: {
-      gradebook: { ok: true, placeholder: true, message: 'Test account — sample data.' },
+      gradebook: { ok: true, placeholder: true, message: 'Test account. Sample data.' },
       attendance: { ok: true, placeholder: true, message: '' },
       documents: { ok: true, message: '' },
-      mail: { ok: true, placeholder: true, message: 'Test account — sample messages.' },
+      mail: { ok: true, placeholder: true, message: 'Test account. Sample messages.' },
     },
   };
 }
@@ -271,15 +271,15 @@ function testSnapshot() {
 
 const friendlyGradebookMessage = (error) => {
   if (error.code === 'NO_ACTIVE_GRADING_PERIOD')
-    return 'No active grading period — grades will appear when the term starts.';
+    return 'No active grading period. Grades will appear when the term starts.';
   if (error.code === 'PARSE_FAILED')
-    return 'Grades are not readable yet — live gradebook support is still being finished.';
+    return 'Grades are not readable yet. Live gradebook support is still being finished.';
   return error.message;
 };
 
 const friendlyMailMessage = (error) => {
   if (error.code === 'PARSE_FAILED')
-    return 'Messages are not readable yet — live mail support is still being finished.';
+    return 'Messages are not readable yet. Live mail support is still being finished.';
   return error.message;
 };
 
@@ -296,7 +296,7 @@ const FETCHERS = {
 
 // Who is signed in, without asking the portal if we can avoid it. Sign-in
 // already fetched the student to show the name, a reload finds it mirrored in
-// sessionStorage, and a scoped refresh still holds the previous snapshot — so in
+// sessionStorage, and a scoped refresh still holds the previous snapshot - so in
 // the steady state this costs zero requests. Only a session that somehow knows
 // no name falls through to the portal.
 function knownIdentity(knownStudent, previous) {
@@ -323,8 +323,8 @@ export async function sync(knownStudent, { scope = ALL_RESOURCES, previous = nul
   const base = previous || emptySnapshot;
   const identity = knownIdentity(knownStudent, base);
 
-  // Only the requested resources are fetched, plus student info if — and only
-  // if — nobody knows the name yet.
+  // Only the requested resources are fetched, plus student info if - and only
+  // if - nobody knows the name yet.
   const jobs = scope.filter((name) => FETCHERS[name]).map((name) => [name, FETCHERS[name]()]);
   if (!identity) jobs.unshift(['student', api.getStudent()]);
 
@@ -347,7 +347,7 @@ export async function sync(knownStudent, { scope = ALL_RESOURCES, previous = nul
   };
 
   // A sync that loses only the student-info request must not blank the name out
-  // of the chrome — the app already knows who is signed in, and after a reload
+  // of the chrome - the app already knows who is signed in, and after a reload
   // there is no caller to pass it back in.
   const student = results.student;
   const info = student && student.status === 'fulfilled' ? student.value : identity;
@@ -369,14 +369,14 @@ export async function sync(knownStudent, { scope = ALL_RESOURCES, previous = nul
     data.assignmentsByClass = mapped.assignmentsByClass;
     data.semesters = mapped.semesters;
     data.session.semester = mapped.semester;
-    // Every sync teaches the per-class grade index a little more — the
+    // Every sync teaches the per-class grade index a little more - the
     // portal's letters are the only honest source of each teacher's scale.
     harvestFromClasses(mapped.classes);
     data.meta.gradebook = {
       ok: true,
       placeholder: gradebook.value.placeholder,
       message: gradebook.value.placeholder
-        ? 'Sample gradebook — the portal has no active grading period yet.'
+        ? 'Sample gradebook. The portal has no active grading period yet.'
         : '',
     };
   } else if (gradebook) {

@@ -1,7 +1,7 @@
 // Per-class letter cutoffs. The portal applies each teacher's scale
 // server-side and only shows us the results, so cutoffs are OBSERVED from
 // (percentage, letter) pairs the portal exposes, inferred conservatively, and
-// overridable by the student. GradeCompass never computed cutoffs either — it
+// overridable by the student. GradeCompass never computed cutoffs either - it
 // displayed Synergy's letters; this reconstructs the scale those letters imply.
 
 export const LETTER_ORDER = [

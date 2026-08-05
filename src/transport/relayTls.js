@@ -7,7 +7,7 @@
 //
 // subtls is pinned to an exact version (it's a young, single-maintainer TLS 1.3
 // implementation). If it ever proves unreliable, the fallback is rustls compiled
-// to WASM — heavier but battle-tested. Both satisfy the same {read,write} contract
+// to WASM - heavier but battle-tested. Both satisfy the same {read,write} contract
 // used below, so swapping is contained to this file.
 
 import { startTls, TrustedCert } from 'subtls';

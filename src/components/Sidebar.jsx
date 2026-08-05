@@ -1,20 +1,31 @@
 /**
- * Sidebar — shared logged-in left nav (Grades + class list, Attendance,
+ * Sidebar - shared logged-in left nav (Grades + class list, Attendance,
  * Documents, Mail, privacy note, Feedback, profile). Self-navigating: it reads
  * the current route to highlight the active item and routes on click, so pages
  * just render <Sidebar /> with no props.
  *
- * Design-system note: the reference has an icon per item; Grademax ships no
- * icon set (see design-system readme "Iconography"), so items are text-only.
+ * Navigation icons use the app's small dependency-free inline SVG set.
  */
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useClasses, useSession, useSignOut } from '../data/SyncProvider.jsx';
-import { SunIcon, MoonIcon, LogOutIcon } from '../lib/icons.jsx';
+import {
+  BellIcon,
+  BookOpenIcon,
+  CalculatorIcon,
+  FilesIcon,
+  LockIcon,
+  LogOutIcon,
+  MailIcon,
+  MessageSquareIcon,
+  MoonIcon,
+  PersonIcon,
+  SunIcon,
+} from '../lib/icons.jsx';
 import PrivacyDialog from './PrivacyDialog.jsx';
 
 // Module-level (not inside Sidebar): a component defined inside the render
-// function gets a new identity every render, so React remounts its DOM node —
+// function gets a new identity every render, so React remounts its DOM node -
 // which kills in-flight CSS transitions (the sun/moon rotate swap) and resets
 // the gm-press-pop click feedback.
 function IconButton({ label, onClick, className, onAnimationEnd, children }) {
@@ -75,7 +86,7 @@ function Sidebar() {
   };
 
   // Sun and moon stacked; the active one rotates in while the other rotates
-  // out — the reference app's dark-toggle icon animation.
+  // out - the reference app's dark-toggle icon animation.
   const themeIcon = (
     <span style={{ position: 'relative', display: 'inline-flex', width: 16, height: 16 }}>
       <span
@@ -117,9 +128,10 @@ function Sidebar() {
   else if (pathname.startsWith('/documents')) section = 'documents';
   else if (pathname.startsWith('/gpa-calculator')) section = 'gpa-calculator';
   else if (pathname.startsWith('/mail')) section = 'mail';
+  else if (pathname.startsWith('/feedback')) section = 'feedback';
   else if (pathname.startsWith('/grades/')) activeClassId = decodeURIComponent(pathname.split('/')[2] || '');
 
-  function NavItem({ label, active, sub, onClick }) {
+  function NavItem({ label, active, sub, onClick, icon: Icon }) {
     const [hov, setHov] = React.useState(false);
     return (
       <div
@@ -138,9 +150,17 @@ function Sidebar() {
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
         }}
       >
-        {label}
+        {Icon && (
+          <span style={{ display: 'inline-flex', flexShrink: 0 }}>
+            <Icon size={17} />
+          </span>
+        )}
+        <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>
       </div>
     );
   }
@@ -163,19 +183,19 @@ function Sidebar() {
       }}
     >
       <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.4px', color: 'var(--color-ink)', padding: '0 12px', marginBottom: 24 }}>
-        Grademax
+        Scoremap
       </div>
 
       <nav style={{ flex: 1, overflowY: 'auto' }}>
-        <NavItem label="Grades" active={section === 'grades' && !activeClassId} onClick={() => navigate('/dashboard')} />
+        <NavItem icon={BookOpenIcon} label="Grades" active={section === 'grades' && !activeClassId} onClick={() => navigate('/dashboard')} />
         {classes.map((c) => (
           <NavItem key={c.id} label={c.name} sub active={activeClassId === c.id} onClick={() => navigate(`/grades/${c.id}`)} />
         ))}
         <div style={{ height: 12 }} />
-        <NavItem label="Attendance" active={section === 'attendance'} onClick={() => navigate('/attendance')} />
-        <NavItem label="Documents" active={section === 'documents'} onClick={() => navigate('/documents')} />
-        <NavItem label="Mail" active={section === 'mail'} onClick={() => navigate('/mail')} />
-        <NavItem label="GPA calculator" active={section === 'gpa-calculator'} onClick={() => navigate('/gpa-calculator')} />
+        <NavItem icon={BellIcon} label="Attendance" active={section === 'attendance'} onClick={() => navigate('/attendance')} />
+        <NavItem icon={FilesIcon} label="Documents" active={section === 'documents'} onClick={() => navigate('/documents')} />
+        <NavItem icon={MailIcon} label="Mail" active={section === 'mail'} onClick={() => navigate('/mail')} />
+        <NavItem icon={CalculatorIcon} label="GPA calculator" active={section === 'gpa-calculator'} onClick={() => navigate('/gpa-calculator')} />
       </nav>
 
       <button
@@ -196,10 +216,15 @@ function Sidebar() {
           cursor: 'pointer',
         }}
       >
-        Your password, login info, and grades are only seen by StudentVUE and you.
+        <span style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+          <span style={{ display: 'inline-flex', flexShrink: 0, marginTop: 2 }}>
+            <LockIcon size={15} />
+          </span>
+          <span>Your password, login info, and grades are only seen by StudentVUE and you.</span>
+        </span>
       </button>
 
-      <NavItem label="Feedback" />
+      <NavItem icon={MessageSquareIcon} label="Feedback" active={section === 'feedback'} onClick={() => navigate('/feedback')} />
       <div
         style={{
           display: 'flex',
@@ -210,6 +235,9 @@ function Sidebar() {
           marginTop: 4,
         }}
       >
+        <span style={{ display: 'inline-flex', flexShrink: 0, color: 'var(--color-body)' }}>
+          <PersonIcon size={16} />
+        </span>
         <span
           style={{
             flex: 1,

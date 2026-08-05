@@ -198,7 +198,7 @@ describe('createRelayFetch', () => {
 		const relayFetch = createRelayFetch({ relayUrl: 'ws://relay' });
 
 		expect(await (await relayFetch(URL_A, {})).text()).toBe(pages[0]);
-		// A misframed first body would corrupt this one — that is the failure
+		// A misframed first body would corrupt this one - that is the failure
 		// mode keep-alive introduces, so it is the thing worth asserting.
 		expect(await (await relayFetch(URL_A, {})).text()).toBe(pages[1]);
 		expect(opened).toHaveLength(1);
@@ -237,7 +237,7 @@ describe('createRelayFetch', () => {
 
 		const inFlight = Array.from({ length: 12 }, () => relayFetch(URL_A, {}));
 		await vi.waitFor(() => expect(gate.length).toBe(4));
-		// Twelve concurrent requests, and the relay only ever sees four sockets —
+		// Twelve concurrent requests, and the relay only ever sees four sockets -
 		// its per-IP concurrency cap can no longer be tripped by fanning out.
 		expect(opened).toHaveLength(4);
 
@@ -251,7 +251,7 @@ describe('createRelayFetch', () => {
 	});
 
 	it('retries on a fresh connection when a pooled one has gone away', async () => {
-		// The connection accepts the first request and is dead by the second —
+		// The connection accepts the first request and is dead by the second -
 		// exactly what an idle keep-alive socket dropped by the portal looks like.
 		respond = (req, conn) => (conn.index === 0 && req.index === 1 ? 'die' : { body: `c${conn.index}` });
 		const relayFetch = createRelayFetch({ relayUrl: 'ws://relay' });
@@ -362,7 +362,7 @@ describe('createRelayFetch', () => {
 			expect(opened[0].closed).toBe(false); // still inside the reuse window
 
 			s.advance(2_000);
-			// Nothing asked for a connection — the pool closed it by itself.
+			// Nothing asked for a connection - the pool closed it by itself.
 			expect(opened[0].closed).toBe(true);
 			expect(relayFetch.stats()).toEqual({ live: 0, idle: 0 });
 		});

@@ -1,11 +1,11 @@
 /**
- * GetStarted — Grademax "Get started" / sign-up page (route: /signup).
+ * GetStarted - Scoremap "Get started" / sign-up page (route: /signup).
  *
  * Asks how the student signs in to StudentVUE, then branches:
  *   • "with Google"     → /signup/google  (create-a-password explainer)
  *   • "with a password" → /login          (the sign-in page)
  *
- * POC note: routes are static harness files here — "with Google" opens
+ * POC note: routes are static harness files here - "with Google" opens
  * signup/google.html and "with a password" opens the sign-in page. Under a
  * real router, swap the onClick navigations for <Link to="/signup/google">
  * and <Link to="/login">.
@@ -54,7 +54,7 @@ function GetStarted() {
           }}
         >
           <div style={{ fontSize: 15, color: 'var(--color-muted)', marginBottom: 6 }}>
-            Sign up for Grademax
+            Sign up for Scoremap
           </div>
           <div
             style={{
@@ -78,7 +78,7 @@ function GetStarted() {
           </div>
 
           <div style={{ fontSize: 14, color: 'var(--color-body)', marginTop: 28 }}>
-            Already used Grademax?{' '}
+            Already used Scoremap?{' '}
             <Link to="/login">Log in</Link>
           </div>
         </div>
@@ -93,7 +93,7 @@ function GetStarted() {
           lineHeight: 1.5,
         }}
       >
-        StudentVUE is a registered trademark of Edupoint Educational Systems LLC. Grademax is not
+        StudentVUE is a registered trademark of Edupoint Educational Systems LLC. Scoremap is not
         affiliated with or endorsed by Edupoint Educational Systems LLC.
       </div>
     </div>

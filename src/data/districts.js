@@ -1,4 +1,4 @@
-// GENERATED FILE — do not edit by hand. Regenerate: node scripts/mine-districts.mjs
+// GENERATED FILE - do not edit by hand. Regenerate: node scripts/mine-districts.mjs
 // Districts that use StudentVUE, from Edupoint's public district-lookup
 // service (the endpoint the official app queries by zip code). 829
 // districts as of 2026-07-23. Sorted by state, then name.

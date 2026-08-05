@@ -1,15 +1,15 @@
 /**
- * Attendance — month calendar + list view (route: /attendance).
+ * Attendance - month calendar + list view (route: /attendance).
  *
  * Records come from the backend's /api/attendance via the sync layer. Each
  * record: { date, status, note, reason, periods: [{ period, reason, note }] }.
- * `unreadableAbsences` counts rows the backend parser could not read — shown as
+ * `unreadableAbsences` counts rows the backend parser could not read - shown as
  * a warning so a short list is never mistaken for a complete one.
  *
  * Two views, toggled by a segmented control:
- *   • Calendar — the selected month, navigable forward/back; days with records
+ *   • Calendar - the selected month, navigable forward/back; days with records
  *     are marked with a status-colored chip. Legend below.
- *   • List — every record, newest first (like the old GradeCompass view), each
+ *   • List - every record, newest first (like the old GradeCompass view), each
  *     row expandable to the affected periods.
  */
 import React, { useMemo, useState } from 'react';
@@ -179,7 +179,7 @@ function Attendance() {
             >
               {meta.attendance.message
                 ? `Attendance could not be loaded: ${meta.attendance.message}`
-                : `${unreadableAbsences} attendance ${unreadableAbsences === 1 ? 'record' : 'records'} could not be read — this list may be incomplete.`}
+                : `${unreadableAbsences} attendance ${unreadableAbsences === 1 ? 'record' : 'records'} could not be read. This list may be incomplete.`}
             </div>
           )}
 
@@ -377,12 +377,12 @@ function Attendance() {
                     {open && (
                       <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
                         {(e.periods || []).length === 0 && (
-                          <div style={{ fontSize: 15, color: 'var(--color-body)' }}>{e.reason || '—'}</div>
+                          <div style={{ fontSize: 15, color: 'var(--color-body)' }}>{e.reason || 'N/A'}</div>
                         )}
                         {(e.periods || []).map((p) => (
                           <div key={p.period} style={{ fontSize: 15, color: 'var(--color-body)' }}>
-                            {periodClass[p.period] || `Period ${p.period}`}: {p.reason || '—'}
-                            {p.note ? ` — ${p.note}` : ''}
+                            {periodClass[p.period] || `Period ${p.period}`}: {p.reason || 'N/A'}
+                            {p.note ? `: ${p.note}` : ''}
                           </div>
                         ))}
                       </div>

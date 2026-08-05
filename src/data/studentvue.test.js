@@ -1,6 +1,6 @@
 // The sync layer's request budget. Every portal request the app makes is
 // charged against a per-IP limit an entire school shares, so "which requests
-// does a refresh actually make" is a correctness property, not a nicety —
+// does a refresh actually make" is a correctness property, not a nicety -
 // these tests assert the call counts, not just the mapped output.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SAMPLE_ATTENDANCE, SAMPLE_GRADEBOOK } from './placeholders';
@@ -128,7 +128,7 @@ describe('sync scope', () => {
     const full = await sync(STUDENT);
     const next = await sync(undefined, { scope: ['mail'], previous: full });
 
-    // Nothing asked the gradebook for anything, so its status is untouched —
+    // Nothing asked the gradebook for anything, so its status is untouched -
     // a scoped refresh must never paint an error onto a page it did not sync.
     expect(next.meta.gradebook.ok).toBe(true);
     expect(next.meta.gradebook.message).toBe('');

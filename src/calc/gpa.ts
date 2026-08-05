@@ -26,7 +26,7 @@ export function gpaPoints(grade: GpaGrade, weighted = false): number {
 }
 
 // Portal letters carry +/- modifiers the four-point scale ignores; ungraded
-// classes show '—'. Some districts use E as the failing letter.
+// classes show 'N/A'. Some districts use E as the failing letter.
 export function toGpaGrade(letter: string): GpaGrade | null {
 	const base = letter.trim().charAt(0).toUpperCase();
 	if (base === 'E') return 'F';

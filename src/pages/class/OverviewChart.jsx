@@ -9,17 +9,13 @@ import { gradeSeries } from '../../calc/index';
 import { useSession } from '../../data/SyncProvider.jsx';
 import { fmt2, shortDate, todayIso, weekdayDate } from './ui.jsx';
 import { useCursorTooltip } from './useCursorTooltip.js';
+import { categoryColorFor, makeCategoryColorMap } from './categoryColors.js';
 
-// Categorical palette, validated (dataviz six-checks) against the dark card
-// surface: lightness band, chroma, CVD ΔE ≥ 8 on adjacent pairs, contrast.
-// Grade-band green/yellow/red are status colors here and deliberately absent.
-// Categories beyond the palette fall to muted gray rather than cycling hues.
-const CAT_COLORS = ['#3987e5', '#d95926', '#199e70', '#9085e9', '#d55181'];
 const CUMULATIVE = '__cumulative__';
 
 // Geometry is shared with GradeChart (same fixed height, same paddings) so
 // switching between the Assignments and Overview tabs keeps the plot frame
-// perfectly in place — only the lines change. Width is measured from the
+// perfectly in place - only the lines change. Width is measured from the
 // container (GradeCompass-style): the svg maps 1:1 to pixels at any screen
 // size, so the chart fills the page and text never stretches.
 const H = 260;
@@ -39,7 +35,7 @@ function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES
   const weighted = !!(categories && categories.length > 0);
   const [hidden, setHidden] = React.useState(() => new Set());
   const [hover, setHover] = React.useState(null);
-  // The tooltip eases toward the cursor every frame (rAF smoothing — see hook).
+  // The tooltip eases toward the cursor every frame (rAF smoothing - see hook).
   const { tooltipRef, onMove, flipStyle } = useCursorTooltip();
   // Real pixel width from the container, so coordinates are 1:1 with screen.
   const wrapRef = React.useRef(null);
@@ -57,18 +53,22 @@ function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES
   const lines = React.useMemo(() => {
     const built = [];
     let latest = todayIso();
+    const categoryColors = makeCategoryColorMap(
+      assignments.map((assignment) => assignment.category ?? 'All'),
+      rows.map((row) => row.name),
+    );
 
     // An unweighted class with no categories has one "All" bucket that IS the
-    // cumulative line — drawing it twice would just shadow the ink line.
+    // cumulative line - drawing it twice would just shadow the ink line.
     const catRows = !weighted && rows.length === 1 ? [] : rows;
-    for (const [idx, r] of catRows.entries()) {
+    for (const r of catRows) {
       const base = gradeSeries(assignments.filter((a) => (a.category ?? 'All') === r.name));
       const points = base.map((p) => ({ date: p.date, grade: p.grade }));
       if (points.length) latest = points[points.length - 1].date > latest ? points[points.length - 1].date : latest;
       built.push({
         key: r.name,
         label: r.name,
-        color: idx < CAT_COLORS.length ? CAT_COLORS[idx] : 'var(--color-muted)',
+        color: categoryColorFor(r.name, categoryColors),
         points,
         dashedFrom: null,
         width: 2,
@@ -87,7 +87,7 @@ function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES
     if (cum.points.length) latest = cum.points[cum.points.length - 1].date > latest ? cum.points[cum.points.length - 1].date : latest;
 
     // What-ifs land on an anchor date: today, or the newest data point when the
-    // gradebook runs ahead of the calendar — never before the series ends.
+    // gradebook runs ahead of the calendar - never before the series ends.
     if (overrides.size > 0) {
       const jumpTo = (line, grade) => {
         const last = line.points[line.points.length - 1];
@@ -103,7 +103,7 @@ function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES
         if (overrides.has(line.key)) jumpTo(line, overrides.get(line.key));
       }
       // Cumulative under the what-ifs: declared weights (or, unweighted, the
-      // point-share weights) over every category that has — or is given — a
+      // point-share weights) over every category that has - or is given - a
       // grade; an empty weighted category with a what-if joins at full weight.
       let wSum = 0;
       let total = 0;
@@ -123,7 +123,7 @@ function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES
 
   const visibleLines = lines.filter((l) => !hidden.has(l.key));
 
-  // Shared x axis: the union of every line's dates, evenly spaced — built from
+  // Shared x axis: the union of every line's dates, evenly spaced - built from
   // ALL lines so toggling one doesn't reshuffle the others.
   const dates = React.useMemo(
     () => [...new Set(lines.flatMap((l) => l.points.map((p) => p.date)))].sort(),
@@ -207,7 +207,7 @@ function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES
           {ticks.map((t) => (
             <g key={t}>
               <line x1={padL} y1={yAt(t)} x2={W - padR} y2={yAt(t)} stroke="var(--color-hairline)" strokeWidth="1" />
-              {/* left-anchored at the svg edge — matches GradeChart so the
+              {/* left-anchored at the svg edge - matches GradeChart so the
                   axis column is identical between tabs */}
               <text x={0} y={yAt(t) + 4} textAnchor="start" fontSize="12" fill="var(--color-muted)">
                 {fmt2(t)}

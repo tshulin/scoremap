@@ -1,5 +1,5 @@
 // Grade → band-color helpers. Centralized here (the design references defined a
-// copy in each file — see README "Grade → band color helper ... centralize it").
+// copy in each file - see README "Grade → band color helper ... centralize it").
 
 // Letter grade → band. A → green, B → yellow, C and below → red;
 // no grade at all → the ungraded gray.
