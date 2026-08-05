@@ -27,8 +27,8 @@ function PrivacyDialog({ onClose }) {
         <p style={paragraph}>Scoremap is designed to keep students' information private.</p>
 
         <p style={paragraph}>
-          Your password, login info, and grades are only ever viewed by StudentVUE and you —
-          Scoremap can't read any of it.{' '}
+          Your password, login info, and grades are only ever viewed by StudentVUE and you.
+          Scoremap doesn't have access to any of it.{' '}
           <a href={LEARN_MORE_URL}>Learn more ↗</a>
         </p>
 
