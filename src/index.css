@@ -2,14 +2,14 @@
    The design-system stylesheet (imported first in main.jsx) ships the token
    names and dark defaults; the :root block here re-colors them to the style
    guide, and the [data-theme='light'] block restates every token for light.
-   Components reference tokens only — retheming stays a this-file edit. */
+   Components reference tokens only - retheming stays a this-file edit. */
 body {
   margin: 0;
   background: var(--color-canvas);
   font-family: var(--font-sans);
 }
 
-/* ---- Dark theme (default) — the original Scoremap dark palette ----
+/* ---- Dark theme (default) - the original Scoremap dark palette ----
    Values match the design-system defaults (_ds/tokens/colors.css); the
    purpose tokens map them onto the same knobs the light theme drives, so
    components stay theme-agnostic. */
@@ -50,7 +50,7 @@ body {
   --color-text-disclaimer: #71717a;
   --color-trend-stroke: #ffffff;
 
-  /* Accent — the style guide's pair on the original dark surfaces */
+  /* Accent - the style guide's pair on the original dark surfaces */
   --color-text-link: #7db4f5;
   --color-text-link-hover: #a7cdfa;
   --color-text-link-secondary: #7db4f5;
@@ -62,14 +62,25 @@ body {
   --color-grade-bad: #ff2d55;
   --color-grade-none: #54585d;
 
-  /* 14% tints — chip/badge backgrounds derived from their foreground */
+  /* Alphabetical assignment-category palette after green and red */
+  --color-category-blue: #4da8ff;
+  --color-category-purple: #a78bfa;
+  --color-category-orange: #ff8a3d;
+  --color-category-teal: #2dd4bf;
+  --color-category-pink: #f472b6;
+  --color-category-lime: #a3e635;
+  --color-category-indigo: #818cf8;
+  --color-category-coral: #fb7185;
+  --color-category-cyan: #22d3ee;
+
+  /* 14% tints - chip/badge backgrounds derived from their foreground */
   --color-tint-good: color-mix(in srgb, var(--color-grade-good) 14%, transparent);
   --color-tint-mid: color-mix(in srgb, var(--color-grade-mid) 14%, transparent);
   --color-tint-bad: color-mix(in srgb, var(--color-grade-bad) 14%, transparent);
   --color-tint-accent: color-mix(in srgb, var(--color-text-link) 14%, transparent);
 }
 
-/* ---- Light theme (pastel) — opt-in via data-theme="light" on <html> ---- */
+/* ---- Light theme (pastel) - opt-in via data-theme="light" on <html> ---- */
 :root[data-theme='light'] {
   color-scheme: light;
 
@@ -107,7 +118,7 @@ body {
   --color-text-disclaimer: #918da1;
   --color-trend-stroke: #413e4f;
 
-  /* Primary CTA — ink pill on light canvas (placeholder, see style_guide.md) */
+  /* Primary CTA - ink pill on light canvas (placeholder, see style_guide.md) */
   --color-primary: #2e2b3a;
   --color-primary-active: #413e4f;
   --color-on-primary: #ffffff;
@@ -123,6 +134,17 @@ body {
   --color-grade-mid: #f0c46a;
   --color-grade-bad: #ec8b8b;
   --color-grade-none: #cfcbdc;
+
+  /* Softer counterparts for the assignment-category palette */
+  --color-category-blue: #6f9fd6;
+  --color-category-purple: #9a86ce;
+  --color-category-orange: #d99562;
+  --color-category-teal: #58afa3;
+  --color-category-pink: #c982a9;
+  --color-category-lime: #8cab50;
+  --color-category-indigo: #7d83c9;
+  --color-category-coral: #d47c89;
+  --color-category-cyan: #54a7bd;
 }
 
 /* ---- Motion (mirrors the original GradeCompass) ----
@@ -162,7 +184,7 @@ body {
 
 /* Chart draw-in: the series (line, area fill, dots) sweeps in left→right via
    a clip reveal when a class page or the overview opens, and again after a
-   refresh. Axes and gridlines stay put — only the data draws itself. */
+   refresh. Axes and gridlines stay put - only the data draws itself. */
 @keyframes gm-chart-draw {
   from { clip-path: inset(0 100% 0 0); }
   to { clip-path: inset(0 0 0 0); }

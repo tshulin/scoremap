@@ -8,7 +8,7 @@ const DEFAULT_MAX_HOPS = 10;
 const DEFAULT_TIMEOUT_MS = 15_000;
 
 // The transport contract the portal client needs. A real `fetch` Response
-// satisfies it, and so does the relay fetch-shim — which, unlike a browser
+// satisfies it, and so does the relay fetch-shim - which, unlike a browser
 // cross-origin fetch, can expose every Set-Cookie (getSetCookie).
 export interface PortalResponse {
 	status: number;

@@ -84,7 +84,7 @@ describe('SAMPLE_GRADEBOOK feeds the grade engine', () => {
 		const grade = courseGrade(mark.assignments, mark.categories);
 
 		// Finals holds 20% but has no work, so the grade divides by 80, not 100. Counting it
-		// as a zero instead would give 68 — the bug this sample is shaped to catch.
+		// as a zero instead would give 68 - the bug this sample is shaped to catch.
 		expect(grade).toBeCloseTo(85);
 	});
 

@@ -1,6 +1,6 @@
-// Grade overview: the category multigraph (OverviewChart) on top — same spot
-// and framing as the assignments-tab chart — with the category table below.
-// The table doubles as the what-if editor — each category's current grade is
+// Grade overview: the category multigraph (OverviewChart) on top - same spot
+// and framing as the assignments-tab chart - with the category table below.
+// The table doubles as the what-if editor - each category's current grade is
 // a typeable box (defaulting to the real value); typing a different number
 // replays the whole overview as if that grade landed today: effective
 // weights, contributions, the Final Grade row, and the chart's dashed jumps
@@ -11,6 +11,7 @@ import { scoreBandColor as bandColor } from '../../lib/grades.js';
 import { categoryOverview } from '../../calc/index';
 import { Chip, ScoreInput, fmt2 } from './ui.jsx';
 import OverviewChart from './OverviewChart.jsx';
+import { compareCategoryNames } from './categoryColors.js';
 
 const th = { padding: '6px 12px 8px 0', fontWeight: 600, whiteSpace: 'nowrap' };
 const td = { padding: '10px 12px 10px 0', verticalAlign: 'middle' };
@@ -33,10 +34,10 @@ const card = {
 
 function OverviewTab({ assignments, categories, hiddenRows = [] }) {
   const baseRows = React.useMemo(
-    () => categoryOverview(assignments, categories),
+    () => categoryOverview(assignments, categories).sort((a, b) => compareCategoryNames(a.name, b.name)),
     [assignments, categories],
   );
-  // Hidden points come from the synced data (see ClassDetail), keyed by name —
+  // Hidden points come from the synced data (see ClassDetail), keyed by name -
   // the overview's own effective-based diff would mistake edits for portal gaps.
   const hiddenByName = React.useMemo(
     () => new Map(hiddenRows.map((d) => [d.category, d])),
@@ -86,7 +87,7 @@ function OverviewTab({ assignments, categories, hiddenRows = [] }) {
   if (baseRows.length === 0) {
     return (
       <div style={{ textAlign: 'center', color: 'var(--color-muted)', fontSize: 15, padding: '48px 0' }}>
-        No graded work yet — the overview appears with the first scored assignment.
+        No graded work yet. The overview appears with the first scored assignment.
       </div>
     );
   }
@@ -96,7 +97,7 @@ function OverviewTab({ assignments, categories, hiddenRows = [] }) {
 
   return (
     <>
-      {/* the multigraph sits where the assignments-tab chart does — top, full width */}
+      {/* the multigraph sits where the assignments-tab chart does - top, full width */}
       <div style={{ marginBottom: 20 }}>
         <OverviewChart assignments={assignments} categories={categories} rows={baseRows} overrides={overrides} />
       </div>
@@ -153,7 +154,7 @@ function OverviewTab({ assignments, categories, hiddenRows = [] }) {
                     <td style={{ ...td, whiteSpace: 'nowrap' }}>
                       {row.pointsPossible > 0 || row.pointsEarned > 0
                         ? `${fmt2(row.pointsEarned)}/${fmt2(row.pointsPossible)}`
-                        : '—'}
+                        : 'N/A'}
                     </td>
                     <td style={{ ...td, whiteSpace: 'nowrap' }}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
@@ -161,7 +162,7 @@ function OverviewTab({ assignments, categories, hiddenRows = [] }) {
                         <ScoreInput
                           width={60}
                           value={whatIf[row.name] ?? (row.currentPct != null ? fmt2(row.currentPct) : '')}
-                          placeholder="—"
+                          placeholder="N/A"
                           label={`${row.name} current grade`}
                           onChange={(v) => setWhatIf((prev) => ({ ...prev, [row.name]: v }))}
                         />
@@ -172,7 +173,7 @@ function OverviewTab({ assignments, categories, hiddenRows = [] }) {
                     </td>
                     <td style={{ ...td, whiteSpace: 'nowrap', fontWeight: 600 }}>{fmt2(row.effectiveWeightPct)}%</td>
                     <td style={{ ...td, whiteSpace: 'nowrap', fontWeight: 600 }}>
-                      {row.nominalWeightPct != null ? `${fmt2(row.nominalWeightPct)}%` : '—'}
+                      {row.nominalWeightPct != null ? `${fmt2(row.nominalWeightPct)}%` : 'N/A'}
                     </td>
                     <td style={{ ...td, paddingRight: 0, fontWeight: 600, whiteSpace: 'nowrap' }}>
                       {fmt2(row.contributionPct)}%

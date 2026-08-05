@@ -19,7 +19,7 @@ const pick = (fields: Record<string, string>, labels: string[]): string => {
 };
 
 // One page, nothing else. The portal also serves a student portrait linked from
-// this page's bootstrap data, but the app renders the name and grade only — so
+// this page's bootstrap data, but the app renders the name and grade only - so
 // downloading the image spent a request (and the bytes) on something no screen
 // ever showed. If a portrait is ever displayed, fetch it there, not here.
 export async function fetchStudentInfo(

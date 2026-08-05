@@ -7,7 +7,7 @@
 //
 // left/top are written imperatively and deliberately kept OUT of the JSX
 // style prop, so React re-renders never snap the box back to a stale spot.
-// Which side of the cursor the box sits on (`flip`) stays React state — the
+// Which side of the cursor the box sits on (`flip`) stays React state - the
 // flip is discrete, has hysteresis, and animates via a CSS transform
 // transition on the element.
 import React from 'react';
@@ -86,7 +86,7 @@ export function useCursorTooltip() {
 
   React.useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
 
-  // Style for the tooltip element: the animated side-flip only — position is
+  // Style for the tooltip element: the animated side-flip only - position is
   // driven imperatively above.
   const flipStyle = {
     transform: `translateX(${flip.x ? 'calc(-100% - 28px)' : '0px'}) translateY(${flip.y ? 'calc(-100% - 28px)' : '0px'})`,

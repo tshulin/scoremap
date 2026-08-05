@@ -1,21 +1,18 @@
 /**
- * Dashboard — logged-in "Grades" overview (route: /dashboard).
+ * Dashboard - logged-in "Grades" overview (route: /dashboard).
  *
  * Recreates the reference dashboard (left sidebar + full-width class rows with
  * grade + progress bar) in the Scoremap design system. Built from DS tokens;
  * the sidebar/rows are page-local layout (no cataloged DS shell yet).
  *
- * Design-system note: the reference has an icon per nav item and per row chip.
- * Scoremap has no icon set (see design-system readme "Iconography"), so nav
- * items are text-only and chips use text. Wire in Lucide/Heroicons here once an
- * icon set is attached.
+ * Course metadata chips use the app's small dependency-free inline SVG set.
  *
  * Loaded via <script type="text/babel" src>, so it attaches to
  * `window.DashboardPage`. Under a bundler, replace that line with
  * `export default DashboardPage` and import the DS components.
  */
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../lib/ds.js';
 import Sidebar from '../components/Sidebar.jsx';
 import TopBar from '../components/TopBar.jsx';
@@ -23,9 +20,9 @@ import GradeNumber from '../components/GradeNumber.jsx';
 import { ChangeTicker } from '../components/RefreshDelta.jsx';
 import { useClasses, useSemesters, useSession, useSyncChanges, useSyncMeta, useSyncStatus } from '../data/SyncProvider.jsx';
 import { gradeBandColor } from '../lib/grades.js';
-import { ChevronLeftIcon, ChevronRightIcon } from '../lib/icons.jsx';
+import { ChevronLeftIcon, ChevronRightIcon, MapPinIcon, PersonIcon } from '../lib/icons.jsx';
 
-// Portals hand back names as "First Last" or "Last, First" — greet with the
+// Portals hand back names as "First Last" or "Last, First" - greet with the
 // first name either way.
 const firstName = (name) => {
   const n = (name || '').trim();
@@ -50,7 +47,7 @@ function DashboardPage() {
   const totalNew = classes.reduce((n, c) => n + (c.isNew || 0), 0);
   const [hovered, setHovered] = React.useState(null);
 
-  // Selecting another period is display-state only for now — the sync always
+  // Selecting another period is display-state only for now - the sync always
   // fetches the portal's current period, so other quarters have no data yet.
   const [semester, setSemester] = React.useState('');
   React.useEffect(() => setSemester(session.semester), [session.semester]);
@@ -254,15 +251,15 @@ function DashboardPage() {
                         {c.name}
                       </div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                        <Chip>{c.teacher}</Chip>
-                        <Chip>{c.room}</Chip>
+                        <Chip><PersonIcon size={14} />{c.teacher}</Chip>
+                        <Chip><MapPinIcon size={14} />{c.room}</Chip>
                       </div>
                     </div>
                   </div>
 
                   <div style={{ flex: '1 1 240px', display: 'flex', alignItems: 'center', gap: 16, minWidth: 220 }}>
                     <div style={{ width: 150, flexShrink: 0, textAlign: 'right', fontSize: 22, fontWeight: 600, letterSpacing: '-0.5px', color: 'var(--color-ink)', whiteSpace: 'nowrap' }}>
-                      {c.pct != null ? <GradeNumber prefix={`${c.grade} `} value={c.pct} /> : '—'}
+                      {c.pct != null ? <GradeNumber prefix={`${c.grade} `} value={c.pct} /> : 'N/A'}
                     </div>
                     <ProgressBar pct={c.pct ?? 0} color={color} />
                   </div>
@@ -293,11 +290,11 @@ function DashboardPage() {
 
           {/* footer */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 40, fontSize: 14, color: 'var(--color-body)' }}>
-            <a href="#">Report an issue</a>
+            <a href="https://github.com/tshulin/grademax/issues/new" target="_blank" rel="noreferrer">Report an issue</a>
             <span style={{ color: 'var(--color-muted)' }}>·</span>
-            <a href="#">Suggest a feature</a>
+            <a href="https://github.com/tshulin/grademax/issues/new" target="_blank" rel="noreferrer">Suggest a feature</a>
             <span style={{ color: 'var(--color-muted)' }}>·</span>
-            <a href="#">Provide feedback</a>
+            <Link to="/feedback">Provide feedback</Link>
           </div>
           <div style={{ textAlign: 'center', marginTop: 12, fontSize: 12, color: 'var(--color-text-disclaimer)' }}>
             Scoremap is not affiliated with or endorsed by Edupoint Educational Systems LLC.

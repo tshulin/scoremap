@@ -1,6 +1,6 @@
 // Grade-over-time, derived from the effective assignment list by replaying it
 // in date order (src/calc/series). No stored history: a retroactively-edited
-// score changes the "past" — inherent to a derived series, and how
+// score changes the "past" - inherent to a derived series, and how
 // GradeCompass behaved too. Renders only with 2+ points.
 import React from 'react';
 import { useSession } from '../../data/SyncProvider.jsx';
@@ -9,7 +9,7 @@ import { useCursorTooltip } from './useCursorTooltip.js';
 
 // Geometry is shared with OverviewChart (same fixed height, same paddings) so
 // switching between the Assignments and Overview tabs keeps the plot frame
-// perfectly in place — only the lines change. Width is measured from the
+// perfectly in place - only the lines change. Width is measured from the
 // container (GradeCompass-style): the svg maps 1:1 to pixels at any screen
 // size, so the chart fills the page and text never stretches.
 const H = 260;
@@ -31,7 +31,7 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
   // The focus dot's resting index: keeps the last hovered node so the dot can
   // slide between nodes (and fade out in place) instead of teleporting.
   const [dotIndex, setDotIndex] = React.useState(null);
-  // The tooltip eases toward the cursor every frame (rAF smoothing — see hook).
+  // The tooltip eases toward the cursor every frame (rAF smoothing - see hook).
   const { tooltipRef, onMove, flipStyle } = useCursorTooltip();
   // Real pixel width from the container, so coordinates are 1:1 with screen.
   const wrapRef = React.useRef(null);
@@ -124,7 +124,7 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
         {ticks.map((t) => (
           <g key={t}>
             <line x1={padL} y1={yAt(t)} x2={W - padR} y2={yAt(t)} stroke="var(--color-hairline)" strokeWidth="1" />
-            {/* left-anchored at the svg edge — the page header's course name
+            {/* left-anchored at the svg edge - the page header's course name
                 aligns to this same line */}
             <text x={0} y={yAt(t) + 4} textAnchor="start" fontSize="12" fill="var(--color-muted)">
               {fmt2(t)}
@@ -147,7 +147,7 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
               ),
           )}
         </g>
-        {/* focus dot — slides along the line to the hovered node, fades out
+        {/* focus dot - slides along the line to the hovered node, fades out
             in place when the cursor leaves (mirrors GradeCompass's chart
             highlight) */}
         {dotIndex != null && dotIndex < series.length && (

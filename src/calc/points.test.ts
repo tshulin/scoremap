@@ -29,7 +29,7 @@ describe('isCalculable', () => {
 	});
 
 	it('accepts extra credit with no points possible', () => {
-		// Nothing reads pointsPossible for extra credit — it never enters the denominator —
+		// Nothing reads pointsPossible for extra credit - it never enters the denominator -
 		// so requiring it would drop the student's bonus points for no reason.
 		expect(isCalculable(assignment({ pointsEarned: 3, extraCredit: true }))).toBe(true);
 	});
@@ -75,7 +75,7 @@ describe('extra credit from the portal', () => {
 	});
 
 	it('still ignores an ungraded row with no points possible', () => {
-		// The same undefined pointsPossible, but no score — this one must stay out.
+		// The same undefined pointsPossible, but no score - this one must stay out.
 		expect(isCalculable(rawAssignmentToDomain(NOT_GRADED_NO_POSSIBLE))).toBe(false);
 	});
 });

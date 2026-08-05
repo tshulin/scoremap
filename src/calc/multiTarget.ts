@@ -27,7 +27,7 @@ const withEarned = (a: Assignment, pointsEarned: number): Assignment => ({ ...a,
 // that the course grade hits the target. In both grading modes the course
 // grade is linear in p (denominators are fixed once the selections' possible
 // points are in), so two evaluations of the real courseGrade determine the
-// line — no mode-specific closed forms to keep in sync with the engine.
+// line - no mode-specific closed forms to keep in sync with the engine.
 export function solveUniformTarget(options: UniformTargetOptions): UniformTargetResult {
 	const { targetPercentage, selections, otherAssignments, categories } = options;
 
@@ -38,7 +38,7 @@ export function solveUniformTarget(options: UniformTargetOptions): UniformTarget
 		if (s.assignment.extraCredit) {
 			return {
 				infeasible: true,
-				reason: `"${s.assignment.name}" is extra credit — it has no points possible to average over. Enter a score for it instead.`
+				reason: `"${s.assignment.name}" is extra credit. It has no points possible to average over. Enter a score for it instead.`
 			};
 		}
 		if (s.assignment.pointsPossible === undefined || s.assignment.pointsPossible <= 0) {

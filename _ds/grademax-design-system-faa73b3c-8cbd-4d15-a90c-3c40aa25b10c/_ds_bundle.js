@@ -11,7 +11,7 @@ const __ds_scope = {};
 // components/badges/Badge.jsx
 try { (() => {
 /**
- * Badge — small pill. `tone="neutral"` is the default surface-strong badge
+ * Badge - small pill. `tone="neutral"` is the default surface-strong badge
  * (section labels, status chips). `tone="grade"` maps a letter grade to one
  * of three color bands for quick visual scanning: A+–A− green, B+–B− yellow,
  * C+ and below red.
@@ -75,7 +75,7 @@ Object.assign(__ds_scope, { Badge });
 // components/buttons/Button.jsx
 try { (() => {
 /**
- * Button — Scoremap's single CTA family.
+ * Button - Scoremap's single CTA family.
  * variant: 'primary' | 'secondary' | 'tertiary' | 'nav'
  * size: 'md' | 'sm'
  */
@@ -164,7 +164,7 @@ Object.assign(__ds_scope, { Button });
 // components/cards/FeatureCard.jsx
 try { (() => {
 /**
- * FeatureCard — flat card, hairline border, 12px radius. `dark` inverts to
+ * FeatureCard - flat card, hairline border, 12px radius. `dark` inverts to
  * the surface-dark fill for one featured card per section.
  */
 function FeatureCard({
@@ -206,7 +206,7 @@ Object.assign(__ds_scope, { FeatureCard });
 
 // components/cards/TestimonialCard.jsx
 try { (() => {
-/** TestimonialCard — quote card, flat, hairline-free (sits on canvas-soft). */
+/** TestimonialCard - quote card, flat, hairline-free (sits on canvas-soft). */
 function TestimonialCard({
   quote,
   name,
@@ -246,7 +246,7 @@ Object.assign(__ds_scope, { TestimonialCard });
 // components/cards/WorkflowStepCard.jsx
 try { (() => {
 /**
- * WorkflowStepCard — a step in a "how it works" row. 32px icon plate +
+ * WorkflowStepCard - a step in a "how it works" row. 32px icon plate +
  * step number + label + body copy.
  */
 function WorkflowStepCard({
@@ -305,7 +305,7 @@ Object.assign(__ds_scope, { WorkflowStepCard });
 // components/forms/TextInput.jsx
 try { (() => {
 /**
- * TextInput — single-line text field. 44px height (AAA touch target),
+ * TextInput - single-line text field. 44px height (AAA touch target),
  * hairline-strong border, thickens to 2px ink on focus.
  */
 function TextInput({
@@ -364,9 +364,9 @@ Object.assign(__ds_scope, { TextInput });
 // components/marketing/BrowserMockup.jsx
 try { (() => {
 /**
- * BrowserMockup — the brand's one recurring image motif: a plain browser-
+ * BrowserMockup - the brand's one recurring image motif: a plain browser-
  * chrome frame around a real Scoremap screen (used inside HeroBand). Not a
- * generic device bezel — flat, 16px radius, hairline border, no skeuomorphism.
+ * generic device bezel - flat, 16px radius, hairline border, no skeuomorphism.
  */
 function BrowserMockup({
   children,
@@ -408,7 +408,7 @@ Object.assign(__ds_scope, { BrowserMockup });
 
 // components/marketing/CtaBand.jsx
 try { (() => {
-/** CtaBand — pre-footer band, centered display headline + one CTA. */
+/** CtaBand - pre-footer band, centered display headline + one CTA. */
 function CtaBand({
   headline,
   cta
@@ -436,7 +436,7 @@ Object.assign(__ds_scope, { CtaBand });
 
 // components/marketing/Footer.jsx
 try { (() => {
-/** Footer — closing light footer, 5-column link list. */
+/** Footer - closing light footer, 5-column link list. */
 function Footer({
   columns = []
 }) {
@@ -495,11 +495,11 @@ Object.assign(__ds_scope, { Footer });
 // components/marketing/HeroBand.jsx
 try { (() => {
 /**
- * HeroBand — marketing hero. Flat black canvas (reference-corrected: no
- * gradient wash — the real expo.dev hero is completely flat), eyebrow pill,
+ * HeroBand - marketing hero. Flat black canvas (reference-corrected: no
+ * gradient wash - the real expo.dev hero is completely flat), eyebrow pill,
  * white display headline + light-gray subhead + single primary CTA, then a
  * browser-window mockup of the actual Scoremap dashboard beneath it (the
- * brand's one recurring image motif — real product UI as chrome, not
+ * brand's one recurring image motif - real product UI as chrome, not
  * illustration).
  */
 function HeroBand({
@@ -552,7 +552,7 @@ Object.assign(__ds_scope, { HeroBand });
 // components/navigation/TopNav.jsx
 try { (() => {
 /**
- * TopNav — 64px marketing/app header. Wordmark left, nav links center-left,
+ * TopNav - 64px marketing/app header. Wordmark left, nav links center-left,
  * auth actions right. `variant="app"` swaps the marketing nav-link set for
  * an in-app breadcrumb-style label (used inside the logged-in web app).
  */
@@ -615,9 +615,9 @@ Object.assign(__ds_scope, { TopNav });
 // ui_kits/web-app/AppShell.jsx
 try { (() => {
 /**
- * AppShell — logged-in web-app chrome: minimal app-mode TopNav + left
+ * AppShell - logged-in web-app chrome: minimal app-mode TopNav + left
  * sidebar nav (Dashboard / Classes / Calculator). Kit-local layout, not a
- * cataloged DS primitive — composes TopNav + Button from the DS bundle.
+ * cataloged DS primitive - composes TopNav + Button from the DS bundle.
  */
 function AppShell({
   active,
@@ -682,7 +682,7 @@ window.AppShell = AppShell;
 // ui_kits/web-app/ClassDetail.jsx
 try { (() => {
 /**
- * ClassDetail — per-assignment breakdown + category weights for one class.
+ * ClassDetail - per-assignment breakdown + category weights for one class.
  */
 const ASSIGNMENTS = [{
   name: 'Lab report: cell respiration',
@@ -890,7 +890,7 @@ window.ClassDetail = ClassDetail;
 // ui_kits/web-app/Dashboard.jsx
 try { (() => {
 /**
- * Dashboard — every class + current grade at a glance.
+ * Dashboard - every class + current grade at a glance.
  */
 const DASHBOARD_CLASSES = [{
   name: 'AP Biology',
@@ -1014,9 +1014,9 @@ window.DASHBOARD_CLASSES = DASHBOARD_CLASSES;
 // ui_kits/web-app/Landing.jsx
 try { (() => {
 /**
- * Landing — Scoremap marketing homepage. Composed from HeroBand, FeatureCard,
+ * Landing - Scoremap marketing homepage. Composed from HeroBand, FeatureCard,
  * WorkflowStepCard, TestimonialCard, CtaBand, Footer, TopNav.
- * Loaded via <script type="text/babel" src>, not a module — exposes itself as window.Landing.
+ * Loaded via <script type="text/babel" src>, not a module - exposes itself as window.Landing.
  */
 function Landing({
   onGetStarted
@@ -1210,7 +1210,7 @@ window.Landing = Landing;
 // ui_kits/web-app/Login.jsx
 try { (() => {
 /**
- * Login — connect StudentVUE account. Single form, no distractions.
+ * Login - connect StudentVUE account. Single form, no distractions.
  */
 function Login({
   onSubmit
@@ -1297,7 +1297,7 @@ window.Login = Login;
 // ui_kits/web-app/WhatIfCalculator.jsx
 try { (() => {
 /**
- * WhatIfCalculator — simulate a future/missing assignment score and see the
+ * WhatIfCalculator - simulate a future/missing assignment score and see the
  * projected effect on the class's final grade, live.
  */
 function pctToGrade(pct) {

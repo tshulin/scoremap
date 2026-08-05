@@ -3,7 +3,7 @@ import { category, graded } from '../../test/helpers/grades';
 import { courseGrade } from './grade';
 import { pointsNeededForTargetGrade } from './target';
 
-describe('pointsNeededForTargetGrade — unweighted', () => {
+describe('pointsNeededForTargetGrade - unweighted', () => {
 	it('solves for the points that hit the target', () => {
 		const otherAssignments = [graded(80, 100)];
 
@@ -59,7 +59,7 @@ describe('pointsNeededForTargetGrade — unweighted', () => {
 	});
 });
 
-describe('pointsNeededForTargetGrade — weighted', () => {
+describe('pointsNeededForTargetGrade - weighted', () => {
 	const categories = [category('Homework', 40), category('Tests', 60)];
 
 	it('solves within the assignment’s category', () => {

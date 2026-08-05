@@ -7,8 +7,8 @@
 // Connections are POOLED AND REUSED (HTTP keep-alive). Every TLS connection is
 // one WebSocket at the relay, and the relay caps both concurrent connections and
 // connections per minute per client IP. One request per connection made a single
-// sync cost ~14 of them — over the concurrency cap and half the per-minute
-// budget — so mail requests failed and took student info down with them. Reuse
+// sync cost ~14 of them - over the concurrency cap and half the per-minute
+// budget - so mail requests failed and took student info down with them. Reuse
 // turns a sync into a handful of connections, and the pool size is the app's
 // global ceiling on how many it can ever hold open at once.
 //
@@ -24,12 +24,12 @@ const USER_AGENT =
 // Kept well under the relay's per-IP concurrent cap (8 by default): idle pooled
 // connections still occupy a slot, and the student may have more than one tab.
 // A whole school shares one public IP, so this number is really "how many of the
-// school's 8 slots may one browser tab hold" — 2 lets four students sync at once
+// school's 8 slots may one browser tab hold" - 2 lets four students sync at once
 // instead of two, and a sync is only a handful of requests now anyway.
 const MAX_CONNECTIONS = 2;
 
 // An idle pooled connection is worth keeping for the next request in a burst,
-// and worth nothing after that — but it still occupies one of the relay's
+// and worth nothing after that - but it still occupies one of the relay's
 // per-IP slots until somebody closes it. So they are CLOSED on this timer, not
 // merely skipped when stale: waiting for the relay's own idle timeout (120s)
 // meant one student parked slots for two minutes after they stopped clicking.
@@ -304,8 +304,8 @@ function createPool({
 	};
 
 	// Arms for the oldest idle entry. An entry taken back out of the pool before
-	// its turn just makes the timer fire early — the sweep finds nothing due and
-	// re-arms — so only `release` needs to schedule.
+	// its turn just makes the timer fire early - the sweep finds nothing due and
+	// re-arms - so only `release` needs to schedule.
 	const schedule = () => {
 		if (sweepTimer !== null) return;
 		let oldest = Infinity;
@@ -396,7 +396,7 @@ function createPool({
 const isAbort = (e) => !!e && (e.name === 'AbortError' || e.name === 'TimeoutError');
 
 // The relay transport is not a browser fetch, so it has to honour the caller's
-// AbortSignal itself — without this the per-hop timeout in portal/http.ts does
+// AbortSignal itself - without this the per-hop timeout in portal/http.ts does
 // nothing and a stalled connection hangs forever.
 function abortable(promise, signal) {
 	if (!signal) return promise;
@@ -410,7 +410,7 @@ function abortable(promise, signal) {
 
 // Waiting for a pool slot has to be interruptible, or a timeout could not fire
 // while every connection is busy. The acquire itself cannot be cancelled, so
-// whatever it eventually produces is handed straight back — otherwise an aborted
+// whatever it eventually produces is handed straight back - otherwise an aborted
 // request would leak a connection that is checked out but owned by nobody.
 async function acquireFor(pool, host, signal) {
 	const pending = pool.acquire(host);
@@ -453,7 +453,7 @@ export function createRelayFetch({
 
 		// A pooled connection may have been closed by the far end since its last
 		// use, which is indistinguishable from a healthy one until we write to it.
-		// One retry on a fresh connection is expected, not exceptional — but only
+		// One retry on a fresh connection is expected, not exceptional - but only
 		// when the peer sent nothing back, so a request the portal actually
 		// processed is never replayed.
 		for (let attempt = 0; ; attempt++) {

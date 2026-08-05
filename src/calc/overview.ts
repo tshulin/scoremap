@@ -10,7 +10,7 @@ export interface CategoryOverviewRow {
 	// The declared weight; null for unweighted classes.
 	nominalWeightPct: number | null;
 	// Share of the final grade right now, after renormalization over graded
-	// categories — "Finals is 20% on paper but 0% of your grade today".
+	// categories - "Finals is 20% on paper but 0% of your grade today".
 	effectiveWeightPct: number;
 	// effectiveWeight × currentPct: points this category adds to the course %.
 	// Summed over all rows this equals the course grade.

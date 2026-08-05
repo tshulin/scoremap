@@ -1,5 +1,5 @@
 /**
- * PrivacyDialog — the privacy explainer as a popup (same Dialog chrome as the
+ * PrivacyDialog - the privacy explainer as a popup (same Dialog chrome as the
  * class-page target calculator) instead of a routed page. Opened from the
  * sidebar privacy note and the landing page's "Private login" card.
  */
@@ -7,7 +7,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { Dialog } from '../pages/class/ui.jsx';
 
-// TODO: destination for the technical explainer — Tiger will add the link.
+// TODO: destination for the technical explainer - Tiger will add the link.
 const LEARN_MORE_URL = '#';
 
 function PrivacyDialog({ onClose }) {
@@ -19,7 +19,7 @@ function PrivacyDialog({ onClose }) {
   };
 
   // Portal to <body>: the sidebar <aside> is position:sticky, which traps a
-  // dialog rendered inside it in the aside's stacking context — content that
+  // dialog rendered inside it in the aside's stacking context - content that
   // animates with transforms (NumberFlow digits) would paint over the overlay.
   return createPortal(
     <Dialog title="Your privacy" onClose={onClose} maxWidth={560}>

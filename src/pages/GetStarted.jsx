@@ -1,11 +1,11 @@
 /**
- * GetStarted — Scoremap "Get started" / sign-up page (route: /signup).
+ * GetStarted - Scoremap "Get started" / sign-up page (route: /signup).
  *
  * Asks how the student signs in to StudentVUE, then branches:
  *   • "with Google"     → /signup/google  (create-a-password explainer)
  *   • "with a password" → /login          (the sign-in page)
  *
- * POC note: routes are static harness files here — "with Google" opens
+ * POC note: routes are static harness files here - "with Google" opens
  * signup/google.html and "with a password" opens the sign-in page. Under a
  * real router, swap the onClick navigations for <Link to="/signup/google">
  * and <Link to="/login">.

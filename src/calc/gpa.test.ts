@@ -66,7 +66,7 @@ describe('toGpaGrade', () => {
 	});
 
 	it('rejects ungraded and unrecognized marks', () => {
-		expect(toGpaGrade('—')).toBeNull();
+		expect(toGpaGrade('N/A')).toBeNull();
 		expect(toGpaGrade('')).toBeNull();
 		expect(toGpaGrade('P')).toBeNull();
 		expect(toGpaGrade('N/A')).toBeNull();

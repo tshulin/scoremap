@@ -1,5 +1,5 @@
 /**
- * Landing — Scoremap marketing homepage.
+ * Landing - Scoremap marketing homepage.
  *
  * React component. Composes the Scoremap design-system components, which are
  * published on `window.ScoremapDesignSystem_faa73b` by the design-system
@@ -25,7 +25,7 @@ function Landing() {
   const navigate = useNavigate();
   const [privacyOpen, setPrivacyOpen] = React.useState(false);
 
-  // A saved sign-in skips the pitch — straight to the grades.
+  // A saved sign-in skips the pitch - straight to the grades.
   React.useEffect(() => {
     if (hasToken()) navigate('/dashboard', { replace: true });
   }, [navigate]);
@@ -87,7 +87,7 @@ function Landing() {
         }
       />
 
-      {/* 2×2 feature card grid — below the dashboard mockup preview */}
+      {/* 2×2 feature card grid - below the dashboard mockup preview */}
       <div style={{ maxWidth: 'var(--container-max)', margin: '0 auto', padding: '0 32px 48px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
           <FeatureCard title="Grade chart">

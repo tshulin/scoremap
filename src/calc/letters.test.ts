@@ -22,7 +22,7 @@ describe('inferScale / resolveLetter', () => {
 	it('enforces monotonicity below an observed bound', () => {
 		const scale = inferScale([{ pct: 84, letter: 'A' }]);
 
-		// A- and B+ default above 84 — they must be clamped under A's bound.
+		// A- and B+ default above 84 - they must be clamped under A's bound.
 		for (let i = 1; i < scale.length; i++) {
 			expect(scale[i]!.lowerBound).toBeLessThanOrEqual(scale[i - 1]!.lowerBound);
 		}
@@ -59,7 +59,7 @@ describe('inferScale / resolveLetter', () => {
 });
 
 describe('mergeObservations', () => {
-	it('keeps one observation per letter — the lowest percentage seen', () => {
+	it('keeps one observation per letter - the lowest percentage seen', () => {
 		const merged = mergeObservations(
 			[{ pct: 90, letter: 'A' }],
 			[

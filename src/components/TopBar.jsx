@@ -1,7 +1,7 @@
-// TopBar — the consistent header band across logged-in pages. The refresh
+// TopBar - the consistent header band across logged-in pages. The refresh
 // pill (SyncPill) is fixed at the center of the content area; each page slots
 // its own content to the left and right of it. The bar lives inside <main>,
-// so it spans only the content area — the sidebar keeps the full screen
+// so it spans only the content area - the sidebar keeps the full screen
 // height and always wins the overlap.
 import React from 'react';
 import SyncPill from './SyncPill.jsx';
@@ -20,7 +20,7 @@ function TopBar({ left, right, pillBelow, pillDelta, pillScope }) {
         marginBottom: 8,
       }}
     >
-      {/* justifySelf start so the box hugs the content — SyncPill measures
+      {/* justifySelf start so the box hugs the content - SyncPill measures
           this rect for overlap, and a stretched 1fr item would always read
           as reaching the pill. */}
       <div ref={leftRef} style={{ minWidth: 0, justifySelf: 'start', maxWidth: '100%' }}>{left}</div>
