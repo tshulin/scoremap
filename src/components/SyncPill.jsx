@@ -63,12 +63,19 @@ function SyncPill({ note, scope, below, delta, avoid }) {
     };
   }, [avoid]);
 
+  // 'error' must be visible: with cached data on screen, a silent failure
+  // would leave stale grades looking current.
+  const failed = status === 'error';
   const label =
     status === 'syncing'
-      ? 'Syncing…'
-      : session.lastUpdated
-        ? `Last updated ${fmtTime(session.lastUpdated)}`
-        : 'Not synced yet';
+      ? 'Updating…'
+      : failed
+        ? session.lastUpdated
+          ? `Couldn't update — showing ${fmtTime(session.lastUpdated)}`
+          : "Couldn't update"
+        : session.lastUpdated
+          ? `Last updated ${fmtTime(session.lastUpdated)}`
+          : 'Not synced yet';
 
   return (
     <>
@@ -106,7 +113,9 @@ function SyncPill({ note, scope, below, delta, avoid }) {
             }}
           >
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ color: 'var(--color-text-updated)' }}>{label}</span>
+              <span style={{ color: failed ? 'var(--color-grade-bad)' : 'var(--color-text-updated)' }}>
+                {label}
+              </span>
               <a
                 href="#"
                 onClick={(e) => {
@@ -115,7 +124,7 @@ function SyncPill({ note, scope, below, delta, avoid }) {
                 }}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
               >
-                <span aria-hidden="true">↻</span> Refresh
+                <span aria-hidden="true">↻</span> {failed ? 'Retry' : 'Refresh'}
               </a>
             </div>
             {delta && <div style={{ fontSize: 12, color: 'var(--color-muted)' }}>{delta}</div>}
