@@ -41,9 +41,9 @@ login page:
 
 - Your password is encrypted **in your browser** and sent straight to StudentVUE;
   the relay passes along bytes it can't read.
-- Your password is never sent to our servers, stored, or logged. Only the
-  short-lived portal session cookie is kept (in `sessionStorage`), never the
-  password.
+- Your password is never sent to our servers or logged. To keep you signed in,
+  it is saved **only on this device** (`localStorage`), beside the short-lived
+  portal session cookie — signing out erases both.
 - The code that handles your password is this public repo, served by GitHub
   Pages — changing it would require a public commit.
 

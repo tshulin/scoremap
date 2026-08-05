@@ -3,12 +3,14 @@
 // ever sees ciphertext. This module wraps the portal client (src/portal) behind
 // the same surface the app already used, returning the same domain shapes.
 //
-// Session model: the portal cookie jar (not the password) is kept in memory and
-// mirrored to sessionStorage so a reload resumes without another login. The
-// password is used once, in the browser, and is never stored. When the portal
-// session expires (~20 min idle) a fetch throws SESSION_EXPIRED and the app
-// returns to sign-in — we can't silently re-login because we don't keep the
-// password.
+// Session model: the portal cookie jar is kept in memory and mirrored to
+// sessionStorage; the credentials are saved in localStorage — on this device
+// only, never sent anywhere but StudentVUE — so the app can sign back in by
+// itself: on the next visit, and again whenever the ~20-min portal session
+// expires mid-use. A saved sign-in is replayed until the portal rejects it;
+// AUTH_FAILED clears everything and the app returns to the login page with a
+// notice. Relay/portal outages never clear it — a dead relay must not log
+// anyone out.
 import { createRelayFetch } from '../transport/fetchShim';
 import { CookieJar } from '../portal/http';
 import { login as portalLogin } from '../portal/login';
@@ -34,15 +36,26 @@ import {
 
 // Set at build time (deploy workflow); wss:// in production, ws://localhost in dev.
 const RELAY_URL = import.meta.env.VITE_RELAY_URL || 'ws://localhost:8080';
-const SESSION_KEY = 'grademax-session';
+const SESSION_KEY = 'grademax-session'; // sessionStorage: the live cookie jar
 const TEST_SESSION_KEY = 'grademax-test-session';
 const STUDENT_KEY = 'grademax-student';
 const SNAPSHOT_KEY = 'grademax-snapshot';
+const CREDS_KEY = 'grademax-credentials';
+const AUTH_NOTICE_KEY = 'grademax-auth-notice'; // sessionStorage: why the sign-in was cleared
 
-// How long a mirrored snapshot is worth showing. The portal drops an idle
-// session after roughly twenty minutes, so anything older belongs to a session
-// that is probably already gone — at which point a sync is needed regardless.
-const SNAPSHOT_MAX_AGE_MS = 20 * 60_000;
+// One-time migration: the snapshot, student, and test-session mirrors moved
+// from sessionStorage to localStorage so auto sign-in survives a closed tab.
+// Carry a live test marker over; purge the rest of the pre-move copies.
+(function migrateStorage() {
+  try {
+    if (sessionStorage.getItem(TEST_SESSION_KEY) === 'true') localStorage.setItem(TEST_SESSION_KEY, 'true');
+    sessionStorage.removeItem(TEST_SESSION_KEY);
+    sessionStorage.removeItem(STUDENT_KEY);
+    sessionStorage.removeItem(SNAPSHOT_KEY);
+  } catch {
+    /* storage unavailable */
+  }
+})();
 
 export class ApiError extends Error {
   constructor(code, message, status) {
@@ -57,16 +70,53 @@ const options = { fetchImpl: createRelayFetch({ relayUrl: RELAY_URL }) };
 let session = null; // in-memory { domain, jar: CookieJar }
 let testSession = false; // signed in as the built-in test account (no portal session)
 
-// The test account has no cookie jar; a sessionStorage marker lets a reload
-// resume it the same way the mirrored jar resumes a real session.
+// The test account has no cookie jar; a localStorage marker lets the next
+// visit resume it the same way stored credentials resume a real session.
 export function isTestSession() {
   if (testSession) return true;
   try {
-    testSession = sessionStorage.getItem(TEST_SESSION_KEY) === 'true';
+    testSession = localStorage.getItem(TEST_SESSION_KEY) === 'true';
   } catch {
     /* storage unavailable */
   }
   return testSession;
+}
+
+// The saved sign-in. Plaintext by design: any obfuscation a bundled app could
+// apply is decodable by the same code that would read it, so it would only
+// pretend. The honest mitigations are elsewhere — the password never leaves
+// the browser unencrypted, and signing out erases it.
+export function rememberCredentials({ domain, username, password }) {
+  try {
+    localStorage.setItem(CREDS_KEY, JSON.stringify({ domain, username, password }));
+  } catch {
+    /* storage unavailable — auto sign-in just won't survive this tab */
+  }
+}
+
+export function recallCredentials() {
+  try {
+    const raw = localStorage.getItem(CREDS_KEY);
+    if (!raw) return null;
+    const { domain, username, password } = JSON.parse(raw);
+    if (!domain || !username || typeof password !== 'string') return null;
+    return { domain, username, password };
+  } catch {
+    return null;
+  }
+}
+
+// Why the login page is being shown after an automatic sign-in died: carries
+// the non-secret half of the cleared credentials so the form can prefill.
+// Read non-destructively (StrictMode mounts twice); erased by the next
+// clearToken(), i.e. by the next completed sign-in or sign-out.
+export function recallAuthNotice() {
+  try {
+    const raw = sessionStorage.getItem(AUTH_NOTICE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
 }
 
 function persist(s) {
@@ -94,7 +144,7 @@ function restore() {
 export function rememberStudent(student) {
   if (!student || !student.name) return;
   try {
-    sessionStorage.setItem(STUDENT_KEY, JSON.stringify({ name: student.name, grade: student.grade }));
+    localStorage.setItem(STUDENT_KEY, JSON.stringify({ name: student.name, grade: student.grade }));
   } catch {
     /* storage unavailable */
   }
@@ -102,26 +152,26 @@ export function rememberStudent(student) {
 
 export function recallStudent() {
   try {
-    const raw = sessionStorage.getItem(STUDENT_KEY);
+    const raw = localStorage.getItem(STUDENT_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
   }
 }
 
-// The last synced snapshot, mirrored beside the cookie jar so a reload can show
-// the data it already had instead of re-fetching all of it. Reloading was the
-// last thing in the app that still cost a full sync every time — F5, a restored
-// tab, or following a link back in all paid for one.
+// The last synced snapshot, mirrored so opening the app can show the data it
+// already had instead of a blank page. It has no expiry: with a saved sign-in
+// the boot sync refreshes it anyway, and grades from last week beat an empty
+// dashboard while that runs. The "Last updated" pill keeps its age honest.
 //
-// It holds grades and messages, which is why it lives in sessionStorage (dies
-// with the tab, same as the jar) and is cleared by clearToken() on sign-out.
+// It holds grades and messages, so it lives exactly as long as the saved
+// sign-in does — clearToken() erases both.
 export function rememberSnapshot(snapshot) {
   // An unsynced snapshot has nothing worth restoring, and writing it would
   // overwrite a good one during sign-out.
   if (!snapshot || !snapshot.session || !snapshot.session.lastUpdated) return;
   try {
-    sessionStorage.setItem(
+    localStorage.setItem(
       SNAPSHOT_KEY,
       JSON.stringify({
         ...snapshot,
@@ -132,7 +182,7 @@ export function rememberSnapshot(snapshot) {
     // Out of quota, most likely. A missing mirror only costs a sync, so drop
     // the stale one rather than leaving a half-written record behind.
     try {
-      sessionStorage.removeItem(SNAPSHOT_KEY);
+      localStorage.removeItem(SNAPSHOT_KEY);
     } catch {
       /* storage unavailable */
     }
@@ -141,26 +191,47 @@ export function rememberSnapshot(snapshot) {
 
 export function recallSnapshot() {
   try {
-    const raw = sessionStorage.getItem(SNAPSHOT_KEY);
+    const raw = localStorage.getItem(SNAPSHOT_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     const lastUpdated = new Date(parsed.session.lastUpdated);
     if (Number.isNaN(lastUpdated.getTime())) return null;
-    if (Date.now() - lastUpdated.getTime() > SNAPSHOT_MAX_AGE_MS) return null;
     return { ...parsed, session: { ...parsed.session, lastUpdated } };
   } catch {
     return null;
   }
 }
 
-export function clearToken() {
+// authFailed: the portal rejected the saved sign-in — leave a notice (with the
+// non-secret fields, for prefill) for the login page. The notice deliberately
+// survives ordinary clears (the provider's 401 handler runs clearToken() right
+// after the one that set it); it goes away only when its story ends — a
+// completed sign-in or an explicit sign-out (clearAuthNotice).
+export function clearToken({ authFailed = false } = {}) {
+  const creds = authFailed ? recallCredentials() : null;
   session = null;
   testSession = false;
   try {
     sessionStorage.removeItem(SESSION_KEY);
-    sessionStorage.removeItem(TEST_SESSION_KEY);
-    sessionStorage.removeItem(STUDENT_KEY);
-    sessionStorage.removeItem(SNAPSHOT_KEY);
+    localStorage.removeItem(TEST_SESSION_KEY);
+    localStorage.removeItem(STUDENT_KEY);
+    localStorage.removeItem(SNAPSHOT_KEY);
+    localStorage.removeItem(CREDS_KEY);
+  } catch {
+    /* ignore */
+  }
+  if (creds) {
+    try {
+      sessionStorage.setItem(AUTH_NOTICE_KEY, JSON.stringify({ username: creds.username, domain: creds.domain }));
+    } catch {
+      /* storage unavailable */
+    }
+  }
+}
+
+function clearAuthNotice() {
+  try {
+    sessionStorage.removeItem(AUTH_NOTICE_KEY);
   } catch {
     /* ignore */
   }
@@ -171,10 +242,11 @@ export function hasToken() {
   if (isTestSession()) return true;
   if (session) return true;
   try {
-    return !!sessionStorage.getItem(SESSION_KEY);
+    if (sessionStorage.getItem(SESSION_KEY)) return true;
   } catch {
-    return false;
+    /* fall through to the saved sign-in */
   }
+  return !!recallCredentials();
 }
 
 export function getToken() {
@@ -205,16 +277,66 @@ function mapError(e) {
   return new ApiError(code, (e && e.message) || 'Request failed.', status);
 }
 
-async function withSession(fn) {
+// A live session, minting one from the saved credentials when there is none.
+// Single-flight: a cold boot fires every resource fetcher at once and they must
+// share one login, not race four. Resolves null only when nothing is saved.
+// AUTH_FAILED here is the moment the saved sign-in "stops working": everything
+// is cleared (with the login-page notice) before the 401 surfaces. Any other
+// failure — relay down, portal 5xx — leaves the credentials alone.
+let loginInFlight = null;
+function ensureSession() {
   const s = currentSession();
+  if (s) return Promise.resolve(s);
+  const creds = recallCredentials();
+  if (!creds) return Promise.resolve(null);
+  if (!loginInFlight) {
+    loginInFlight = (async () => {
+      try {
+        session = await portalLogin(creds, options);
+        persist(session);
+        return session;
+      } catch (e) {
+        const mapped = mapError(e);
+        if (mapped.code === 'AUTH_FAILED') clearToken({ authFailed: true });
+        throw mapped;
+      } finally {
+        loginInFlight = null;
+      }
+    })();
+  }
+  return loginInFlight;
+}
+
+async function withSession(fn) {
+  const s = await ensureSession();
   if (!s) throw new ApiError('SESSION_EXPIRED', 'Your session has ended. Sign in again.', 401);
   try {
     const result = await fn(s);
     persist(s); // the jar is updated in place per request; keep the mirror fresh
     return result;
   } catch (e) {
-    if (e instanceof SessionExpiredError) clearToken();
-    throw mapError(e);
+    if (!(e instanceof SessionExpiredError)) throw mapError(e);
+    // The cookie died mid-use (~20 min idle). With a saved sign-in this heals
+    // itself: drop the dead jar, log in again, retry the request once.
+    session = null;
+    try {
+      sessionStorage.removeItem(SESSION_KEY);
+    } catch {
+      /* ignore */
+    }
+    const revived = await ensureSession();
+    if (!revived) {
+      clearToken();
+      throw mapError(e);
+    }
+    try {
+      const result = await fn(revived);
+      persist(revived);
+      return result;
+    } catch (retryError) {
+      if (retryError instanceof SessionExpiredError) clearToken();
+      throw mapError(retryError);
+    }
   }
 }
 
@@ -229,15 +351,19 @@ export async function login({ domain, username, password }) {
   if (isTestCredentials({ domain, username, password })) {
     testSession = true;
     try {
-      sessionStorage.setItem(TEST_SESSION_KEY, 'true');
+      localStorage.setItem(TEST_SESSION_KEY, 'true');
     } catch {
       /* storage unavailable — the session just won't survive a reload */
     }
+    clearAuthNotice();
     return TEST_STUDENT;
   }
   try {
     session = await portalLogin({ domain, username, password }, options);
     persist(session);
+    // Only a portal-accepted sign-in is worth replaying later.
+    rememberCredentials({ domain, username, password });
+    clearAuthNotice();
     return await fetchStudentInfo(session, options);
   } catch (e) {
     clearToken();
@@ -247,6 +373,7 @@ export async function login({ domain, username, password }) {
 
 export async function logout() {
   clearToken();
+  clearAuthNotice();
 }
 
 // ---- resources (return the same domain shapes the app already maps) ----

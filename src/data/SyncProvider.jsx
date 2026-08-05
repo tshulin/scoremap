@@ -1,17 +1,17 @@
 // SyncProvider — owns the signed-in session and the synced data.
 //
-// Status: 'signedOut' | 'syncing' | 'ready' | 'error'. On mount, an existing
-// token (page reload) triggers a background sync; a 401 from any resource
-// clears the token and drops back to signedOut. Pages read data through the
-// hooks below; RequireAuth (App.jsx) redirects to /login when signed out.
+// Status: 'signedOut' | 'syncing' | 'ready' | 'error'. On mount, a saved
+// sign-in (api.js) paints the mirrored snapshot immediately and refreshes it
+// with a background sync — the auto sign-in: stale grades first, fresh grades
+// animate in when the sync lands (NumberFlow, the chart sweep, the change
+// ticker are all keyed on the data). A 401 clears the sign-in and drops back
+// to signedOut; anything else keeps the cached data on screen with an error.
+// Pages read data through the hooks below; RequireAuth (App.jsx) redirects to
+// /login when signed out.
 //
 // refresh(scope) syncs only the named resources and merges them over the current
 // snapshot, so the Refresh button on a page costs one request for what that page
 // shows instead of a full re-sync of everything (see studentvue.js).
-//
-// A reload restores the mirrored snapshot rather than re-syncing (api.js). The
-// pill always shows how old the data is and Refresh is one click away, so the
-// student is never shown stale data without being told.
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import * as api from './api.js';
 import { emptySnapshot } from './snapshot.js';
@@ -21,6 +21,9 @@ const SyncContext = createContext(null);
 
 // Read once per mount, not per render.
 const restored = () => (api.hasToken() ? api.recallSnapshot() : null);
+
+// A boot sync is skipped when the mirror is at most this old.
+const AUTO_SYNC_MIN_AGE_MS = 60_000;
 
 // Per-class grade movement between the previous completed sync and the
 // latest one: [{ id, name, delta }] for every class whose percentage moved.
@@ -98,10 +101,16 @@ export function SyncProvider({ children }) {
     }
   }, [store]);
 
-  // Resume the session on reload — but only sync when there was nothing to
-  // restore. A reload with a fresh mirror costs zero portal requests.
+  // Resume on load: cached data has already painted (status 'ready'); a saved
+  // sign-in then refreshes it in the background. A snapshot younger than a
+  // minute is left alone so rapid reloads don't chew through the relay's
+  // per-IP connection budget for nothing.
   useEffect(() => {
-    if (api.hasToken() && !initial.current.snapshot) runSync().catch(() => {});
+    if (!api.hasToken()) return;
+    const s = initial.current.snapshot;
+    const last = s && s.session ? s.session.lastUpdated : null;
+    if (last && Date.now() - last.getTime() < AUTO_SYNC_MIN_AGE_MS) return;
+    runSync().catch(() => {});
   }, [runSync]);
 
   const signIn = useCallback(
