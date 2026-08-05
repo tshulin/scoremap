@@ -27,7 +27,7 @@ export const MailMessageSchema = z.object({
 	body: z.array(z.string()),
 	links: z.array(MailLinkSchema),
 	attachments: z.array(MailAttachmentSchema),
-	// The portal's message list carries no body — only the per-message call does.
+	// The portal's message list carries no body - only the per-message call does.
 	// This keeps "not fetched yet" distinguishable from "genuinely empty", so the
 	// reader knows to load it and the list knows whether it can show a preview.
 	bodyLoaded: z.boolean().default(true),

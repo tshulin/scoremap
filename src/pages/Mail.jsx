@@ -1,9 +1,9 @@
 /**
- * Mail — the student's school messages (route: /mail).
+ * Mail - the student's school messages (route: /mail).
  *
  * The list comes from the sync layer (portal messages module scraped in the
  * browser, or the test/demo mailbox). meta.mail tells the page whether the
- * mailbox is real, sample (placeholder), or failed to load — the banner reflects
+ * mailbox is real, sample (placeholder), or failed to load - the banner reflects
  * that instead of hardcoding "not connected".
  *
  * Uses the same card box as the Documents page for a consistent look. Clicking a
@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar.jsx';
 import SyncPill from '../components/SyncPill.jsx';
 import { useMail, useSyncMeta } from '../data/SyncProvider.jsx';
+import { LinkIcon, PaperclipIcon, PersonIcon } from '../lib/icons.jsx';
 
 const fmtDate = (iso) => {
   const [y, m, d] = iso.split('-').map(Number);
@@ -29,13 +30,14 @@ const TONES = {
 };
 
 function Chip({ icon, tone = 'neutral', children }) {
+  const compactLink = tone === 'link';
   return (
     <span
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        gap: 8,
-        padding: '5px 12px',
+        gap: compactLink ? 6 : 8,
+        padding: compactLink ? '5px 8px' : '5px 12px',
         borderRadius: 'var(--radius-md)',
         fontSize: 13,
         lineHeight: 1.3,
@@ -49,25 +51,12 @@ function Chip({ icon, tone = 'neutral', children }) {
   );
 }
 
-const Dot = () => (
-  <span
-    style={{
-      width: 6,
-      height: 6,
-      borderRadius: '50%',
-      background: 'var(--color-muted)',
-      display: 'inline-block',
-      flexShrink: 0,
-    }}
-  />
-);
-
 // The subject is one non-wrapping run that dissolves at the card's right edge
 // (Gmail-style), so a long subject never wraps or clips.
 //
 // There is deliberately no inline body preview. Showing one meant fetching a
-// message body per visible row — eight extra portal requests on every sync, more
-// than the whole rest of the sync combined — and those requests are charged
+// message body per visible row - eight extra portal requests on every sync, more
+// than the whole rest of the sync combined - and those requests are charged
 // against a per-IP budget the entire school shares. The body loads when the
 // student opens the message.
 const TITLE_FADE = 'linear-gradient(to right, black 78%, transparent 98%)';
@@ -144,7 +133,7 @@ function Mail() {
             </div>
           )}
 
-          {/* message list — same narrow card box as Documents */}
+          {/* message list - same narrow card box as Documents */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 820, margin: '0 auto' }}>
             {messages.length === 0 && (
               <div style={{ textAlign: 'center', color: 'var(--color-muted)', fontSize: 15, padding: '48px 0' }}>
@@ -185,18 +174,18 @@ function Mail() {
                     </span>
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    <Chip icon={<Dot />}>
+                    <Chip icon={<PersonIcon size={14} />}>
                       {m.sender}
                       {m.role ? ` (${m.role})` : ''}
                     </Chip>
                     <Chip>{fmtDate(m.date)}</Chip>
                     {m.links.length > 0 && (
-                      <Chip tone="link">{plural(m.links.length, 'Link')}</Chip>
+                      <Chip icon={<LinkIcon size={14} />} tone="link">{plural(m.links.length, 'Link')}</Chip>
                     )}
                     {/* Until a body is loaded the count is unknown, but the list
                         already knows whether attachments exist. */}
                     {(m.attachments.length > 0 || m.hasAttachments) && (
-                      <Chip tone="attachment">
+                      <Chip icon={<PaperclipIcon size={14} />} tone="attachment">
                         {m.attachments.length > 0
                           ? plural(m.attachments.length, 'Attachment')
                           : 'Attachments'}

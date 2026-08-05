@@ -11,7 +11,7 @@ export interface GradePoint {
 // The grade-over-time series is derived, not stored: replay calculable
 // assignments in date order and take the course grade after each date. The
 // last point therefore always equals the current computed grade. Editing a
-// past score rewrites the "past" — inherent to a derived series.
+// past score rewrites the "past" - inherent to a derived series.
 export function gradeSeries(assignments: Assignment[], categories?: Category[]): GradePoint[] {
 	const byDate = new Map<string, Assignment[]>();
 	for (const a of assignments.filter(isCalculable)) {

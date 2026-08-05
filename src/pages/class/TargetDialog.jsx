@@ -7,7 +7,8 @@
 import React from 'react';
 import GradeNumber from '../../components/GradeNumber.jsx';
 import { inferScale, solveUniformTarget } from '../../calc/index';
-import { Chip, Dialog, ScoreInput, assessmentLike, fmt2, shortDate } from './ui.jsx';
+import { Chip, Dialog, ScoreInput, fmt2, shortDate } from './ui.jsx';
+import { categoryChipStyle, makeCategoryColorMap } from './categoryColors.js';
 
 // Selectable: real assignments that are assigned but not graded, plus any
 // added hypotheticals (whose scores are the student's to play with anyway).
@@ -21,10 +22,17 @@ export const targetCandidates = (effective) =>
 
 function TargetDialog({ onClose, effective, categories, scale }) {
   const candidates = React.useMemo(() => targetCandidates(effective), [effective]);
+  const categoryColors = React.useMemo(
+    () => makeCategoryColorMap(
+      effective.map((assignment) => assignment.category),
+      (categories ?? []).map((category) => category.name),
+    ),
+    [categories, effective],
+  );
 
   const [target, setTarget] = React.useState('90');
   const [selectedIds, setSelectedIds] = React.useState({});
-  // { [id]: string } — a parseable value locks the row at that score.
+  // { [id]: string } - a parseable value locks the row at that score.
   const [locks, setLocks] = React.useState({});
 
   const letterRows = React.useMemo(
@@ -101,13 +109,13 @@ function TargetDialog({ onClose, effective, categories, scale }) {
 
       {candidates.length === 0 ? (
         <div style={{ color: 'var(--color-muted)', fontSize: 15, padding: '24px 0' }}>
-          Nothing to solve for — every assignment already has a score. Add a hypothetical
+          Nothing to solve for. Every assignment already has a score. Add a hypothetical
           assignment first (Hypothetical mode → add), then plan against it here.
         </div>
       ) : (
         <>
           <div style={{ fontSize: 13, color: 'var(--color-muted)', marginBottom: 10 }}>
-            Pick the upcoming assignments to spread the work over. Type a score to lock a row —
+            Pick the upcoming assignments to spread the work over. Type a score to lock a row;
             the others re-solve around it; ↺ unlocks.
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
@@ -140,7 +148,9 @@ function TargetDialog({ onClose, effective, categories, scale }) {
                     />
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                       {a.name}
-                      {a.category && <Chip tone={assessmentLike(a.category) ? 'assessment' : 'assignment'}>{a.category}</Chip>}
+                      {a.category && a.category !== 'Uncategorized' && (
+                        <Chip style={categoryChipStyle(a.category, categoryColors)}>{a.category}</Chip>
+                      )}
                       {a.id.startsWith('hypo-') && <Chip tone="info">Hypothetical</Chip>}
                       {a.extraCredit && <Chip>Extra credit</Chip>}
                       <Chip>{shortDate(a.date)}</Chip>
@@ -156,12 +166,12 @@ function TargetDialog({ onClose, effective, categories, scale }) {
                       )}
                       {a.extraCredit && !isLocked && (
                         <span style={{ fontSize: 13, color: 'var(--color-grade-mid)' }}>
-                          extra credit — enter a score
+                          extra credit: enter a score
                         </span>
                       )}
                       <ScoreInput
                         value={lockRaw}
-                        placeholder={needed !== undefined ? fmt2(needed) : '—'}
+                        placeholder={needed !== undefined ? fmt2(needed) : 'N/A'}
                         label={`${a.name} locked score`}
                         onChange={(v) => setLock(a.id, v)}
                       />
@@ -169,7 +179,7 @@ function TargetDialog({ onClose, effective, categories, scale }) {
                         <button
                           onClick={() => clearLock(a.id)}
                           aria-label={`Unlock ${a.name}`}
-                          title="Unlock — rejoin the uniform average"
+                          title="Unlock and rejoin the uniform average"
                           style={{ border: 'none', background: 'transparent', color: 'var(--color-text-link)', cursor: 'pointer', fontSize: 17, lineHeight: 1, padding: 2 }}
                         >
                           ↺
@@ -215,7 +225,7 @@ function TargetDialog({ onClose, effective, categories, scale }) {
                 {result.uniformPct > 100 && (
                   <span style={{ color: 'var(--color-grade-mid)' }}>
                     {' '}
-                    That's over 100% — not possible without extra credit.
+                    That's over 100%. It is not possible without extra credit.
                   </span>
                 )}
                 {result.uniformPct < 0 && (

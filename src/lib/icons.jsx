@@ -1,4 +1,4 @@
-// Small inline icons (Lucide-style, stroke = currentColor). Grademax ships no
+// Small inline icons (Lucide-style, stroke = currentColor). Scoremap ships no
 // icon set (see design-system readme "Iconography"); these are the few the app
 // needs, kept dependency-free.
 import React from 'react';
@@ -16,6 +16,63 @@ export const PersonIcon = ({ size = 14 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" {...base}>
     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
     <circle cx="12" cy="7" r="4" />
+  </svg>
+);
+
+export const BookOpenIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" {...base}>
+    <path d="M2 4.5A2.5 2.5 0 0 1 4.5 2H10a2 2 0 0 1 2 2v16a2.5 2.5 0 0 0-2.5-2.5H2z" />
+    <path d="M22 4.5A2.5 2.5 0 0 0 19.5 2H14a2 2 0 0 0-2 2v16a2.5 2.5 0 0 1 2.5-2.5H22z" />
+  </svg>
+);
+
+export const BellIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" {...base}>
+    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+  </svg>
+);
+
+export const FilesIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" {...base}>
+    <path d="M15 2H6a2 2 0 0 0-2 2v12" />
+    <rect x="8" y="6" width="12" height="16" rx="2" />
+    <path d="M12 11h4M12 15h4" />
+  </svg>
+);
+
+export const MailIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" {...base}>
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="m3 7 9 6 9-6" />
+  </svg>
+);
+
+export const CalculatorIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" {...base}>
+    <rect x="4" y="2" width="16" height="20" rx="2" />
+    <path d="M8 6h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h.01M16 19h.01" />
+  </svg>
+);
+
+export const MessageSquareIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" {...base}>
+    <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+    <path d="M8 8h8M8 12h5" />
+  </svg>
+);
+
+export const MapPinIcon = ({ size = 14 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" {...base}>
+    <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0z" />
+    <circle cx="12" cy="10" r="2.5" />
+  </svg>
+);
+
+export const LockIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" {...base}>
+    <rect x="4" y="10" width="16" height="11" rx="2" />
+    <path d="M8 10V7a4 4 0 0 1 8 0v3" />
   </svg>
 );
 

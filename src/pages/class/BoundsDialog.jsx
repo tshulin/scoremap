@@ -3,7 +3,7 @@
 // remaining work; src/calc/bounds turns that into the lowest and highest
 // possible final grade (monotone in each expectation, so the extremes need no
 // search). Entering remaining points for an empty category (Finals) pulls its
-// weight into the renormalized grade — exactly "how much can finals hurt me".
+// weight into the renormalized grade - exactly "how much can finals hurt me".
 import React from 'react';
 import GradeNumber from '../../components/GradeNumber.jsx';
 import { gradeBounds, inferScale, isCalculable, resolveLetter } from '../../calc/index';
@@ -11,7 +11,7 @@ import { scoreBandColor as bandColor } from '../../lib/grades.js';
 import { Check, Dialog, ScoreInput, fmt2 } from './ui.jsx';
 
 // Current per-category % of the chosen assignment set (label 'All' when
-// unweighted) — used to prefill the expectation inputs so the initial output
+// unweighted) - used to prefill the expectation inputs so the initial output
 // brackets today's grade.
 function currentPctByCategory(assignments, categories) {
   const weighted = !!(categories && categories.length > 0);
@@ -67,7 +67,7 @@ function BoundsDialog({ onClose, baseAssignments, effective, hypothetical, categ
 
   const toggleSource = (on) => {
     setUseScenarioData(on);
-    // Fresh defaults for the other data set — the current %s differ.
+    // Fresh defaults for the other data set - the current %s differ.
     setRows(makeDefaults(on ? effective : baseAssignments));
   };
 

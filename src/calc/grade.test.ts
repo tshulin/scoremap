@@ -16,7 +16,7 @@ describe('gradePercentage', () => {
 	});
 });
 
-describe('courseGrade — unweighted', () => {
+describe('courseGrade - unweighted', () => {
 	it('adds up points', () => {
 		expect(courseGrade([graded(8, 10), graded(9, 10)])).toBe(85);
 	});
@@ -43,7 +43,7 @@ describe('courseGrade — unweighted', () => {
 	});
 });
 
-describe('courseGrade — weighted', () => {
+describe('courseGrade - weighted', () => {
 	const categories = [category('Homework', 40), category('Tests', 60)];
 
 	it('weights each category by its share', () => {

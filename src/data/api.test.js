@@ -2,7 +2,7 @@
 // auto sign-in safe: the snapshot must never overwrite good data with an empty
 // one, signing out must erase everything durable (it holds grades, messages,
 // and the password), and the credentials are replayed only until the portal
-// rejects them — a dead relay must not log anyone out.
+// rejects them - a dead relay must not log anyone out.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthError, SessionExpiredError, PortalHttpError } from '../portal/errors';
 
@@ -231,7 +231,7 @@ describe('auto sign-in policy', () => {
 
     expect(docs).toEqual([{ id: 'DOC-1' }]);
     expect(portalLogin).toHaveBeenCalledTimes(2); // boot login + the heal
-    expect(recallCredentials()).toEqual(CREDS); // still saved — it worked
+    expect(recallCredentials()).toEqual(CREDS); // still saved - it worked
   });
 
   it('clears the saved sign-in when the portal rejects it', async () => {
@@ -279,7 +279,7 @@ describe('auto sign-in policy', () => {
 
   // The production bundle is minified and esbuild mangles class names; the
   // error mapping must key on identity, not `constructor.name`, or the 401
-  // sign-out policy silently dies in prod (it did — this is the regression).
+  // sign-out policy silently dies in prod (it did - this is the regression).
   it('maps errors by identity even when the class name is mangled', async () => {
     rememberCredentials(CREDS);
     const Mangled = class extends AuthError {};

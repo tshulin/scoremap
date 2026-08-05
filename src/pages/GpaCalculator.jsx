@@ -1,5 +1,5 @@
 /**
- * GPA calculator — a device-local, one-semester planning tool.
+ * GPA calculator - a device-local, one-semester planning tool.
  *
  * Every course is weighted equally. A weighted course adds one grade point to
  * passing grades for the weighted result; the unweighted result always uses
@@ -44,7 +44,7 @@ const loadCourses = () => {
   }
 };
 
-const formatGpa = (value) => (value == null ? '—' : value.toFixed(2));
+const formatGpa = (value) => (value == null ? 'N/A' : value.toFixed(2));
 
 function GpaCalculator() {
   const [courses, setCourses] = useState(loadCourses);

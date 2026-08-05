@@ -1,4 +1,4 @@
-// Demo mode — run the app signed-in on sample data with no relay, no portal,
+// Demo mode - run the app signed-in on sample data with no relay, no portal,
 // and no real login. Dev-only: the deploy workflow never sets VITE_DEMO, and
 // this module refuses to load in a production build at all.
 export const DEMO = import.meta.env?.VITE_DEMO === 'true';

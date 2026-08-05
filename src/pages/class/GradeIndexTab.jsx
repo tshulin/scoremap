@@ -1,6 +1,6 @@
 // The class's letter scale: cutoffs observed from the portal's own letters,
 // defaults where nothing has been seen, and student overrides on top. The
-// portal computes letters server-side per teacher — we reconstruct the scale
+// portal computes letters server-side per teacher - we reconstruct the scale
 // the letters imply, honestly labeled by source.
 import React from 'react';
 import { clearOverride, resetOverrides, setOverride, useGradeIndex } from '../../data/gradeIndexStore.js';
@@ -29,7 +29,7 @@ function CutoffRow({ classId, row }) {
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           <ScoreInput
             value={draft}
-            placeholder="—"
+            placeholder="N/A"
             label={`${row.letter} cutoff`}
             onChange={setDraft}
             width={72}
@@ -85,11 +85,11 @@ function GradeIndexTab({ classId }) {
       <div style={{ fontSize: 14, color: 'var(--color-body)', marginBottom: 4 }}>
         {observedCount > 0
           ? `Cutoffs inferred from ${observedCount} letter${observedCount === 1 ? '' : 's'} this portal has shown for this class, on top of the standard scale.`
-          : 'No portal letters seen for this class yet — this is the standard scale.'}
+          : 'No portal letters seen for this class yet. This is the standard scale.'}
       </div>
       <div style={{ fontSize: 13, color: 'var(--color-muted)', marginBottom: 14 }}>
         Based on grades seen so far; refine a cutoff manually if you know the teacher's exact
-        scale. These letters label the hypothetical grade and both calculators — the portal's
+        scale. These letters label the hypothetical grade and both calculators. The portal's
         official letter is always shown as-is.
       </div>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 15, color: 'var(--color-ink)' }}>

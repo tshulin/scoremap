@@ -1,6 +1,6 @@
 // Forgiving parser for the "StudentVUE domain" field. Users paste whatever
-// they have — a bare hostname, a full login URL, the URL of their gradebook
-// page, a link with no scheme — and we pull the portal address out of it.
+// they have - a bare hostname, a full login URL, the URL of their gradebook
+// page, a link with no scheme - and we pull the portal address out of it.
 //
 // A portal address is a hostname plus an optional base path: most districts
 // live at a bare host ("ca-sfu-psv.edupoint.com"), but ~30% of them share a
@@ -24,7 +24,7 @@ export function isPortalDomain(domain: string): boolean {
 const fromUrl = (url: URL): string | null => {
 	const host = url.hostname.replace(/\.+$/, '').toLowerCase();
 	if (!HOST_RE.test(host)) return null;
-	// Path: drop empty segments, then drop a trailing page file — any last
+	// Path: drop empty segments, then drop a trailing page file - any last
 	// segment with a dot in it ("PXP2_Login_Student.aspx", "default.aspx").
 	const segments = url.pathname.toLowerCase().split('/').filter(Boolean);
 	if (segments.length && segments[segments.length - 1]!.includes('.')) segments.pop();

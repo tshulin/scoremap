@@ -1,4 +1,4 @@
-// RefreshDelta — the second line inside the "Last updated" pill: how grades
+// RefreshDelta - the second line inside the "Last updated" pill: how grades
 // moved since the previous sync. DeltaValue renders one signed, colored
 // percentage; ChangeTicker rotates through multiple changed classes
 // vertically, one line at a time.

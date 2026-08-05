@@ -1,4 +1,4 @@
-// Regenerates src/data/districts.js — the district list behind the login
+// Regenerates src/data/districts.js - the district list behind the login
 // page's "choose your school district" dropdown.
 //
 // Asks Edupoint's public district-lookup service (the same endpoint the
@@ -182,7 +182,7 @@ const body = districts
   .join('\n');
 writeFileSync(
   OUT_PATH,
-  `// GENERATED FILE — do not edit by hand. Regenerate: node scripts/mine-districts.mjs
+  `// GENERATED FILE - do not edit by hand. Regenerate: node scripts/mine-districts.mjs
 // Districts that use StudentVUE, from Edupoint's public district-lookup
 // service (the endpoint the official app queries by zip code). ${districts.length}
 // districts as of ${date}. Sorted by state, then name.

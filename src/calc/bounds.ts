@@ -24,7 +24,7 @@ export interface GradeBounds {
 }
 
 // The course grade is monotone increasing in each category's expected
-// percentage — a category grade is (E + x·R)/(P + R), rising in x, and both
+// percentage - a category grade is (E + x·R)/(P + R), rising in x, and both
 // grading modes combine category grades with non-negative coefficients. So the
 // global minimum is every category at its minPct and the maximum every
 // category at its maxPct; no search is needed. Entering remaining points for a

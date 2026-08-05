@@ -1,4 +1,4 @@
-// Capture real portal pages for parser development — run this WHEN GRADES ARE BACK,
+// Capture real portal pages for parser development - run this WHEN GRADES ARE BACK,
 // then implement parseGradebook (src/portal/pages/gradebook/index.ts) against the
 // captured markup. See ADDING_REAL_DATA.md.
 //
@@ -7,7 +7,7 @@
 //   SYNERGY_DOMAIN=... SYNERGY_USERNAME=... SYNERGY_PASSWORD=... \
 //   npx tsx scripts/capture-gradebook.ts
 //
-// Output goes to captures/ (gitignored). It contains REAL personal data — never
+// Output goes to captures/ (gitignored). It contains REAL personal data - never
 // commit it. Sanitize before turning any of it into a committed test fixture.
 
 import { createRelayFetch } from '../src/transport/fetchShim.js';
@@ -48,7 +48,7 @@ for (const p of PAGES) {
 		const file = path.join(outDir, `${p.name}.html`);
 		fs.writeFileSync(file, page.body);
 		const grids = (page.body.match(/"dataSource":\s*\[/g) || []).length;
-		const redirected = page.redirected ? '  (REDIRECTED — likely out of term / unavailable)' : '';
+		const redirected = page.redirected ? '  (REDIRECTED - likely out of term / unavailable)' : '';
 		console.log(`  ${p.name.padEnd(12)} ${page.body.length} bytes, ${grids} dataSource grid(s)${redirected}`);
 		console.log(`               -> ${file}`);
 	} catch (e) {
@@ -57,7 +57,7 @@ for (const p of PAGES) {
 }
 
 console.log(
-	'\n  DONE. captures/ holds REAL personal data — do not commit it. Search each file for\n' +
+	'\n  DONE. captures/ holds REAL personal data - do not commit it. Search each file for\n' +
 		'  `"dataSource":[` to find the grids, then implement parseGradebook. Sanitize before\n' +
 		'  making a committed fixture.\n'
 );

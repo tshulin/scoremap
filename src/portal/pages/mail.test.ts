@@ -84,7 +84,7 @@ describe('fetchMail', () => {
 		expect(mailbox.unreadableMessages).toBe(0);
 		expect(mailbox.messages).toHaveLength(1);
 		const m = mailbox.messages[0]!;
-		// The identifier is messagePersonId — what GetMessage is keyed on.
+		// The identifier is messagePersonId - what GetMessage is keyed on.
 		expect(m.id).toBe('FACE0000-0000-0000-0000-000000000002');
 		expect(m.subject).toBe('Action Needed: DECA/ROP Survey');
 		expect(m.sender).toEqual({
