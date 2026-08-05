@@ -18,6 +18,7 @@ import { hasToken, recallAuthNotice } from '../data/api.js';
 import { extractPortalDomain } from '../portal/domainInput';
 import { DISTRICTS } from '../data/districts.js';
 import { TEST_DISTRICT } from '../data/testAccount.js';
+import { EyeIcon, EyeOffIcon, XIcon } from '../lib/icons.jsx';
 
 // The built-in test district (test/test account) rides along at the end so it
 // never gets lost when the real list is regenerated.
@@ -38,6 +39,87 @@ function districtSearchScore(district, query) {
   if (state.startsWith(query)) return 4;
   if (domain.includes(query)) return 5;
   return null;
+}
+
+function PasswordInput({ value, onChange }) {
+  const [focused, setFocused] = React.useState(false);
+  const [visible, setVisible] = React.useState(false);
+
+  return (
+    <label
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 6,
+        fontFamily: 'var(--font-sans)',
+      }}
+    >
+      <span
+        style={{
+          fontSize: 'var(--text-title-sm-size)',
+          fontWeight: 600,
+          color: 'var(--color-ink)',
+        }}
+      >
+        StudentVUE password
+      </span>
+      <div
+        onFocus={() => setFocused(true)}
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false);
+        }}
+        style={{
+          height: 44,
+          boxSizing: 'border-box',
+          borderRadius: 'var(--radius-md)',
+          border: `${focused ? 2 : 1}px solid ${focused ? 'var(--color-ink)' : 'var(--color-hairline-strong)'}`,
+          background: 'var(--color-surface-card)',
+          display: 'flex',
+          alignItems: 'center',
+          overflow: 'hidden',
+        }}
+      >
+        <input
+          type={visible ? 'text' : 'password'}
+          autoComplete="current-password"
+          value={value}
+          onChange={onChange}
+          style={{
+            minWidth: 0,
+            flex: 1,
+            alignSelf: 'stretch',
+            padding: '0 8px 0 16px',
+            border: 0,
+            outline: 0,
+            fontSize: 'var(--text-body-md-size)',
+            fontFamily: 'var(--font-sans)',
+            color: 'var(--color-ink)',
+            background: 'transparent',
+          }}
+        />
+        <button
+          type="button"
+          aria-label={visible ? 'Hide password' : 'Show password'}
+          aria-pressed={visible}
+          onClick={() => setVisible((current) => !current)}
+          style={{
+            width: 44,
+            alignSelf: 'stretch',
+            flexShrink: 0,
+            border: 0,
+            padding: 0,
+            background: 'transparent',
+            color: 'var(--color-body)',
+            cursor: 'pointer',
+            display: 'grid',
+            placeItems: 'center',
+          }}
+        >
+          {visible ? <EyeOffIcon /> : <EyeIcon />}
+        </button>
+      </div>
+    </label>
+  );
 }
 
 // Searchable district combobox. Typing narrows the list beneath the field;
@@ -165,6 +247,34 @@ function DistrictCombobox({ query, value, onQueryChange, onSelect }) {
             background: 'transparent',
           }}
         />
+        {query && (
+          <button
+            type="button"
+            aria-label="Clear district search"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => {
+              onQueryChange('');
+              setShowAll(false);
+              setOpen(true);
+              setActiveIndex(0);
+              inputRef.current?.focus();
+            }}
+            style={{
+              width: 36,
+              alignSelf: 'stretch',
+              flexShrink: 0,
+              border: 0,
+              padding: 0,
+              background: 'transparent',
+              color: 'var(--color-body)',
+              cursor: 'pointer',
+              display: 'grid',
+              placeItems: 'center',
+            }}
+          >
+            <XIcon size={16} />
+          </button>
+        )}
         <button
           type="button"
           aria-label={open ? 'Close district list' : 'Open district list'}
@@ -414,9 +524,7 @@ function Login() {
             />
 
             <div>
-              <TextInput
-                label="StudentVUE password"
-                type="password"
+              <PasswordInput
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
