@@ -23,7 +23,16 @@ import {
   fetchMailMessage,
   downloadMailAttachment as portalDownloadMailAttachment,
 } from '../portal/pages/mail';
-import { SessionExpiredError, NoActiveGradingPeriodError, ParseError } from '../portal/errors';
+import {
+  AuthError,
+  InvalidDomainError,
+  ModuleUnavailableError,
+  NoActiveGradingPeriodError,
+  ParseError,
+  PortalHttpError,
+  PortalShapeError,
+  SessionExpiredError,
+} from '../portal/errors';
 import { SAMPLE_GRADEBOOK, SAMPLE_ATTENDANCE, PLACEHOLDER_DATA } from './placeholders';
 import { DEMO, DEMO_STUDENT } from './demo';
 import {
@@ -260,20 +269,25 @@ function currentSession() {
 
 // Portal errors -> the { code, status } shape the app already handles. Codes match
 // the former backend's PortalErrorCode enum; status 401 sends the app to sign-in.
+// Matched by instanceof, never by class NAME: the production bundle is minified
+// and esbuild mangles class names, which silently turned every entry of the old
+// name-keyed table into INTERNAL — auth failures showed a generic error instead
+// of signing the student out.
+const ERROR_MAP = [
+  [AuthError, 'AUTH_FAILED', 401],
+  [InvalidDomainError, 'VALIDATION', 400],
+  [SessionExpiredError, 'SESSION_EXPIRED', 401],
+  [NoActiveGradingPeriodError, 'NO_ACTIVE_GRADING_PERIOD', 409],
+  [ModuleUnavailableError, 'PORTAL_UNAVAILABLE', 502],
+  [ParseError, 'PARSE_FAILED', 502],
+  [PortalShapeError, 'PARSE_FAILED', 502],
+  [PortalHttpError, 'PORTAL_UNAVAILABLE', 502],
+];
+
 function mapError(e) {
   if (e instanceof ApiError) return e;
-  const name = e && e.constructor ? e.constructor.name : '';
-  const table = {
-    AuthError: ['AUTH_FAILED', 401],
-    InvalidDomainError: ['VALIDATION', 400],
-    SessionExpiredError: ['SESSION_EXPIRED', 401],
-    NoActiveGradingPeriodError: ['NO_ACTIVE_GRADING_PERIOD', 409],
-    ModuleUnavailableError: ['PORTAL_UNAVAILABLE', 502],
-    ParseError: ['PARSE_FAILED', 502],
-    PortalShapeError: ['PARSE_FAILED', 502],
-    PortalHttpError: ['PORTAL_UNAVAILABLE', 502],
-  };
-  const [code, status] = table[name] || ['INTERNAL', 500];
+  const hit = ERROR_MAP.find(([cls]) => e instanceof cls);
+  const [, code, status] = hit || [null, 'INTERNAL', 500];
   return new ApiError(code, (e && e.message) || 'Request failed.', status);
 }
 

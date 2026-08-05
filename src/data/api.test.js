@@ -276,4 +276,17 @@ describe('auto sign-in policy', () => {
     await expect(api.getDocuments()).rejects.toMatchObject({ code: 'SESSION_EXPIRED', status: 401 });
     expect(portalLogin).not.toHaveBeenCalled();
   });
+
+  // The production bundle is minified and esbuild mangles class names; the
+  // error mapping must key on identity, not `constructor.name`, or the 401
+  // sign-out policy silently dies in prod (it did — this is the regression).
+  it('maps errors by identity even when the class name is mangled', async () => {
+    rememberCredentials(CREDS);
+    const Mangled = class extends AuthError {};
+    Object.defineProperty(Mangled, 'name', { value: 'x7' });
+    portalLogin.mockRejectedValue(new Mangled('nope'));
+
+    await expect(api.getDocuments()).rejects.toMatchObject({ code: 'AUTH_FAILED', status: 401 });
+    expect(recallCredentials()).toBeNull();
+  });
 });
