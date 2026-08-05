@@ -6,10 +6,12 @@
     <!-- GitHub Pages serves this for any unknown path (e.g. a refresh on
          /dashboard). Re-encode the path as a query string and bounce to the
          app root, where index.html restores it before React Router boots.
-         pathSegmentsToKeep = 1 keeps the /grademax/ project prefix.
+         On the github.io project page one segment (/grademax/) must be kept;
+         on the custom domain the app is at the root, and keeping a segment
+         there turns every deep link into an infinite redirect loop.
          (https://github.com/rafgraph/spa-github-pages) -->
     <script type="text/javascript">
-      var pathSegmentsToKeep = 1;
+      var pathSegmentsToKeep = window.location.hostname.endsWith('github.io') ? 1 : 0;
       var l = window.location;
       l.replace(
         l.protocol +
