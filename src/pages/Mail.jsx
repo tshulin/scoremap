@@ -6,15 +6,21 @@
  * mailbox is real, sample (placeholder), or failed to load - the banner reflects
  * that instead of hardcoding "not connected".
  *
- * Uses the same card box as the Documents page for a consistent look. Clicking a
- * message opens the reader at /mail/:mailId.
+ * Uses the same card box as the Documents page for a consistent look, and the
+ * same vertical rhythm: a filter bar sits where Documents puts its category
+ * switcher, so the first card of both lists lands at the same spot. The bar
+ * narrows the list with a text search over subjects and a dropdown that picks
+ * a sender. Both work on data the list scrape already has - subjects and
+ * senders - never message bodies, which would cost a portal request per
+ * message (see the note above TITLE_FADE). Clicking a message opens the reader
+ * at /mail/:mailId.
  */
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar.jsx';
 import SyncPill from '../components/SyncPill.jsx';
-import { useMail, useSyncMeta } from '../data/SyncProvider.jsx';
-import { LinkIcon, PaperclipIcon, PersonIcon } from '../lib/icons.jsx';
+import { useMail, useSession, useSyncMeta } from '../data/SyncProvider.jsx';
+import { ChevronDownIcon, LinkIcon, PaperclipIcon, PersonIcon, SearchIcon, XIcon } from '../lib/icons.jsx';
 
 const fmtDate = (iso) => {
   const [y, m, d] = iso.split('-').map(Number);
@@ -24,23 +30,24 @@ const fmtDate = (iso) => {
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
 const TONES = {
-  neutral: { background: 'var(--color-surface-strong)', color: 'var(--color-body)', border: '1px solid var(--color-hairline)', fontWeight: 500 },
-  link: { background: 'color-mix(in srgb, var(--color-grade-good) 22%, transparent)', color: 'var(--color-grade-good)', border: '1px solid transparent', fontWeight: 600 },
-  attachment: { background: 'color-mix(in srgb, var(--color-preview) 22%, transparent)', color: 'var(--color-preview)', border: '1px solid transparent', fontWeight: 600 },
+  neutral: { background: 'var(--color-surface-strong)', color: 'var(--color-body)', border: '1px solid var(--color-hairline)' },
+  link: { background: 'color-mix(in srgb, var(--color-grade-good) 22%, transparent)', color: 'var(--color-grade-good)', border: '1px solid transparent' },
+  attachment: { background: 'color-mix(in srgb, var(--color-preview) 22%, transparent)', color: 'var(--color-preview)', border: '1px solid transparent' },
 };
 
+// Same chip metrics as the Documents page so both lists read identically.
 function Chip({ icon, tone = 'neutral', children }) {
-  const compactLink = tone === 'link';
   return (
     <span
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        gap: compactLink ? 6 : 8,
-        padding: compactLink ? '5px 8px' : '5px 12px',
-        borderRadius: 'var(--radius-md)',
+        gap: 6,
+        padding: '4px 10px',
+        borderRadius: 'var(--radius-sm)',
         fontSize: 13,
-        lineHeight: 1.3,
+        fontWeight: 600,
+        lineHeight: 1.2,
         whiteSpace: 'nowrap',
         ...TONES[tone],
       }}
@@ -61,13 +68,77 @@ function Chip({ icon, tone = 'neutral', children }) {
 // student opens the message.
 const TITLE_FADE = 'linear-gradient(to right, black 78%, transparent 98%)';
 
+function SenderOption({ label, count, active, onClick }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <button
+      role="option"
+      aria-selected={active}
+      onClick={onClick}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        display: 'flex',
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 12,
+        padding: '8px 12px',
+        borderRadius: 'var(--radius-sm)',
+        border: 'none',
+        cursor: 'pointer',
+        fontFamily: 'var(--font-sans)',
+        fontSize: 14,
+        fontWeight: active ? 600 : 500,
+        textAlign: 'left',
+        background: hov ? 'var(--color-nav-active)' : 'transparent',
+        color: active || hov ? 'var(--color-ink)' : 'var(--color-body)',
+      }}
+    >
+      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
+      {count != null && <span style={{ color: 'var(--color-muted)', fontSize: 13, fontWeight: 500, flexShrink: 0 }}>{count}</span>}
+    </button>
+  );
+}
+
 function Mail() {
   const navigate = useNavigate();
   const mail = useMail();
+  const session = useSession();
   const meta = useSyncMeta();
   const [hovered, setHovered] = useState(null);
+  const [search, setSearch] = useState('');
+  const [sender, setSender] = useState(null);
+  const [searchFocus, setSearchFocus] = useState(false);
+  const [senderOpen, setSenderOpen] = useState(false);
+  const senderRef = useRef(null);
 
-  const messages = [...mail.messages].sort((a, b) => b.date.localeCompare(a.date));
+  useEffect(() => {
+    if (!senderOpen) return undefined;
+    const onDown = (e) => {
+      if (senderRef.current && !senderRef.current.contains(e.target)) setSenderOpen(false);
+    };
+    const onKey = (e) => {
+      if (e.key === 'Escape') setSenderOpen(false);
+    };
+    window.addEventListener('mousedown', onDown);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('mousedown', onDown);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [senderOpen]);
+
+  const senders = useMemo(() => {
+    const counts = new Map();
+    for (const m of mail.messages) counts.set(m.sender, (counts.get(m.sender) || 0) + 1);
+    return [...counts.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  }, [mail.messages]);
+
+  const query = search.trim().toLowerCase();
+  const messages = mail.messages
+    .filter((m) => (!sender || m.sender === sender) && (!query || m.subject.toLowerCase().includes(query)))
+    .sort((a, b) => b.date.localeCompare(a.date));
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-canvas)', fontFamily: 'var(--font-sans)' }}>
@@ -98,9 +169,13 @@ function Mail() {
             </div>
           )}
 
-          {(meta.mail.placeholder || mail.unreadableMessages > 0) && (
+          {/* In demo/test mode the SyncPill's "everything here is sample data"
+              pill already covers it (same rule SyncPill applies to the sample
+              gradebook/attendance pills) - repeating it here would push the
+              list below where the Documents list starts. */}
+          {((!session.demo && meta.mail.placeholder) || mail.unreadableMessages > 0) && (
             <div style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
-              {meta.mail.placeholder && (
+              {!session.demo && meta.mail.placeholder && (
                 <div
                   className="gm-fade-in"
                   style={{
@@ -133,11 +208,154 @@ function Mail() {
             </div>
           )}
 
+          {/* filter bar - subject search plus a sender picker. Sits in the
+              same slot as the Documents category switcher (same height, same
+              24px gap to the list), so the first card of both lists lands at
+              the same spot. */}
+          {mail.messages.length > 0 && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+                padding: 4,
+                borderRadius: 'var(--radius-lg)',
+                background: 'var(--color-surface-card)',
+                border: '1px solid var(--color-hairline-strong)',
+                boxShadow: searchFocus ? 'var(--shadow-soft-drop)' : 'none',
+                transition: 'box-shadow 150ms ease',
+                boxSizing: 'border-box',
+                maxWidth: 820,
+                margin: '0 auto 24px',
+              }}
+            >
+              <span style={{ display: 'inline-flex', color: 'var(--color-muted)', paddingLeft: 12, flexShrink: 0 }}>
+                <SearchIcon size={16} />
+              </span>
+              <input
+                type="text"
+                className="gm-bare-input"
+                aria-label="Search mail subjects"
+                placeholder="Search subjects"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onFocus={() => setSearchFocus(true)}
+                onBlur={() => setSearchFocus(false)}
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  border: 'none',
+                  outline: 'none',
+                  background: 'transparent',
+                  color: 'var(--color-ink)',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: 15,
+                  padding: '8px 6px',
+                }}
+              />
+              {search !== '' && (
+                <button
+                  aria-label="Clear search"
+                  onClick={() => setSearch('')}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    padding: 6,
+                    borderRadius: 'var(--radius-sm)',
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: 'transparent',
+                    color: 'var(--color-muted)',
+                    flexShrink: 0,
+                  }}
+                >
+                  <XIcon size={14} />
+                </button>
+              )}
+              <span aria-hidden="true" style={{ width: 1, alignSelf: 'stretch', margin: '6px 2px', background: 'var(--color-hairline)', flexShrink: 0 }} />
+              <div ref={senderRef} style={{ position: 'relative', flexShrink: 0, maxWidth: '45%' }}>
+                <button
+                  aria-haspopup="listbox"
+                  aria-expanded={senderOpen}
+                  onClick={() => setSenderOpen((o) => !o)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    maxWidth: '100%',
+                    padding: '8px 14px',
+                    borderRadius: 'var(--radius-md)',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: 14,
+                    fontWeight: 500,
+                    whiteSpace: 'nowrap',
+                    background: sender ? 'var(--color-surface-dark-elevated)' : 'transparent',
+                    color: sender ? 'var(--color-ink)' : 'var(--color-body)',
+                  }}
+                >
+                  <span style={{ display: 'inline-flex', flexShrink: 0 }}>
+                    <PersonIcon size={14} />
+                  </span>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{sender || 'From'}</span>
+                  <span style={{ display: 'inline-flex', flexShrink: 0 }}>
+                    <ChevronDownIcon size={14} />
+                  </span>
+                </button>
+                {senderOpen && (
+                  <div
+                    role="listbox"
+                    aria-label="Filter by sender"
+                    className="gm-pop-in"
+                    style={{
+                      position: 'absolute',
+                      top: 'calc(100% + 8px)',
+                      right: 0,
+                      zIndex: 30,
+                      minWidth: 240,
+                      maxWidth: 320,
+                      maxHeight: 300,
+                      overflowY: 'auto',
+                      padding: 6,
+                      borderRadius: 'var(--radius-lg)',
+                      background: 'var(--color-surface-dark-elevated)',
+                      border: '1px solid var(--color-hairline-strong)',
+                      boxShadow: 'var(--shadow-soft-drop)',
+                      boxSizing: 'border-box',
+                    }}
+                  >
+                    <SenderOption
+                      label="Everyone"
+                      active={sender === null}
+                      onClick={() => {
+                        setSender(null);
+                        setSenderOpen(false);
+                      }}
+                    />
+                    {senders.map(([name, count]) => (
+                      <SenderOption
+                        key={name}
+                        label={name}
+                        count={count}
+                        active={sender === name}
+                        onClick={() => {
+                          setSender(name);
+                          setSenderOpen(false);
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* message list - same narrow card box as Documents */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 820, margin: '0 auto' }}>
             {messages.length === 0 && (
               <div style={{ textAlign: 'center', color: 'var(--color-muted)', fontSize: 15, padding: '48px 0' }}>
-                No messages.
+                {mail.messages.length === 0 ? 'No messages.' : 'No messages match.'}
               </div>
             )}
             {messages.map((m) => {
@@ -152,7 +370,7 @@ function Mail() {
                     background: 'var(--color-surface-card)',
                     border: '1px solid var(--color-hairline-strong)',
                     borderRadius: 'var(--radius-xl)',
-                    padding: '24px 28px',
+                    padding: '20px 24px',
                     boxSizing: 'border-box',
                     cursor: 'pointer',
                     boxShadow: hov ? 'var(--shadow-soft-drop)' : 'none',
@@ -164,7 +382,7 @@ function Mail() {
                     style={{
                       overflow: 'hidden',
                       whiteSpace: 'nowrap',
-                      marginBottom: 14,
+                      marginBottom: 10,
                       WebkitMaskImage: TITLE_FADE,
                       maskImage: TITLE_FADE,
                     }}

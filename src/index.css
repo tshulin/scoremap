@@ -3,6 +3,13 @@
    names and dark defaults; the :root block here re-colors them to the style
    guide, and the [data-theme='light'] block restates every token for light.
    Components reference tokens only - retheming stays a this-file edit. */
+/* Reserve the scrollbar gutter even when the page doesn't scroll. Without
+   this, filtering a list below one screen (e.g. the Mail search) drops the
+   scrollbar, widens the viewport, and the centered content wobbles sideways. */
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   margin: 0;
   background: var(--color-canvas);
@@ -192,6 +199,13 @@ body {
 
 .gm-chart-draw {
   animation: gm-chart-draw 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Borderless inline search fields (Mail filter bar) - the surrounding bar
+   carries the border, so the input itself only needs a themed placeholder. */
+.gm-bare-input::placeholder {
+  color: var(--color-muted);
+  opacity: 1;
 }
 
 a {

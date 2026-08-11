@@ -118,6 +118,13 @@ export const ArrowLeftIcon = ({ size = 18 }) => (
   </svg>
 );
 
+export const SearchIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" {...base}>
+    <circle cx="11" cy="11" r="7" />
+    <path d="m21 21-4.3-4.3" />
+  </svg>
+);
+
 export const ChevronDownIcon = ({ size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" {...base}>
     <path d="m6 9 6 6 6-6" />
