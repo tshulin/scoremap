@@ -96,7 +96,7 @@ function BoundsDialog({ onClose, baseAssignments, effective, hypothetical, categ
   const perCategory = new Map((result?.perCategory ?? []).map((c) => [c.name, c]));
 
   return (
-    <Dialog title="Max / min grade" onClose={onClose}>
+    <Dialog title="Max/Min grade" onClose={onClose}>
       <div style={{ fontSize: 13, color: 'var(--color-muted)', marginBottom: 12 }}>
         For each {weighted ? 'category' : 'class'}, estimate the points still to come this term
         and your worst/best average on that work. With everything at 0 remaining, both bounds

@@ -372,7 +372,8 @@ const pdfText = (s) =>
     .replace(/[\\()]/g, (c) => '\\' + c)
     .replace(/[^\x20-\x7e]/g, '');
 
-function buildPdf(title, bodyLines) {
+// Shared with displayAccount.js, which generates its own sample PDFs.
+export function buildPdf(title, bodyLines) {
   const ops = ['BT', '/F1 16 Tf', '72 714 Td', `(${pdfText(title)}) Tj`, '/F1 11 Tf', '0 -30 Td'];
   bodyLines.forEach((line, i) => {
     if (i > 0) ops.push('0 -16 Td');

@@ -377,7 +377,7 @@ function ClassDetail() {
               </div>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
                 <PillButton onClick={() => setTargetOpen(true)}>Target calculator</PillButton>
-                <PillButton onClick={() => setBoundsOpen(true)}>Max / min grade</PillButton>
+                <PillButton onClick={() => setBoundsOpen(true)}>Max/Min grade</PillButton>
               </div>
             </div>
 
