@@ -203,7 +203,7 @@ function DashboardPage() {
               </div>
             )}
             {classes.map((c) => {
-              const color = gradeBandColor(c.grade);
+              const color = gradeBandColor(c.grade, c.pct);
               const hov = hovered === c.name;
               const periodNum = c.period.replace(/[^0-9]/g, '');
               return (

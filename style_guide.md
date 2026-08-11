@@ -58,6 +58,7 @@ persisted in `localStorage.grademax-theme`).
 | `#ffc400` | Amber - borderline |
 | `#ff2d55` | Red - failing / Quizzes + Tests legend |
 | `#54585d` | Ungraded / no score |
+| `#149fc4` | Cyan - grade over 100% / extra-credit assignments |
 
 ---
 
@@ -108,6 +109,7 @@ persisted in `localStorage.grademax-theme`).
 | `#f0c46a` | Amber - borderline |
 | `#ec8b8b` | Red - failing / Quizzes + Tests legend |
 | `#cfcbdc` | Ungraded / no score |
+| `#149fc4` | Cyan - grade over 100% / extra-credit assignments (same as dark) |
 
 ---
 
@@ -167,6 +169,7 @@ design-system defaults and adds the purpose tokens; the
 | `--color-grade-mid` | `#ffc400` | `#f0c46a` | Borderline |
 | `--color-grade-bad` | `#ff2d55` | `#ec8b8b` | Failing / assessment-type |
 | `--color-grade-none` | `#54585d` | `#cfcbdc` | Ungraded / no score |
+| `--color-grade-over` | `#149fc4` | `#149fc4` | Grade over 100% / extra-credit assignments (`--color-tint-over` derives its chip) |
 
 ---
 

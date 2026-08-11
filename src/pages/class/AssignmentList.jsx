@@ -65,10 +65,12 @@ function ImpactChip({ impact }) {
   );
 }
 
-function ScoreBar({ pct }) {
+// Extra credit is outside the normal bands: its bar is always the over-100
+// cyan, no matter the row's own percentage.
+function ScoreBar({ pct, extraCredit }) {
   return (
     <div style={{ width: '58.333%', alignSelf: 'flex-end', height: 8, borderRadius: 'var(--radius-pill)', background: 'var(--color-progress-track)', overflow: 'hidden' }}>
-      <div style={{ width: `${pct != null ? Math.min(pct, 100) : 0}%`, height: '100%', background: bandColor(pct ?? 0), borderRadius: 'var(--radius-pill)', transition: 'width 400ms cubic-bezier(0.22, 1, 0.36, 1), background 400ms ease' }} />
+      <div style={{ width: `${pct != null ? Math.min(pct, 100) : 0}%`, height: '100%', background: extraCredit ? 'var(--color-grade-over)' : bandColor(pct ?? 0), borderRadius: 'var(--radius-pill)', transition: 'width 400ms cubic-bezier(0.22, 1, 0.36, 1), background 400ms ease' }} />
     </div>
   );
 }
@@ -309,7 +311,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
               ✕
             </button>
           </div>
-          <ScoreBar pct={pct} />
+          <ScoreBar pct={pct} extraCredit={a.extraCredit} />
         </div>
       </div>
     );
@@ -339,7 +341,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
               <Chip style={categoryChipStyle(type, categoryColors)}>{type}</Chip>
             ) : null}
             {a.scaled && <Chip>Scaled</Chip>}
-            {a.extraCredit && <Chip>Extra credit</Chip>}
+            {a.extraCredit && <Chip tone="extra">Extra credit</Chip>}
             {a.notForGrade &&
               (editable ? (
                 <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--color-body)' }}>
@@ -372,7 +374,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
               {pct != null ? `${pct}%` : 'N/A'}
             </span>
           </div>
-          <ScoreBar pct={pct} />
+          <ScoreBar pct={pct} extraCredit={eff ? eff.extraCredit : a.extraCredit} />
         </div>
       </div>
     );
