@@ -180,6 +180,28 @@ body {
   animation: gm-pop-in 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Landing carousel: the incoming trio swings in around the vertical axis
+   like the ring turning one notch - arriving slightly rotated from the side
+   it came from, settling flat. A transient composited transform, so it costs
+   nothing once settled. */
+@keyframes gm-turn-in-right {
+  from { opacity: 0; transform: perspective(1200px) translateX(72px) rotateY(10deg); }
+  to { opacity: 1; transform: perspective(1200px) translateX(0) rotateY(0deg); }
+}
+
+@keyframes gm-turn-in-left {
+  from { opacity: 0; transform: perspective(1200px) translateX(-72px) rotateY(-10deg); }
+  to { opacity: 1; transform: perspective(1200px) translateX(0) rotateY(0deg); }
+}
+
+.gm-turn-in-right {
+  animation: gm-turn-in-right 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.gm-turn-in-left {
+  animation: gm-turn-in-left 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 /* Click feedback for icon buttons (sidebar theme toggle): squish down and
    spring back with a small overshoot. Re-triggered per click by toggling the
    class off on animationend. */

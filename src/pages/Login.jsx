@@ -15,6 +15,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { TextInput, Button } from '../lib/ds.js';
 import { useSignIn } from '../data/SyncProvider.jsx';
 import { hasToken, recallAuthNotice } from '../data/api.js';
+import BackButton from '../components/BackButton.jsx';
 import { extractPortalDomain } from '../portal/domainInput';
 import { DISTRICTS } from '../data/districts.js';
 import { TEST_DISTRICT } from '../data/testAccount.js';
@@ -409,6 +410,22 @@ function Login() {
   });
   const [agreed, setAgreed] = React.useState(false);
   const [pending, setPending] = React.useState(false);
+  // Live sign-in progress: null | 'signingIn' | 'syncing'. Set the instant
+  // the button is clicked so there is immediate feedback, then advanced by
+  // the provider as each real phase starts.
+  const [stage, setStage] = React.useState(null);
+  // The portal can be slow at busy times; after a few seconds of connecting,
+  // say so instead of looking frozen.
+  const [slow, setSlow] = React.useState(false);
+
+  React.useEffect(() => {
+    if (stage !== 'signingIn') {
+      setSlow(false);
+      return undefined;
+    }
+    const timer = setTimeout(() => setSlow(true), 5000);
+    return () => clearTimeout(timer);
+  }, [stage]);
   const [error, setError] = React.useState(
     notice
       ? 'Your saved sign-in stopped working. StudentVUE rejected it, usually after a password change. Enter your password to sign back in.'
@@ -444,14 +461,16 @@ function Login() {
       return;
     }
     setPending(true);
+    setStage('signingIn');
     setError('');
     try {
-      await signIn({ username, password, domain });
+      await signIn({ username, password, domain }, setStage);
       navigate('/dashboard');
     } catch (e) {
       setError(e && e.message ? e.message : 'Sign-in failed. Try again.');
     } finally {
       setPending(false);
+      setStage(null);
     }
   };
 
@@ -468,6 +487,8 @@ function Login() {
       {/* Full-width primary button override (DS Button ignores style/className). */}
       <style>{`.gm-login-submit button { width: 100%; }`}</style>
 
+      <BackButton to="/" label="Back to home" />
+
       <div
         style={{
           flex: 1,
@@ -478,8 +499,10 @@ function Login() {
         }}
       >
         <div style={{ width: 420, maxWidth: '100%' }}>
-          {/* Wordmark (no logomark exists in the system - plain wordmark per brand). */}
+          {/* Wordmark (no logomark exists in the system - plain wordmark per
+              brand). Clicks back out to the landing page. */}
           <div
+            onClick={() => navigate('/')}
             style={{
               fontSize: 22,
               fontWeight: 600,
@@ -487,6 +510,7 @@ function Login() {
               color: 'var(--color-ink)',
               textAlign: 'center',
               marginBottom: 20,
+              cursor: 'pointer',
             }}
           >
             Scoremap
@@ -536,10 +560,9 @@ function Login() {
                   marginTop: 8,
                 }}
               >
-                Scoremap signs in to StudentVUE from inside your browser: your password is
-                encrypted here and sent straight to StudentVUE, so our relay only ever passes
-                along data it can't read. It's never sent to our servers or logged. To keep
-                you signed in, it's saved only on this device, and signing out erases it.
+                Scoremap pulls info from StudentVUE directly from inside your browser; none of
+                your info is ever saved, your password is encrypted, and our relay passes data
+                blind.
               </div>
             </div>
 
@@ -597,9 +620,7 @@ function Login() {
                     marginTop: 8,
                   }}
                 >
-                  Any web address from your StudentVUE portal works, with or without
-                  https://, straight from your grades page, whatever you have. Scoremap
-                  pulls the domain out of it.
+                  Any web address from your StudentVUE portal works.
                 </div>
               </div>
             </div>
@@ -663,6 +684,28 @@ function Login() {
                 )}
               </Button>
             </div>
+
+            {/* live progress - appears the instant the button is clicked and
+                tracks the real phases, so the wait never looks frozen */}
+            {stage && (
+              <div
+                role="status"
+                className="gm-fade-in"
+                style={{
+                  textAlign: 'center',
+                  fontSize: 14,
+                  color: 'var(--color-body)',
+                  lineHeight: 1.5,
+                  marginTop: -8,
+                }}
+              >
+                {stage === 'signingIn'
+                  ? slow
+                    ? 'Still connecting… the school portal can be slow at busy times.'
+                    : 'Connecting to StudentVUE and signing you in…'
+                  : 'Signed in ✓ Loading your grades…'}
+              </div>
+            )}
           </div>
         </div>
       </div>

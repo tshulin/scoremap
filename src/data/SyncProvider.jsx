@@ -115,9 +115,14 @@ export function SyncProvider({ children }) {
     runSync().catch(() => {});
   }, [runSync]);
 
+  // onProgress (optional) hears the real phases as they start: 'signingIn'
+  // while the portal login runs, 'syncing' once it succeeded and the first
+  // data sync begins - so the login page can show live progress.
   const signIn = useCallback(
-    async (credentials) => {
+    async (credentials, onProgress) => {
+      if (onProgress) onProgress('signingIn');
       const student = await api.login(credentials);
+      if (onProgress) onProgress('syncing');
       return runSync(student);
     },
     [runSync],
