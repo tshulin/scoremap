@@ -7,9 +7,9 @@ import { todayIso } from './ui.jsx';
 
 export function useScenario(baseAssignments) {
   const [hypothetical, setHypothetical] = useState(false);
-  // { [assignmentId]: { earned, possible, category, date, notForGrade } } - score fields as
-  // input strings; category/date as committed values. Applies to real AND
-  // added rows, so every assignment is editable the same way.
+  // { [assignmentId]: { name, earned, possible, category, date, notForGrade } } - score
+  // fields as input strings; name/category/date as committed values. Applies
+  // to real AND added rows, so every assignment is editable the same way.
   const [edits, setEdits] = useState({});
   // Added hypotheticals, ids "hypo-1", "hypo-2", … Born blank: no score, no
   // category - the row itself is the editor, there is nothing to decide first.
@@ -69,6 +69,8 @@ export function useScenario(baseAssignments) {
       if (e.possible !== undefined && e.possible !== '' && Number.isFinite(possible)) {
         out.pointsPossible = possible;
       }
+      // A cleared name falls back to the original - no assignment is nameless.
+      if (e.name !== undefined && e.name.trim() !== '') out.name = e.name;
       // '' means "no category" (back to uncategorized); an absent key means untouched.
       if (e.category !== undefined) out.category = e.category || undefined;
       if (e.date !== undefined && e.date !== '') out.date = e.date;

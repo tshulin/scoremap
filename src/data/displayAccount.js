@@ -26,7 +26,7 @@ export const DISPLAY_USERNAME = 'display';
 export const DISPLAY_PASSWORD = 'display';
 
 export const DISPLAY_STUDENT = {
-  name: 'Jordan Avery',
+  name: 'Hisori Gotou',
   permId: 'DISP-0001',
   gender: '',
   grade: '11',
@@ -303,10 +303,17 @@ export const DISPLAY_GRADEBOOK = GradebookSchema.parse({
   courses: [CALCULUS, ENGLISH, HISTORY, CHEMISTRY, SPANISH, COMPSCI],
 });
 
-// Light and mostly excused - the display student is doing fine.
+// Light and mostly excused - the display student is doing fine. August is
+// deliberately the busiest month: the attendance calendar opens on the
+// current month, and the landing-page photo is taken there.
 export const DISPLAY_ATTENDANCE = AttendanceSchema.parse({
   schoolName: "Hustler's University",
   absences: [
+    { date: '2026-08-14', periods: [{ period: '1', reason: 'Tardy', note: 'Overslept' }] },
+    { date: '2026-08-19', reason: 'Excused Absence', note: 'Dentist appointment' },
+    { date: '2026-08-24', reason: 'Field Trip', note: 'Marching band performance' },
+    { date: '2026-08-27', reason: 'Excused Absence', note: 'Illness' },
+    { date: '2026-08-31', periods: [{ period: '5', reason: 'Tardy', note: 'Locker jam' }] },
     { date: '2026-09-02', reason: 'Excused Absence', note: 'Medical appointment' },
     { date: '2026-09-18', periods: [{ period: '1', reason: 'Tardy', note: 'Bus delay' }] },
     { date: '2026-10-06', reason: 'Excused Absence', note: 'College visit' },

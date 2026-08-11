@@ -159,24 +159,3 @@ export function PillButton({ onClick, children }) {
   );
 }
 
-export function TextInputSmall({ value, placeholder, onChange, label, width = 220 }) {
-  return (
-    <input
-      type="text"
-      value={value}
-      placeholder={placeholder}
-      aria-label={label}
-      onChange={(e) => onChange(e.target.value)}
-      style={{
-        width,
-        padding: '6px 10px',
-        borderRadius: 'var(--radius-sm)',
-        border: '1px solid var(--color-hairline-strong)',
-        background: 'var(--color-surface-strong)',
-        color: 'var(--color-ink)',
-        fontFamily: 'var(--font-sans)',
-        fontSize: 15,
-      }}
-    />
-  );
-}
