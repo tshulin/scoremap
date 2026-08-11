@@ -68,8 +68,9 @@ body {
   --color-grade-mid: #ffc400;
   --color-grade-bad: #ff2d55;
   --color-grade-none: #54585d;
-  /* Over 100% and extra credit - beyond the normal bands (same both themes) */
-  --color-grade-over: #149fc4;
+  /* Over 100% and extra credit - beyond the normal bands (neon, like its
+     siblings above; light keeps the deeper #149fc4) */
+  --color-grade-over: #1cc5f0;
 
   /* Alphabetical assignment-category palette after green and red */
   --color-category-blue: #4da8ff;
