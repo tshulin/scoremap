@@ -3,13 +3,13 @@
 // pages are photographed for the landing page.
 //
 // Where the test account exists to exercise every UI state (all four grade
-// bands, missing work, failures), this one exists to look good in a
-// screenshot: a six-course junior with As and Bs plus one C (so the shots
-// show all three grade colors), a realistic amount of graded work in every
-// class, and - unlike the test account - none of the "sample data" chrome
-// (its snapshot carries no demo/placeholder flags, see studentvue.js
-// displaySnapshot). Login/sync short-circuit exactly like the test account
-// (api.js).
+// bands, missing work, failures), this one exists to look good: a six-course
+// junior with As and Bs plus one C (so the landing shots show all three
+// grade colors) and a realistic amount of graded work in every class. It is
+// also the landing page's "Try demo mode" account, so its session carries
+// the demo flag (the "sample data" pill) - though never the per-page
+// placeholder banners (see studentvue.js displaySnapshot). Login/sync
+// short-circuit exactly like the test account (api.js).
 //
 // Mail and documents are the display account's own. Every sender and
 // document here is invented for this fictional school - nothing is carried
