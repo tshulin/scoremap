@@ -68,6 +68,8 @@ body {
   --color-grade-mid: #ffc400;
   --color-grade-bad: #ff2d55;
   --color-grade-none: #54585d;
+  /* Over 100% and extra credit - beyond the normal bands (same both themes) */
+  --color-grade-over: #149fc4;
 
   /* Alphabetical assignment-category palette after green and red */
   --color-category-blue: #4da8ff;
@@ -85,6 +87,7 @@ body {
   --color-tint-mid: color-mix(in srgb, var(--color-grade-mid) 14%, transparent);
   --color-tint-bad: color-mix(in srgb, var(--color-grade-bad) 14%, transparent);
   --color-tint-accent: color-mix(in srgb, var(--color-text-link) 14%, transparent);
+  --color-tint-over: color-mix(in srgb, var(--color-grade-over) 14%, transparent);
 }
 
 /* ---- Light theme (pastel) - opt-in via data-theme="light" on <html> ---- */
@@ -141,6 +144,7 @@ body {
   --color-grade-mid: #f0c46a;
   --color-grade-bad: #ec8b8b;
   --color-grade-none: #cfcbdc;
+  --color-grade-over: #149fc4;
 
   /* Softer counterparts for the assignment-category palette */
   --color-category-blue: #6f9fd6;

@@ -36,6 +36,7 @@ export function Chip({ children, tone = 'neutral', style }) {
     assessment: { background: 'var(--color-tint-bad)', border: '1px solid transparent', color: 'var(--color-grade-bad)' },
     info: { background: 'var(--color-tint-accent)', border: '1px solid transparent', color: 'var(--color-text-link)' },
     warn: { background: 'var(--color-tint-mid)', border: '1px solid transparent', color: 'var(--color-grade-mid)' },
+    extra: { background: 'var(--color-tint-over)', border: '1px solid transparent', color: 'var(--color-grade-over)' },
   };
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 600, lineHeight: 1.2, ...tones[tone], ...style }}>
