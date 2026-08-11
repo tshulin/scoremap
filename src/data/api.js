@@ -42,6 +42,13 @@ import {
   testDocumentContent,
   testMailAttachmentContent,
 } from './testAccount';
+import {
+  isDisplayCredentials,
+  DISPLAY_STUDENT,
+  DISPLAY_MAIL,
+  displayDocumentContent,
+  displayMailAttachmentContent,
+} from './displayAccount';
 
 // Set at build time (deploy workflow); wss:// in production, ws://localhost in dev.
 const RELAY_URL = import.meta.env.VITE_RELAY_URL || 'ws://localhost:8080';
@@ -77,18 +84,28 @@ export class ApiError extends Error {
 
 const options = { fetchImpl: createRelayFetch({ relayUrl: RELAY_URL }) };
 let session = null; // in-memory { domain, jar: CookieJar }
-let testSession = false; // signed in as the built-in test account (no portal session)
+// 'test' | 'display' | null - signed in as a built-in account (no portal
+// session). The marker value 'true' predates the display account and still
+// means the test account, so existing sessions survive.
+let builtinSession = null;
 
-// The test account has no cookie jar; a localStorage marker lets the next
+const MARKER_TO_ACCOUNT = { true: 'test', display: 'display' };
+
+// A built-in account has no cookie jar; a localStorage marker lets the next
 // visit resume it the same way stored credentials resume a real session.
 export function isTestSession() {
-  if (testSession) return true;
+  if (builtinSession) return true;
   try {
-    testSession = localStorage.getItem(TEST_SESSION_KEY) === 'true';
+    builtinSession = MARKER_TO_ACCOUNT[localStorage.getItem(TEST_SESSION_KEY)] || null;
   } catch {
     /* storage unavailable */
   }
-  return testSession;
+  return !!builtinSession;
+}
+
+// Which built-in account is signed in: 'test', 'display', or null.
+export function builtinAccount() {
+  return isTestSession() ? builtinSession : null;
 }
 
 // The saved sign-in. Plaintext by design: any obfuscation a bundled app could
@@ -219,7 +236,7 @@ export function recallSnapshot() {
 export function clearToken({ authFailed = false } = {}) {
   const creds = authFailed ? recallCredentials() : null;
   session = null;
-  testSession = false;
+  builtinSession = null;
   try {
     sessionStorage.removeItem(SESSION_KEY);
     localStorage.removeItem(TEST_SESSION_KEY);
@@ -362,15 +379,20 @@ export async function login({ domain, username, password }) {
   // login must drop a lingering test-session marker, or the sync layer keeps
   // serving the sample snapshot to a genuinely signed-in student.
   clearToken();
-  if (isTestCredentials({ domain, username, password })) {
-    testSession = true;
+  const builtin = isTestCredentials({ domain, username, password })
+    ? 'test'
+    : isDisplayCredentials({ domain, username, password })
+      ? 'display'
+      : null;
+  if (builtin) {
+    builtinSession = builtin;
     try {
-      localStorage.setItem(TEST_SESSION_KEY, 'true');
+      localStorage.setItem(TEST_SESSION_KEY, builtin === 'test' ? 'true' : builtin);
     } catch {
       /* storage unavailable - the session just won't survive a reload */
     }
     clearAuthNotice();
-    return TEST_STUDENT;
+    return builtin === 'display' ? DISPLAY_STUDENT : TEST_STUDENT;
   }
   try {
     session = await portalLogin({ domain, username, password }, options);
@@ -441,7 +463,8 @@ export function getMail() {
 // the reader loads them on open for anything the sync did not prefetch.
 export function getMailMessage(id, isSystemMessage = false) {
   if (isTestSession() || DEMO) {
-    const message = TEST_MAIL.find((m) => m.id === id);
+    const mailbox = builtinAccount() === 'display' ? DISPLAY_MAIL : TEST_MAIL;
+    const message = mailbox.find((m) => m.id === id);
     if (!message) throw new ApiError('NOT_FOUND', 'Message not found.', 404);
     return Promise.resolve(message);
   }
@@ -450,7 +473,8 @@ export function getMailMessage(id, isSystemMessage = false) {
 
 export async function downloadMailAttachment(token) {
   if (isTestSession()) {
-    const { bytes, mimeType, fileName } = testMailAttachmentContent(token);
+    const { bytes, mimeType, fileName } =
+      builtinAccount() === 'display' ? displayMailAttachmentContent(token) : testMailAttachmentContent(token);
     return { blob: new Blob([bytes], { type: mimeType }), fileName };
   }
   return withSession(async (s) => {
@@ -461,7 +485,8 @@ export async function downloadMailAttachment(token) {
 
 export async function downloadDocument(docToken) {
   if (isTestSession()) {
-    const { bytes, mimeType, fileName } = testDocumentContent(docToken);
+    const { bytes, mimeType, fileName } =
+      builtinAccount() === 'display' ? displayDocumentContent(docToken) : testDocumentContent(docToken);
     return { blob: new Blob([bytes], { type: mimeType }), fileName };
   }
   return withSession(async (s) => {

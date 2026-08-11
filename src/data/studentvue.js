@@ -25,6 +25,14 @@ import {
   TEST_USERNAME,
   TEST_DISTRICT,
 } from './testAccount.js';
+import {
+  DISPLAY_STUDENT,
+  DISPLAY_GRADEBOOK,
+  DISPLAY_ATTENDANCE,
+  DISPLAY_DOCUMENTS,
+  DISPLAY_MAIL,
+  DISPLAY_USERNAME,
+} from './displayAccount.js';
 import { GradebookSchema } from '../domain/index';
 
 const slug = (name) =>
@@ -267,6 +275,52 @@ function testSnapshot() {
   };
 }
 
+// ---- display-account snapshot (username "display" / password "display") ----
+// The landing page's screenshot subject: a six-course student with a
+// realistic gradebook and its own invented mailbox and document center
+// (nothing shared with the test account's, whose contents mirror a real
+// district's design mock). Unlike the test account it does NOT flag itself as
+// sample data (no demo flag, no placeholder meta) - the point is pages that
+// look exactly like a real signed-in student when photographed.
+
+function displaySnapshot() {
+  const mapped = mapGradebook(DISPLAY_GRADEBOOK);
+  return {
+    ...emptySnapshot,
+    classes: mapped.classes,
+    assignmentsByClass: mapped.assignmentsByClass,
+    semesters: mapped.semesters,
+    attendance: {
+      schoolName: DISPLAY_ATTENDANCE.schoolName,
+      records: DISPLAY_ATTENDANCE.absences.map(mapAbsence),
+      unreadableAbsences: DISPLAY_ATTENDANCE.unreadableAbsences,
+    },
+    documents: DISPLAY_DOCUMENTS.map((d) => ({
+      id: d.docToken,
+      docToken: d.docToken,
+      title: d.title,
+      category: d.category,
+      date: d.uploadDate,
+    })),
+    mail: { messages: DISPLAY_MAIL.map(mapMailMessage), unreadableMessages: 0 },
+    session: {
+      ...emptySnapshot.session,
+      studentName: DISPLAY_STUDENT.name,
+      grade: DISPLAY_STUDENT.grade,
+      username: DISPLAY_USERNAME,
+      domain: TEST_DISTRICT.domain,
+      semester: mapped.semester,
+      lastUpdated: new Date(),
+    },
+    meta: {
+      gradebook: { ok: true, placeholder: false, message: '' },
+      attendance: { ok: true, placeholder: false, message: '' },
+      documents: { ok: true, message: '' },
+      mail: { ok: true, placeholder: false, message: '' },
+    },
+  };
+}
+
 // ---- the sync ----
 
 const friendlyGradebookMessage = (error) => {
@@ -315,7 +369,7 @@ export async function sync(knownStudent, { scope = ALL_RESOURCES, previous = nul
     return snapshot;
   }
   if (api.isTestSession()) {
-    const snapshot = testSnapshot();
+    const snapshot = api.builtinAccount() === 'display' ? displaySnapshot() : testSnapshot();
     harvestFromClasses(snapshot.classes);
     return snapshot;
   }
