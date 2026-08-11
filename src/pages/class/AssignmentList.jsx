@@ -66,11 +66,13 @@ function ImpactChip({ impact }) {
 }
 
 // Extra credit is outside the normal bands: its bar is always the over-100
-// cyan, no matter the row's own percentage.
+// cyan and always full - EC rows usually have no points-possible, so a
+// percentage-driven width would leave the bar empty (e.g. "+2 / N/A").
 function ScoreBar({ pct, extraCredit }) {
+  const width = extraCredit ? 100 : pct != null ? Math.min(pct, 100) : 0;
   return (
     <div style={{ width: '58.333%', alignSelf: 'flex-end', height: 8, borderRadius: 'var(--radius-pill)', background: 'var(--color-progress-track)', overflow: 'hidden' }}>
-      <div style={{ width: `${pct != null ? Math.min(pct, 100) : 0}%`, height: '100%', background: extraCredit ? 'var(--color-grade-over)' : bandColor(pct ?? 0), borderRadius: 'var(--radius-pill)', transition: 'width 400ms cubic-bezier(0.22, 1, 0.36, 1), background 400ms ease' }} />
+      <div style={{ width: `${width}%`, height: '100%', background: extraCredit ? 'var(--color-grade-over)' : bandColor(pct ?? 0), borderRadius: 'var(--radius-pill)', transition: 'width 400ms cubic-bezier(0.22, 1, 0.36, 1), background 400ms ease' }} />
     </div>
   );
 }
