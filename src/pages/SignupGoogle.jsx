@@ -18,6 +18,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../lib/ds.js';
+import BackButton from '../components/BackButton.jsx';
 
 function SignupGoogle() {
   const [helpOpen, setHelpOpen] = React.useState(false);
@@ -84,6 +85,7 @@ function SignupGoogle() {
         fontFamily: 'var(--font-sans)',
       }}
     >
+      <BackButton to="/signup" label="Back to sign up" />
       <div
         style={{
           flex: 1,

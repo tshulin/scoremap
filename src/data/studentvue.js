@@ -276,12 +276,13 @@ function testSnapshot() {
 }
 
 // ---- display-account snapshot (username "display" / password "display") ----
-// The landing page's screenshot subject: a six-course student with a
-// realistic gradebook and its own invented mailbox and document center
-// (nothing shared with the test account's, whose contents mirror a real
-// district's design mock). Unlike the test account it does NOT flag itself as
-// sample data (no demo flag, no placeholder meta) - the point is pages that
-// look exactly like a real signed-in student when photographed.
+// The landing page's screenshot subject AND the landing's "Try demo mode"
+// target: a six-course student with a realistic gradebook and its own
+// invented mailbox and document center (nothing shared with the test
+// account's, whose contents mirror a real district's design mock). The
+// session carries the demo flag so visitors see the "sample data" pill, but
+// no placeholder meta - the per-page banners stay away. (For pill-free
+// photography, strip `demo` below before capturing.)
 
 function displaySnapshot() {
   const mapped = mapGradebook(DISPLAY_GRADEBOOK);
@@ -311,6 +312,7 @@ function displaySnapshot() {
       domain: TEST_DISTRICT.domain,
       semester: mapped.semester,
       lastUpdated: new Date(),
+      demo: true,
     },
     meta: {
       gradebook: { ok: true, placeholder: false, message: '' },

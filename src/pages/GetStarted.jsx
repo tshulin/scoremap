@@ -17,6 +17,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../lib/ds.js';
+import BackButton from '../components/BackButton.jsx';
 
 function GetStarted() {
   const navigate = useNavigate();
@@ -33,6 +34,7 @@ function GetStarted() {
         fontFamily: 'var(--font-sans)',
       }}
     >
+      <BackButton to="/" label="Back to home" />
       <div
         style={{
           flex: 1,
