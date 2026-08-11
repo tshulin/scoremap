@@ -5,7 +5,7 @@
 // looks like every other assignment. Rows are ordered newest first.
 import React from 'react';
 import { scoreBandColor as bandColor } from '../../lib/grades.js';
-import { Chip, ScoreInput, TextInputSmall, fmt2, signed } from './ui.jsx';
+import { Chip, ScoreInput, fmt2, signed } from './ui.jsx';
 import {
   categoryChipStyle,
   categoryColorFor,
@@ -106,7 +106,7 @@ function CategorySelect({ value, options, colors, onChange, label }) {
       }}
     >
       <option value="" style={{ color: 'var(--color-body)', background: 'var(--color-surface-card)' }}>
-        Select category
+        Category
       </option>
       {options.map((name) => (
         <option key={name} value={name} style={{ color: categoryColorFor(name, colors), background: 'var(--color-surface-card)' }}>
@@ -124,7 +124,7 @@ function DateInput({ value, onChange, label }) {
       value={value}
       aria-label={label}
       onChange={(e) => onChange(e.target.value)}
-      style={editControl}
+      style={{ ...editControl, padding: '5px 6px', width: 118, boxSizing: 'border-box' }}
     />
   );
 }
@@ -239,15 +239,65 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
     const pct = rowPct(eff);
     const edit = edits[a.id] || {};
     return (
-      <div key={a.id} style={rowCard}>
+      <div key={a.id} style={{ ...rowCard, position: 'relative' }}>
+        {/* Mirrors the real-row skeleton (title line, then a chips line) so
+            added rows sit at the same height as everything around them. The
+            name input wears the title's own type on a dashed baseline; the
+            Hypothetical tag's padding is tuned so it stands exactly as tall
+            as the category dropdown beside it. The remove ✕ floats in the
+            card's corner instead of the metric row, so the percentage stays
+            on the same right edge as every real row's. */}
+        <button
+          onClick={() => removeAssignment(a.id)}
+          aria-label={`Remove ${eff.name}`}
+          style={{
+            position: 'absolute',
+            top: 2,
+            right: 4,
+            border: 'none',
+            background: 'transparent',
+            color: 'var(--color-muted)',
+            cursor: 'pointer',
+            fontSize: 13,
+            lineHeight: 1,
+            padding: 4,
+          }}
+        >
+          ✕
+        </button>
         <div style={{ minWidth: 0, flex: '1 1 240px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
-            <TextInputSmall
+          {/* The tag makes this line 28px tall where a real title line is 19,
+              so the line gap shrinks to keep the whole card at row height.
+              The name underline spans the category+date block below (106 + 8
+              + 118) and the tag follows after the same 8px the chips line
+              uses - the spacing it would have from the date on that line. */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 2 }}>
+            <input
+              type="text"
+              className="gm-bare-input"
               value={a.name}
               placeholder="Hypothetical assignment"
-              label="Hypothetical assignment name"
-              onChange={(v) => updateAssignment(a.id, { name: v })}
+              aria-label="Hypothetical assignment name"
+              onChange={(e) => updateAssignment(a.id, { name: e.target.value })}
+              style={{
+                width: 232,
+                maxWidth: '100%',
+                padding: '0 0 1px',
+                border: 'none',
+                borderBottom: '1px dashed var(--color-hairline-strong)',
+                outline: 'none',
+                background: 'transparent',
+                fontFamily: 'var(--font-sans)',
+                fontSize: 16,
+                fontWeight: 600,
+                color: 'var(--color-ink)',
+              }}
             />
+            {/* padding tuned so the chip stands exactly as tall as the
+                category dropdown below it */}
+            <Chip tone="info" style={{ padding: '5px 8px' }}>Hypothetical</Chip>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
             {categoryOptions.length > 0 && (
               <CategorySelect
                 value={eff.category || ''}
@@ -257,9 +307,6 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
                 onChange={(v) => setEdit(a.id, 'category', v)}
               />
             )}
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-            <Chip tone="info">Hypothetical</Chip>
             <DateInput value={eff.date} label={`${eff.name} date`} onChange={(v) => setEdit(a.id, 'date', v)} />
             <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--color-body)' }}>
               <input
@@ -297,21 +344,6 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
             <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)', textAlign: 'right' }}>
               {pct != null ? `${pct}%` : 'N/A'}
             </span>
-            <button
-              onClick={() => removeAssignment(a.id)}
-              aria-label={`Remove ${eff.name}`}
-              style={{
-                border: 'none',
-                background: 'transparent',
-                color: 'var(--color-muted)',
-                cursor: 'pointer',
-                fontSize: 18,
-                lineHeight: 1,
-                padding: '4px 6px',
-              }}
-            >
-              ✕
-            </button>
           </div>
           <ScoreBar pct={pct} extraCredit={a.extraCredit} />
         </div>
@@ -325,11 +357,41 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
     const impact = raw ? impactById.get(raw.id) : undefined;
     const pct = hypothetical ? rowPct(eff) : a.pct;
     const editable = hypothetical && raw;
+    const edit = (raw && edits[raw.id]) || {};
     const type = typeOfReal(a);
     return (
       <div key={`${a.title}-${i}`} style={rowCard}>
         <div style={{ minWidth: 0, flex: '1 1 240px' }}>
-          <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-ink)', marginBottom: 8 }}>{a.title}</div>
+          {/* In hypothetical mode the title is an edit too ("what if this
+              were the retake?") on the same dashed baseline the added row's
+              name uses. A cleared field falls back to the real name. */}
+          {editable ? (
+            <input
+              type="text"
+              className="gm-bare-input"
+              value={edit.name !== undefined ? edit.name : a.title}
+              placeholder={a.title}
+              aria-label={`${a.title} name`}
+              onChange={(e2) => setEdit(raw.id, 'name', e2.target.value)}
+              style={{
+                display: 'block',
+                width: '100%',
+                boxSizing: 'border-box',
+                marginBottom: 8,
+                padding: '0 0 1px',
+                border: 'none',
+                borderBottom: '1px dashed var(--color-hairline-strong)',
+                outline: 'none',
+                background: 'transparent',
+                fontFamily: 'var(--font-sans)',
+                fontSize: 16,
+                fontWeight: 600,
+                color: 'var(--color-ink)',
+              }}
+            />
+          ) : (
+            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-ink)', marginBottom: 8 }}>{a.title}</div>
+          )}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
             {editable && categoryOptions.length > 0 ? (
               <CategorySelect
