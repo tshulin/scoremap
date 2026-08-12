@@ -183,12 +183,29 @@ function ShowcaseCarousel() {
           className={dir > 0 ? 'gm-turn-in-right' : 'gm-turn-in-left'}
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 28 }}
         >
-          <img
-            src={`${base}landing/${leftSlide.key}-${theme}-left.png`}
-            alt=""
-            aria-hidden="true"
-            style={{ height: SIDE_H, width: 'auto', flexShrink: 0 }}
-          />
+          <button
+            type="button"
+            aria-label={`Show previous screenshot: ${leftSlide.title}`}
+            onClick={() => step(-1)}
+            style={{
+              height: SIDE_H,
+              width: 'auto',
+              flexShrink: 0,
+              padding: 0,
+              border: 0,
+              background: 'transparent',
+              cursor: 'pointer',
+              display: 'flex',
+            }}
+          >
+            <img
+              src={`${base}landing/${leftSlide.key}-${theme}-left.png`}
+              alt=""
+              aria-hidden="true"
+              draggable="false"
+              style={{ height: '100%', width: 'auto', display: 'block' }}
+            />
+          </button>
           <img
             src={`${base}landing/${active.key}-${theme}.png`}
             alt={`Scoremap - ${active.title}`}
@@ -201,49 +218,69 @@ function ShowcaseCarousel() {
               boxSizing: 'border-box',
             }}
           />
-          <img
-            src={`${base}landing/${rightSlide.key}-${theme}-right.png`}
-            alt=""
-            aria-hidden="true"
-            style={{ height: SIDE_H, width: 'auto', flexShrink: 0 }}
-          />
+          <button
+            type="button"
+            aria-label={`Show next screenshot: ${rightSlide.title}`}
+            onClick={() => step(1)}
+            style={{
+              height: SIDE_H,
+              width: 'auto',
+              flexShrink: 0,
+              padding: 0,
+              border: 0,
+              background: 'transparent',
+              cursor: 'pointer',
+              display: 'flex',
+            }}
+          >
+            <img
+              src={`${base}landing/${rightSlide.key}-${theme}-right.png`}
+              alt=""
+              aria-hidden="true"
+              draggable="false"
+              style={{ height: '100%', width: 'auto', display: 'block' }}
+            />
+          </button>
         </div>
       </div>
       {/* caption + controls */}
-      <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <button aria-label="Previous screenshot" onClick={() => step(-1)} style={arrowStyle}>
-            <ChevronLeftIcon size={16} />
-          </button>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {SLIDES.map((s, i) => (
-              <button
-                key={s.key}
-                aria-label={`Show ${s.title}`}
-                onClick={() => {
-                  // Shortest way around the ring to the chosen slide.
-                  let delta = i - activeIndex;
-                  if (delta > SLIDES.length / 2) delta -= SLIDES.length;
-                  if (delta < -SLIDES.length / 2) delta += SLIDES.length;
-                  if (delta !== 0) step(delta);
-                }}
-                style={{
-                  width: 8,
-                  height: 8,
-                  padding: 0,
-                  borderRadius: '50%',
-                  border: 'none',
-                  cursor: 'pointer',
-                  background: i === activeIndex ? 'var(--color-ink)' : 'var(--color-hairline-strong)',
-                  transition: 'background 200ms ease',
-                }}
-              />
-            ))}
+      <div className="gm-carousel-meta">
+        <div className="gm-carousel-controls">
+          <div className="gm-carousel-navigation">
+            <button aria-label="Previous screenshot" onClick={() => step(-1)} style={arrowStyle}>
+              <ChevronLeftIcon size={16} />
+            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {SLIDES.map((s, i) => (
+                <button
+                  key={s.key}
+                  aria-label={`Show ${s.title}`}
+                  onClick={() => {
+                    // Shortest way around the ring to the chosen slide.
+                    let delta = i - activeIndex;
+                    if (delta > SLIDES.length / 2) delta -= SLIDES.length;
+                    if (delta < -SLIDES.length / 2) delta += SLIDES.length;
+                    if (delta !== 0) step(delta);
+                  }}
+                  style={{
+                    width: 8,
+                    height: 8,
+                    padding: 0,
+                    borderRadius: '50%',
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: i === activeIndex ? 'var(--color-ink)' : 'var(--color-hairline-strong)',
+                    transition: 'background 200ms ease',
+                  }}
+                />
+              ))}
+            </div>
+            <button aria-label="Next screenshot" onClick={() => step(1)} style={arrowStyle}>
+              <ChevronRightIcon size={16} />
+            </button>
           </div>
-          <button aria-label="Next screenshot" onClick={() => step(1)} style={arrowStyle}>
-            <ChevronRightIcon size={16} />
-          </button>
           <button
+            className="gm-carousel-theme"
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             onClick={toggleTheme}
             style={arrowStyle}
@@ -252,7 +289,7 @@ function ShowcaseCarousel() {
           </button>
         </div>
         {/* fixed-height caption well - swapping slides must not shift the page */}
-        <div style={{ minHeight: 132, textAlign: 'center' }}>
+        <div className="gm-carousel-caption">
           <div style={{ fontSize: 19, fontWeight: 600, color: 'var(--color-ink)', marginBottom: 8 }}>
             {active.title}
           </div>
