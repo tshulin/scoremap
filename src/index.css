@@ -202,6 +202,39 @@ body {
   animation: gm-turn-in-left 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+.gm-carousel-meta {
+  display: grid;
+  justify-items: center;
+  width: min(100%, 800px);
+  margin: 20px auto 0;
+  gap: 12px;
+  text-align: center;
+}
+
+.gm-carousel-controls {
+  display: grid;
+  justify-items: center;
+  width: 100%;
+  gap: 10px;
+}
+
+.gm-carousel-navigation {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.gm-carousel-theme {
+  position: static;
+}
+
+.gm-carousel-caption {
+  width: min(100%, 680px);
+  min-height: 132px;
+  margin-inline: auto;
+  text-align: center;
+}
+
 /* Click feedback for icon buttons (sidebar theme toggle): squish down and
    spring back with a small overshoot. Re-triggered per click by toggling the
    class off on animationend. */
