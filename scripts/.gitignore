@@ -1,0 +1,17 @@
+# Claude working files — never commit
+CLAUDE.md
+CLAUDE.local.md
+execution-plan.md
+.claude/
+
+# Reference clone of the original GradeCompass (has its own .git) — never commit
+gradecompass/
+
+# Secrets & personal data
+.env
+captures/
+sample_credentials.md
+
+# Build & tooling output
+node_modules/
+coverage/

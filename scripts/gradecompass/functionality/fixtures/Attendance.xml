@@ -1,0 +1,11 @@
+<!-- Reference example of the legacy Attendance inner XML (synthetic data). -->
+<!-- Produced by translate.ts attendanceXml(); consumed by src/lib/types/Attendance.ts. -->
+<!-- Empty <Absences/> is valid (most accounts have no absences). -->
+<Attendance xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Type="Attendance" SchoolName="Demo High School">
+	<Absences />
+	<TotalExcused />
+	<TotalTardies />
+	<TotalUnexcused />
+	<TotalActivities />
+	<TotalUnexcusedTardies />
+</Attendance>

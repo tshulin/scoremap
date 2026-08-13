@@ -1,0 +1,54 @@
+<Gradebook xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Type="Gradebook" ErrorMessage="" HideStandardGraphInd="true" HideMarksColumnElementary="false" HidePointsColumnElementary="false" HidePercentSecondary="false" DisplayStandardsData="false" GBStandardsTabDefault="false">
+	<ReportingPeriods>
+		<ReportPeriod Index="0" GradePeriod="Quarter 1" StartDate="08/14/2025" EndDate="10/17/2025" />
+		<ReportPeriod Index="1" GradePeriod="Quarter 2" StartDate="10/20/2025" EndDate="01/16/2026" />
+	</ReportingPeriods>
+	<ReportingPeriod GradePeriod="Quarter 2" Index="1" StartDate="10/20/2025" EndDate="01/16/2026" />
+	<Courses>
+		<Course Period="1" Title="Algebra II (H) (4501)" CourseName="Algebra II (H)" CourseID="4501" Room="204" Staff="Ms. Rivera" StaffEMail="staff4501@demo.net" StaffGU="GU-STAFF-4501" ImageType="math" HighlightPercentageCutOffForProgressBar="70" UsesRichContent="false">
+			<Marks>
+				<Mark MarkName="Quarter 2" ShortMarkName="Q2" CalculatedScoreString="A-" CalculatedScoreRaw="91.4">
+					<GradeCalculationSummary>
+						<AssignmentGradeCalc Type="Tests" Weight="60%" Points="264.0" PointsPossible="300.0" WeightedPct="52.8%" CalculatedMark="B+" />
+						<AssignmentGradeCalc Type="Homework" Weight="40%" Points="96.0" PointsPossible="100.0" WeightedPct="38.4%" CalculatedMark="A" />
+						<AssignmentGradeCalc Type="TOTAL" Weight="100%" Points="360.0" PointsPossible="400.0" WeightedPct="91.4%" CalculatedMark="A-" />
+					</GradeCalculationSummary>
+					<Assignments>
+						<Assignment GradebookID="1001" Measure="Unit 4 Test" Type="Tests" Date="12/05/2025" DueDate="12/05/2025" Score="88" DisplayScore="88 out of 100" ScoreCalValue="88" TimeSincePost="20d" TotalSecondsSincePost="1728000" ScoreMaxValue="100" ScoreType="Raw Score" Points="88 / 100" Point="88" PointPossible="100" Notes="" TeacherID="4501" StudentID="1" MeasureDescription="" HasDropBox="false" DropStartDate="" DropEndDate="" />
+						<Assignment GradebookID="1002" Measure="Homework 4.3" Type="Homework" Date="11/28/2025" DueDate="11/28/2025" Score="10" DisplayScore="10 out of 10" ScoreCalValue="10" TimeSincePost="20d" TotalSecondsSincePost="1728000" ScoreMaxValue="10" ScoreType="Raw Score" Points="10 / 10" Point="10" PointPossible="10" Notes="" TeacherID="4501" StudentID="1" MeasureDescription="" HasDropBox="false" DropStartDate="" DropEndDate="" />
+					</Assignments>
+				</Mark>
+			</Marks>
+		</Course>
+		<Course Period="2" Title="English 11 (2210)" CourseName="English 11" CourseID="2210" Room="112" Staff="Mr. Okafor" StaffEMail="staff2210@demo.net" StaffGU="GU-STAFF-2210" ImageType="language" HighlightPercentageCutOffForProgressBar="70" UsesRichContent="false">
+			<Marks>
+				<Mark MarkName="Quarter 2" ShortMarkName="Q2" CalculatedScoreString="B+" CalculatedScoreRaw="88.2">
+					<GradeCalculationSummary>
+						<AssignmentGradeCalc Type="Essays" Weight="50%" Points="132.0" PointsPossible="150.0" WeightedPct="44.0%" CalculatedMark="B+" />
+						<AssignmentGradeCalc Type="Participation" Weight="50%" Points="90.0" PointsPossible="100.0" WeightedPct="45.0%" CalculatedMark="A-" />
+						<AssignmentGradeCalc Type="TOTAL" Weight="100%" Points="222.0" PointsPossible="250.0" WeightedPct="88.8%" CalculatedMark="B+" />
+					</GradeCalculationSummary>
+					<Assignments>
+						<Assignment GradebookID="2001" Measure="Rhetoric Essay" Type="Essays" Date="12/10/2025" DueDate="12/10/2025" Score="82" DisplayScore="82 out of 100" ScoreCalValue="82" TimeSincePost="20d" TotalSecondsSincePost="1728000" ScoreMaxValue="100" ScoreType="Raw Score" Points="82 / 100" Point="82" PointPossible="100" Notes="" TeacherID="2210" StudentID="1" MeasureDescription="" HasDropBox="false" DropStartDate="" DropEndDate="" />
+						<Assignment GradebookID="2002" Measure="Socratic Seminar" Type="Participation" Date="12/03/2025" DueDate="12/03/2025" Score="47" DisplayScore="47 out of 50" ScoreCalValue="47" TimeSincePost="20d" TotalSecondsSincePost="1728000" ScoreMaxValue="50" ScoreType="Raw Score" Points="47 / 50" Point="47" PointPossible="50" Notes="" TeacherID="2210" StudentID="1" MeasureDescription="" HasDropBox="false" DropStartDate="" DropEndDate="" />
+					</Assignments>
+				</Mark>
+			</Marks>
+		</Course>
+		<Course Period="3" Title="Chemistry (3305)" CourseName="Chemistry" CourseID="3305" Room="Lab B" Staff="Dr. Chen" StaffEMail="staff3305@demo.net" StaffGU="GU-STAFF-3305" ImageType="science" HighlightPercentageCutOffForProgressBar="70" UsesRichContent="false">
+			<Marks>
+				<Mark MarkName="Quarter 2" ShortMarkName="Q2" CalculatedScoreString="A" CalculatedScoreRaw="95.6">
+					<GradeCalculationSummary>
+						<AssignmentGradeCalc Type="Labs" Weight="45%" Points="140.0" PointsPossible="150.0" WeightedPct="42.0%" CalculatedMark="A-" />
+						<AssignmentGradeCalc Type="Exams" Weight="55%" Points="191.0" PointsPossible="200.0" WeightedPct="52.5%" CalculatedMark="A" />
+						<AssignmentGradeCalc Type="TOTAL" Weight="100%" Points="331.0" PointsPossible="350.0" WeightedPct="94.6%" CalculatedMark="A" />
+					</GradeCalculationSummary>
+					<Assignments>
+						<Assignment GradebookID="3001" Measure="Titration Lab" Type="Labs" Date="12/08/2025" DueDate="12/08/2025" Score="48" DisplayScore="48 out of 50" ScoreCalValue="48" TimeSincePost="20d" TotalSecondsSincePost="1728000" ScoreMaxValue="50" ScoreType="Raw Score" Points="48 / 50" Point="48" PointPossible="50" Notes="" TeacherID="3305" StudentID="1" MeasureDescription="" HasDropBox="false" DropStartDate="" DropEndDate="" />
+						<Assignment GradebookID="3002" Measure="Stoichiometry Exam" Type="Exams" Date="12/15/2025" DueDate="12/15/2025" Score="96" DisplayScore="96 out of 100" ScoreCalValue="96" TimeSincePost="20d" TotalSecondsSincePost="1728000" ScoreMaxValue="100" ScoreType="Raw Score" Points="96 / 100" Point="96" PointPossible="100" Notes="" TeacherID="3305" StudentID="1" MeasureDescription="" HasDropBox="false" DropStartDate="" DropEndDate="" />
+					</Assignments>
+				</Mark>
+			</Marks>
+		</Course>
+	</Courses>
+</Gradebook>

@@ -1,0 +1,12 @@
+node_modules/
+gradecompass/
+# Preserve fixture markup.
+test/fixtures/
+legacy/
+lib/
+captures/
+*.mjs
+*.md
+package-lock.json
+# The web app (web/) has its own toolchain.
+web/
