@@ -1,0 +1,183 @@
+/* App-level globals + the Grademax color theme (see style_guide.md).
+   The design-system stylesheet (imported first in main.jsx) ships the token
+   names and dark defaults; the :root block here re-colors them to the style
+   guide, and the [data-theme='light'] block restates every token for light.
+   Components reference tokens only — retheming stays a this-file edit. */
+body {
+  margin: 0;
+  background: var(--color-canvas);
+  font-family: var(--font-sans);
+}
+
+/* ---- Dark theme (default) — the original Grademax dark palette ----
+   Values match the design-system defaults (_ds/tokens/colors.css); the
+   purpose tokens map them onto the same knobs the light theme drives, so
+   components stay theme-agnostic. */
+:root {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --color-canvas: #111113;
+  --color-canvas-soft: #0d0e10;
+  --color-surface-card: #18191b;
+  --color-surface-strong: #18191b;
+  --color-surface-dark: #1c1d20;
+  --color-surface-dark-elevated: #202125;
+  --color-surface-sidebar: #111113;
+  --color-surface-demo: color-mix(in srgb, var(--color-text-link) 14%, transparent);
+  --color-nav-active: #18191b;
+  --color-card-hover: #18191b;
+  --color-progress-track: #202125;
+  --color-avatar-bg: #202125;
+
+  /* Borders */
+  --color-hairline: rgba(255, 255, 255, 0.08);
+  --color-hairline-soft: rgba(255, 255, 255, 0.06);
+  --color-hairline-strong: rgba(255, 255, 255, 0.14);
+
+  /* Text */
+  --color-ink: #ffffff;
+  --color-body: #a1a1aa;
+  --color-body-strong: #ffffff;
+  --color-muted: #71717a;
+  --color-muted-soft: #45454b;
+  --color-on-dark: #ffffff;
+  --color-on-dark-soft: #a1a1aa;
+  --color-text-pill: #ffffff;
+  --color-text-updated: #a1a1aa;
+  --color-text-meta: #a1a1aa;
+  --color-text-privacy: #71717a;
+  --color-text-disclaimer: #71717a;
+  --color-trend-stroke: #ffffff;
+
+  /* Accent — the style guide's pair on the original dark surfaces */
+  --color-text-link: #7db4f5;
+  --color-text-link-hover: #a7cdfa;
+  --color-text-link-secondary: #7db4f5;
+  --color-accent-link-bright: #a7cdfa;
+
+  /* Grade bands (neon, per the style guide) */
+  --color-grade-good: #39ff6a;
+  --color-grade-mid: #ffc400;
+  --color-grade-bad: #ff2d55;
+  --color-grade-none: #54585d;
+
+  /* 14% tints — chip/badge backgrounds derived from their foreground */
+  --color-tint-good: color-mix(in srgb, var(--color-grade-good) 14%, transparent);
+  --color-tint-mid: color-mix(in srgb, var(--color-grade-mid) 14%, transparent);
+  --color-tint-bad: color-mix(in srgb, var(--color-grade-bad) 14%, transparent);
+  --color-tint-accent: color-mix(in srgb, var(--color-text-link) 14%, transparent);
+}
+
+/* ---- Light theme (pastel) — opt-in via data-theme="light" on <html> ---- */
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  /* Surfaces */
+  --color-canvas: #f7f6fb;
+  --color-canvas-soft: #efeef8;
+  --color-surface-card: #efeef8;
+  --color-surface-strong: #f7f6fb;
+  --color-surface-dark: #efeef8;
+  --color-surface-dark-elevated: #e6e4f1;
+  --color-surface-sidebar: #efeef8;
+  --color-surface-demo: #eef1fa;
+  --color-nav-active: #e6e4f1;
+  --color-card-hover: #eae8f4;
+  --color-progress-track: #ddd9ea;
+  --color-avatar-bg: #f7f6fb;
+
+  /* Borders */
+  --color-hairline: rgba(60, 55, 90, 0.11);
+  --color-hairline-soft: rgba(60, 55, 90, 0.08);
+  --color-hairline-strong: rgba(60, 55, 90, 0.15);
+
+  /* Text */
+  --color-ink: #2e2b3a;
+  --color-body: #605c72;
+  --color-body-strong: #35323f;
+  --color-muted: #918da1;
+  --color-muted-soft: #918da1;
+  --color-on-dark: #2e2b3a;
+  --color-on-dark-soft: #605c72;
+  --color-text-pill: #413e4f;
+  --color-text-updated: #605c72;
+  --color-text-meta: #7c788c;
+  --color-text-privacy: #7c788c;
+  --color-text-disclaimer: #918da1;
+  --color-trend-stroke: #413e4f;
+
+  /* Primary CTA — ink pill on light canvas (placeholder, see style_guide.md) */
+  --color-primary: #2e2b3a;
+  --color-primary-active: #413e4f;
+  --color-on-primary: #ffffff;
+
+  /* Accent */
+  --color-text-link: #7d7ab3;
+  --color-text-link-hover: #63609a;
+  --color-text-link-secondary: #7d7ab3;
+  --color-accent-link-bright: #63609a;
+
+  /* Grade bands (pastel) */
+  --color-grade-good: #6cc79a;
+  --color-grade-mid: #f0c46a;
+  --color-grade-bad: #ec8b8b;
+  --color-grade-none: #cfcbdc;
+}
+
+/* ---- Motion (mirrors the original GradeCompass) ----
+   Banners/pills fade in; dialogs and popovers pop in like shadcn's
+   data-[state=open] animations in the reference app. */
+@keyframes gm-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes gm-pop-in {
+  from { opacity: 0; transform: scale(0.97) translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+.gm-fade-in {
+  animation: gm-fade-in 200ms ease-out both;
+}
+
+.gm-pop-in {
+  animation: gm-pop-in 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Click feedback for icon buttons (sidebar theme toggle): squish down and
+   spring back with a small overshoot. Re-triggered per click by toggling the
+   class off on animationend. */
+@keyframes gm-press-pop {
+  0% { transform: scale(1); }
+  35% { transform: scale(0.8); }
+  70% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+.gm-press-pop {
+  animation: gm-press-pop 300ms ease;
+}
+
+/* Chart draw-in: the series (line, area fill, dots) sweeps in left→right via
+   a clip reveal when a class page or the overview opens, and again after a
+   refresh. Axes and gridlines stay put — only the data draws itself. */
+@keyframes gm-chart-draw {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+.gm-chart-draw {
+  animation: gm-chart-draw 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+a {
+  color: var(--color-text-link);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-text-link-hover);
+  text-decoration: underline;
+}
