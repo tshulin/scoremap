@@ -1,10 +1,21 @@
+node_modules
+dist
+.DS_Store
+*.local
+
+# Claude working files - never commit
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+
 # Raw portal captures contain REAL personal data (names, IDs, grades). Never commit.
 captures/
 
 # Local env files holding real credentials or a session cookie.
 .env
 .env.local
-*.local
 
 # SSH keys for the VPS partner account. Never commit.
 local/partner-access/
+
+/design_handoff_grademax/
