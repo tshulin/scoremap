@@ -172,6 +172,7 @@ function mapMailMessage(m) {
     email: m.sender.email || '',
     date: m.date,
     body: m.body,
+    bodyHtml: m.bodyHtml || '',
     links: m.links,
     attachments: m.attachments,
     bodyLoaded: m.bodyLoaded,
