@@ -235,6 +235,99 @@ body {
   text-align: center;
 }
 
+.gm-mail-rich {
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+.gm-mail-rich > :first-child {
+  margin-top: 0;
+}
+
+.gm-mail-rich > :last-child {
+  margin-bottom: 0;
+}
+
+.gm-mail-rich p {
+  margin: 0 0 16px;
+}
+
+.gm-mail-rich h1,
+.gm-mail-rich h2,
+.gm-mail-rich h3,
+.gm-mail-rich h4,
+.gm-mail-rich h5,
+.gm-mail-rich h6 {
+  margin: 24px 0 12px;
+  color: var(--color-ink);
+  line-height: 1.3;
+}
+
+.gm-mail-rich h1 { font-size: 1.5em; }
+.gm-mail-rich h2 { font-size: 1.35em; }
+.gm-mail-rich h3 { font-size: 1.2em; }
+.gm-mail-rich h4,
+.gm-mail-rich h5,
+.gm-mail-rich h6 { font-size: 1em; }
+
+.gm-mail-rich strong,
+.gm-mail-rich b {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.gm-mail-rich ul,
+.gm-mail-rich ol {
+  margin: 0 0 16px;
+  padding-left: 28px;
+}
+
+.gm-mail-rich li + li {
+  margin-top: 4px;
+}
+
+.gm-mail-rich a {
+  color: var(--color-text-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.gm-mail-rich blockquote {
+  margin: 16px 0;
+  padding-left: 16px;
+  border-left: 3px solid var(--color-hairline-strong);
+  color: var(--color-body);
+}
+
+.gm-mail-rich table {
+  display: block;
+  max-width: 100%;
+  margin: 0 0 16px;
+  border-collapse: collapse;
+  overflow-x: auto;
+}
+
+.gm-mail-rich th,
+.gm-mail-rich td {
+  padding: 8px 10px;
+  border: 1px solid var(--color-hairline-strong);
+  text-align: left;
+  vertical-align: top;
+}
+
+.gm-mail-rich pre,
+.gm-mail-rich code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.gm-mail-rich pre {
+  max-width: 100%;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-card);
+  overflow-x: auto;
+}
+
 /* Click feedback for icon buttons (sidebar theme toggle): squish down and
    spring back with a small overshoot. Re-triggered per click by toggling the
    class off on animationend. */

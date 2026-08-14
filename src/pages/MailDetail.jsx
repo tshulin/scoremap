@@ -7,7 +7,8 @@
  * sidebar and drops all of Gmail's chrome the app doesn't need - just a clean
  * read view in the Scoremap style.
  */
-import React, { useEffect, useRef, useState } from 'react';
+import DOMPurify from 'dompurify';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import Sidebar from '../components/Sidebar.jsx';
 import { downloadMailAttachment, getMailMessage } from '../data/api.js';
@@ -20,6 +21,48 @@ const longDate = (iso) => {
 };
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+const RICH_MAIL_TAGS = [
+  'a', 'b', 'blockquote', 'br', 'code', 'del', 'div', 'em', 'h1', 'h2', 'h3',
+  'h4', 'h5', 'h6', 'hr', 'i', 'li', 'ol', 'p', 'pre', 's', 'span', 'strong',
+  'sub', 'sup', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'u', 'ul',
+];
+
+const SAFE_STYLE_VALUES = {
+  'font-style': /^(?:normal|italic|oblique)$/i,
+  'font-weight': /^(?:normal|bold|bolder|lighter|[1-9]00)$/i,
+  'text-align': /^(?:left|right|center|justify|start|end)$/i,
+  'text-decoration': /^(?:none|underline|line-through)(?:\s+(?:solid|double|dotted|dashed|wavy))?$/i,
+  'white-space': /^(?:normal|pre|pre-line|pre-wrap)$/i,
+};
+
+function sanitizeMailHtml(html) {
+  if (!html || typeof DOMParser === 'undefined') return '';
+  const clean = DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: RICH_MAIL_TAGS,
+    ALLOWED_ATTR: ['colspan', 'href', 'rowspan', 'style', 'title'],
+  });
+  const document = new DOMParser().parseFromString(clean, 'text/html');
+  document.querySelectorAll('[style]').forEach((element) => {
+    const safeDeclarations = [];
+    for (const [property, allowed] of Object.entries(SAFE_STYLE_VALUES)) {
+      const value = element.style.getPropertyValue(property).trim();
+      if (value && allowed.test(value)) safeDeclarations.push(`${property}: ${value}`);
+    }
+    if (safeDeclarations.length) element.setAttribute('style', safeDeclarations.join('; '));
+    else element.removeAttribute('style');
+  });
+  document.querySelectorAll('a').forEach((anchor) => {
+    const href = anchor.getAttribute('href') || '';
+    if (!/^(?:https?:|mailto:)/i.test(href)) {
+      anchor.removeAttribute('href');
+      return;
+    }
+    anchor.setAttribute('target', '_blank');
+    anchor.setAttribute('rel', 'noreferrer noopener');
+  });
+  return document.body.innerHTML;
+}
 
 function Shell({ children }) {
   return (
@@ -87,6 +130,7 @@ function MailDetail() {
         setLoaded({
           ...listed,
           body: full.body,
+          bodyHtml: full.bodyHtml,
           links: full.links,
           attachments: full.attachments,
           bodyLoaded: true,
@@ -104,6 +148,7 @@ function MailDetail() {
   }, [needsBody, listed]);
 
   const m = loaded && listed && loaded.id === listed.id ? loaded : listed;
+  const richBody = useMemo(() => sanitizeMailHtml(m?.bodyHtml || ''), [m?.bodyHtml]);
 
   useEffect(() => {
     return () => {
@@ -200,19 +245,23 @@ function MailDetail() {
       )}
 
       {/* body */}
-      <div style={{ fontSize: 16, lineHeight: 1.7, color: 'var(--color-body)' }}>
+      <div style={{ fontSize: 16, lineHeight: 1.7, color: 'var(--color-ink)' }}>
         {loadingBody && !m.bodyLoaded && (
           <p style={{ margin: 0, color: 'var(--color-muted)' }}>Loading message…</p>
         )}
-        {m.body.map((p, i) => (
-          <p key={i} style={{ margin: '0 0 16px', whiteSpace: 'pre-line' }}>
-            {p}
-          </p>
-        ))}
+        {richBody ? (
+          <div className="gm-mail-rich" dangerouslySetInnerHTML={{ __html: richBody }} />
+        ) : (
+          m.body.map((p, i) => (
+            <p key={i} style={{ margin: '0 0 16px', whiteSpace: 'pre-line' }}>
+              {p}
+            </p>
+          ))
+        )}
       </div>
 
       {/* links */}
-      {m.links.length > 0 && (
+      {!richBody && m.links.length > 0 && (
         <div style={{ marginTop: 28 }}>
           <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.6px', textTransform: 'uppercase', color: 'var(--color-muted)', marginBottom: 12 }}>
             {plural(m.links.length, 'Link')}

@@ -139,6 +139,7 @@ function toMessage(row: Record<string, unknown>): unknown {
 		},
 		date: toIsoDate(asString(row['sendDateTime'])),
 		body: contentParagraphs(messageText),
+		bodyHtml: bodyLoaded ? messageText : '',
 		links: contentLinks(messageText),
 		attachments: toAttachments(row['attachments']),
 		bodyLoaded,
