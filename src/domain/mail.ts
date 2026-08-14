@@ -17,14 +17,16 @@ export const MailSenderSchema = z.object({
 	email: z.string().optional()
 });
 
-// Bodies are plain-text paragraphs: the portal sends HTML, which the portal layer
-// reduces to text + an extracted link list so the app never renders portal markup.
+// `body` remains the plain-text fallback used by demo data and older snapshots.
+// Real messages may also carry the portal's original rich HTML; the reader must
+// sanitize it before rendering.
 export const MailMessageSchema = z.object({
 	id: z.string().min(1),
 	subject: z.string().min(1),
 	sender: MailSenderSchema,
 	date: IsoDateString,
 	body: z.array(z.string()),
+	bodyHtml: z.string().default(''),
 	links: z.array(MailLinkSchema),
 	attachments: z.array(MailAttachmentSchema),
 	// The portal's message list carries no body - only the per-message call does.

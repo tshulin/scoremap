@@ -189,6 +189,7 @@ describe('fetchMailMessage', () => {
 
 		expect(message.bodyLoaded).toBe(true);
 		expect(message.body[0]).toBe('Hi all,');
+		expect(message.bodyHtml).toContain('<strong>Hi all,</strong>');
 		expect(calls[0]!.url).toBe(
 			'https://ca-test-psv.edupoint.com/st_api/ST.Messaging/GetMessage?PORTAL=3'
 		);
