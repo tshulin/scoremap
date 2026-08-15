@@ -58,17 +58,24 @@ export const CourseSchema = z.object({
 	marks: z.array(MarkSchema)
 });
 
+// Dates are optional: the legacy XML carried them, but the PXP2 gradebook page
+// only names its grading periods. Nothing downstream reads the dates.
 export const ReportPeriodSchema = z.object({
 	index: z.number(),
 	name: z.string(),
-	startDate: IsoDateString,
-	endDate: IsoDateString
+	startDate: IsoDateString.optional(),
+	endDate: IsoDateString.optional()
 });
 
+// The unreadable* counters follow the attendance/mail pattern: a row or course
+// the parser could not read is skipped and counted, never silently dropped.
 export const GradebookSchema = z.object({
 	reportingPeriods: z.array(ReportPeriodSchema),
 	currentPeriodIndex: z.number(),
-	courses: z.array(CourseSchema)
+	courses: z.array(CourseSchema),
+	unreadableCourses: z.number().default(0),
+	unreadableAssignments: z.number().default(0),
+	unreadableCategories: z.number().default(0)
 });
 
 export type Resource = z.infer<typeof ResourceSchema>;

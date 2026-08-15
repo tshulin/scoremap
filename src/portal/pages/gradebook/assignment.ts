@@ -1,7 +1,8 @@
 import type { Assignment } from '../../../domain/index';
 import { AssignmentSchema } from '../../../domain/index';
-import { toIsoDate } from '../../../extract/index';
+import { decodeEntities, stripTags, toIsoDate } from '../../../extract/index';
 import { validate } from '../shared';
+import { cellText } from './cells';
 
 const NOT_FOR_GRADING_PREFIX = '(Not For Grading)';
 
@@ -83,3 +84,86 @@ export function rawAssignmentToDomain(row: Record<string, unknown>): Assignment 
 		`assignment ${optionalString(row['Measure']) ?? optionalString(row['GradebookID']) ?? '?'}`
 	);
 }
+
+// The live class-detail fragments (captured 2026-08-14) column their assignment
+// grid with GB*-prefixed fields, not the legacy keys above. This adapter
+// translates a GB row into the legacy raw shape so rawAssignmentToDomain stays
+// the single owner of every score edge case. The shapes handled here are
+// corroborated by other scrapers' live data (flat string cells with
+// gradeBookId/GBAssignmentID keys, LinkColumn-wrapped cells, both points
+// conventions - see gradedata.md), but our own district's populated rows are
+// still unobserved - re-check against the first real capture.
+const isGbRow = (row: Record<string, unknown>): boolean =>
+	'GBAssignment' in row || 'GBPoints' in row;
+
+const FRACTION = /^([\d.]+)\s*\/\s*([\d.]+)$/;
+const RAW_SCORE = /^([\d.]+)\s+out of\s+([\d.]+)$/i;
+const BARE_NUMBER = /^[\d.]+$/;
+
+function gbRowToRaw(row: Record<string, unknown>): Record<string, unknown> {
+	// A plain id key on the row wins; failing that, the id is mined from the
+	// cell's link parameters (data-focus / hrefAttributes) BEFORE unwrapping -
+	// the unwrapped value is only the display name. The quote may arrive
+	// entity-encoded or JSON-escaped depending on how the cell is wrapped.
+	const cell = row['GBAssignment'];
+	const cellSource = typeof cell === 'string' ? cell : cell ? JSON.stringify(cell) : '';
+	const minedId = /"assignmentID\\?"\s*:\s*"?(-?\d+)/.exec(decodeEntities(cellSource))?.[1];
+	const id =
+		cellText(row['gradeBookId']) ??
+		cellText(row['GBAssignmentID']) ??
+		cellText(row['GradebookID']) ??
+		cellText(row['AssignmentID']) ??
+		minedId;
+
+	const raw: Record<string, unknown> = {
+		...(id === undefined ? {} : { GradebookID: id }),
+		Measure: stripTags(cellText(cell) ?? ''),
+		Date: cellText(row['Date']) ?? '',
+		Type: cellText(row['GBAssignmentType']),
+		Notes: stripTags(cellText(row['GBNotes']) ?? '')
+	};
+
+	const dueDate = cellText(row['DueDate']);
+	if (dueDate !== undefined) raw['DueDate'] = dueDate;
+
+	// Two live conventions. Ours: GBPoints is the whole score - "8.00 / 10.0000"
+	// graded, "10.00 Points Possible" ungraded. Others: GBPoints is a bare
+	// possible ("20") and GBScore carries the earned ("17"), or a non-numeric
+	// state ("Missing", "Not Due") when ungraded. Point stays absent for
+	// ungraded work, never '': '' would mean an earned zero.
+	const points = (cellText(row['GBPoints']) ?? '').trim();
+	const scoreText = stripTags(cellText(row['GBScore']) ?? '').trim();
+	const fraction = FRACTION.exec(points);
+	if (fraction) {
+		raw['Point'] = fraction[1];
+		raw['PointPossible'] = fraction[2];
+	} else if (BARE_NUMBER.test(points)) {
+		raw['PointPossible'] = points;
+		if (BARE_NUMBER.test(scoreText)) raw['Point'] = scoreText;
+	} else if (points !== '') {
+		raw['Points'] = points;
+	}
+
+	// A raw score differing from the points is the portal's scaled-points
+	// signal; ScoreCalValue/ScoreMaxValue carry the unscaled pair. The same
+	// numbers rendered differently ("8.00 / 10.0000" vs "8 out of 10") are not
+	// a signal, and downstream compares the strings, so equal pairs stay out.
+	if (/raw score/i.test(cellText(row['GBScoreType']) ?? '')) {
+		const score = RAW_SCORE.exec(stripTags(cellText(row['GBScore']) ?? ''));
+		if (score) {
+			const differs =
+				!fraction ||
+				Number.parseFloat(score[1]!) !== Number.parseFloat(fraction[1]!) ||
+				Number.parseFloat(score[2]!) !== Number.parseFloat(fraction[2]!);
+			if (differs) {
+				raw['ScoreCalValue'] = score[1];
+				raw['ScoreMaxValue'] = score[2];
+			}
+		}
+	}
+
+	return raw;
+}
+
+export const assignmentRowToDomain = (row: Record<string, unknown>): Assignment =>
+	rawAssignmentToDomain(isGbRow(row) ? gbRowToRaw(row) : row);

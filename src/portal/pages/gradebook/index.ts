@@ -1,83 +1,183 @@
-import type { Gradebook } from '../../../domain/index';
+import type { Assignment, Category, Course, Gradebook } from '../../../domain/index';
+import { GradebookSchema } from '../../../domain/index';
 import { NoActiveGradingPeriodError, ParseError } from '../../errors';
 import type { FetchFollowOptions } from '../../http';
 import type { PortalSession } from '../../login';
-import { getPage } from '../shared';
+import { getPage, validate } from '../shared';
+import { assignmentRowToDomain } from './assignment';
+import { parseClassDetail, type ClassDetail } from './classDetail';
+import {
+	parseGradebookLanding,
+	parseLandingClasses,
+	type GradingPeriod,
+	type LandingClass
+} from './landing';
+import { loadControl } from './loadControl';
 
 export { rawAssignmentToDomain } from './assignment';
 
-// Period selection cannot be implemented until an active gradebook response is observed.
-const gradebookPath = (_periodIndex?: number): string => 'PXP2_Gradebook.aspx?AGU=0';
+// The full portal contract (endpoints, fragments, grid columns, request
+// budget) is documented in gradedata.md - verified live 2026-08-14. The one
+// unverified piece is the populated assignment-row internals; the adapter in
+// assignment.ts must be re-checked against the first real capture.
+const LANDING = 'PXP2_Gradebook.aspx?AGU=0';
+const CLASS_DETAILS = 'Gradebook_ClassDetails';
+const SCHOOL_CLASSES = 'Gradebook_SchoolClasses';
 
+// Matches the transport's connection pool; more workers would only queue.
+const DETAIL_CONCURRENCY = 2;
+
+// Every request is charged against a shared per-IP budget at the portal, so
+// the sync fetches as little as it can prove it needs:
+//   - the landing page alone carries the class list, marks, and period map;
+//   - a class detail is fetched only when the landing row shows any sign of
+//     posted work (mayHaveWork) - early in a term the whole sync is 1 request;
+//   - all assignment rows arrive inline in the one detail response;
+//   - a non-default period costs exactly one extra class-list request.
 export async function fetchGradebook(
 	session: PortalSession,
 	periodIndex?: number,
 	options: FetchFollowOptions = {}
 ): Promise<Gradebook> {
-	const page = await getPage(session, gradebookPath(periodIndex), options);
+	const page = await getPage(session, LANDING, options);
 
-	// Out of term, the portal bounces the gradebook module to Home. This is expected,
-	// not a fault - the UI shows a friendly "grades appear once the term starts" message,
-	// and (with VITE_PLACEHOLDER_DATA on) the sample gradebook stands in.
+	// Out of term, the portal bounces the gradebook module to Home. This is
+	// expected, not a fault - the UI shows a friendly "grades appear once the
+	// term starts" message.
 	if (page.redirected) {
 		throw new NoActiveGradingPeriodError('The portal has no active grading period.');
 	}
 
-	return parseGradebook(page.body);
+	const landing = parseGradebookLanding(page.body);
+
+	let classes = landing.classes;
+	let currentIndex = landing.currentPeriodIndex;
+	if (periodIndex !== undefined && periodIndex !== landing.currentPeriodIndex) {
+		const target = landing.periods[periodIndex];
+		if (!target) {
+			throw new ParseError(`The portal has no grading period at index ${periodIndex}.`);
+		}
+		classes = parseLandingClasses(
+			await loadControl(
+				session,
+				SCHOOL_CLASSES,
+				{
+					schoolID: target.schoolId,
+					OrgYearGU: target.orgYearGu,
+					gradePeriodGU: target.gu,
+					GradingPeriodGroup: target.groupName,
+					AGU: landing.agu
+				},
+				options
+			)
+		);
+		currentIndex = periodIndex;
+	}
+
+	const details = await fetchDetails(session, classes, options);
+
+	let unreadableCourses = 0;
+	let unreadableAssignments = 0;
+	let unreadableCategories = 0;
+	const period = landing.periods[currentIndex];
+	const courses: Course[] = classes.map((cls, i) => {
+		const detail = details[i];
+		// Some districts render the landing mark as "A- 91.8%"; split it so the
+		// no-detail fallback still carries both letter and percentage.
+		let letter = cls.mark === 'N/A' ? '' : cls.mark;
+		let percentage = 0;
+		const combined = /\s*([\d.]+)%$/.exec(letter);
+		if (combined) {
+			percentage = Number.parseFloat(combined[1]!);
+			letter = letter.slice(0, combined.index).trim();
+		}
+		let categories: Category[] | undefined;
+		const assignments: Assignment[] = [];
+
+		if (detail === 'unreadable') {
+			// The course still appears with what the landing row showed; only
+			// its detail view was unreadable.
+			unreadableCourses++;
+		} else if (detail) {
+			letter = detail.letter;
+			percentage = detail.percentage;
+			categories = detail.categories;
+			unreadableCategories += detail.unreadableCategories;
+			for (const [rowIndex, raw] of detail.rawAssignments.entries()) {
+				try {
+					const assignment = assignmentRowToDomain(raw);
+					assignments.push(
+						assignment.id === '' ? { ...assignment, id: `${cls.classId}-${rowIndex}` } : assignment
+					);
+				} catch (error) {
+					if (!(error instanceof ParseError)) throw error;
+					unreadableAssignments++;
+				}
+			}
+		}
+
+		return {
+			courseId: cls.classId,
+			name: cls.name,
+			title: cls.name,
+			period: cls.period,
+			room: cls.room,
+			staff: { name: cls.teacher },
+			marks: [
+				{
+					name: period ? period.name : '',
+					shortName: markShortName(cls, period),
+					letter,
+					percentage,
+					...(categories ? { categories } : {}),
+					assignments
+				}
+			]
+		};
+	});
+
+	return validate(
+		GradebookSchema,
+		{
+			reportingPeriods: landing.periods.map((p, index) => ({ index, name: p.name })),
+			currentPeriodIndex: currentIndex,
+			courses,
+			unreadableCourses,
+			unreadableAssignments,
+			unreadableCategories
+		},
+		'gradebook'
+	);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// THE PARSER SLOT - implement this once a real active-term gradebook is captured.
-// Everything around it is done: the domain schema, the assignment normalizer
-// (rawAssignmentToDomain, which already encodes every score edge case), the sample
-// data, the UI, and the grade engine. This function is the only missing piece.
-//
-// HOW TO GET HERE:
-//   1. When grades are back, capture the real page (see web/capture-portal.ts and
-//      ADDING_REAL_DATA.md): it dumps PXP2_Gradebook.aspx (and PXP2_ClassGrades.aspx)
-//      HTML to a gitignored captures/ folder.
-//   2. Find the embedded DevExpress grids - search the HTML for `"dataSource":[`.
-//      The courses, marks, categories, and per-assignment rows live in those arrays.
-//
-// TOOLS ALREADY AVAILABLE (import from '../../../extract/index' and './assignment'):
-//   • findDataSourceWithKeys(html, [keyA, keyB]) -> rows[]  - pulls a grid whose rows
-//       contain the given keys (use it to locate each grid by its columns).
-//   • extractJsonAfter(html, '"dataSource":') -> the balanced JSON literal that follows.
-//   • rawAssignmentToDomain(row) -> Assignment - DO NOT re-derive score logic; feed it a
-//       raw row with the portal's assignment keys and it handles extra credit
-//       (PointPossible=''), earned zeros (Point=''), "(Not For Grading)" Notes, and
-//       scaled vs. unscaled points. Confirm the raw key names against the capture; it
-//       reads: Point, PointPossible, ScoreCalValue, ScoreMaxValue, Points, Notes,
-//       Measure, MeasureDescription, GradebookID, Type, Date, DueDate.
-//   • toIsoDate(mmddyyyy), stripTags(html), validate(schema, value, what).
-//
-// TARGET SHAPE (validate the result with GradebookSchema before returning):
-//   Gradebook {
-//     reportingPeriods: ReportPeriod[] { index, name, startDate, endDate }
-//     currentPeriodIndex: number        // which period THIS payload is for
-//     courses: Course[] {
-//       courseId, name, title, period, room, staff{name,email?}, marks: Mark[] {
-//         name, shortName, letter, percentage,
-//         categories?: Category[] {      // from the GradeCalculationSummary grid, if weighted
-//           name, weightPercentage, pointsEarned, pointsPossible, weightedPercentage, letter
-//         },
-//         assignments: Assignment[]      // each via rawAssignmentToDomain(rawRow)
-//       }
-//     }
-//   }
-//
-// GOTCHAS (already handled by rawAssignmentToDomain, but verify against real rows):
-//   • A course with no categories is unweighted -> the engine uses point totals.
-//   • A category with weight but no graded work must stay (weightedPercentage 0); the
-//     engine renormalizes over graded categories so an ungraded Finals doesn't zero the grade.
-//   • Some districts render per-class assignment detail on PXP2_ClassGrades.aspx instead -
-//     if the gradebook grid lacks assignment rows, fetch that page per course too.
-//
-// VERIFY: turn the sample off (VITE_PLACEHOLDER_DATA unset), and check a few courses'
-// weighted and unweighted grades against the numbers the portal itself shows.
-// ─────────────────────────────────────────────────────────────────────────────
-function parseGradebook(_html: string): Gradebook {
-	throw new ParseError(
-		'Gradebook parsing is not implemented yet. Capture a live active-term page and fill in parseGradebook (see the guide above this function).'
-	);
+const markShortName = (cls: LandingClass, period: GradingPeriod | undefined): string =>
+	cls.markPeriodName || period?.markPeriods[0]?.name || (period ? period.name : '');
+
+// One detail request per class that may have work, none for the rest. An
+// unreadable detail (ParseError only) degrades that course; anything else -
+// session expiry, portal errors - fails the sync and must surface.
+async function fetchDetails(
+	session: PortalSession,
+	classes: LandingClass[],
+	options: FetchFollowOptions
+): Promise<Array<ClassDetail | 'unreadable' | undefined>> {
+	const details = new Array<ClassDetail | 'unreadable' | undefined>(classes.length);
+	const queue = classes.map((cls, index) => ({ cls, index })).filter(({ cls }) => cls.mayHaveWork);
+
+	const worker = async (): Promise<void> => {
+		for (;;) {
+			const next = queue.shift();
+			if (!next) return;
+			try {
+				details[next.index] = parseClassDetail(
+					await loadControl(session, CLASS_DETAILS, next.cls.focusArgs, options)
+				);
+			} catch (error) {
+				if (!(error instanceof ParseError)) throw error;
+				details[next.index] = 'unreadable';
+			}
+		}
+	};
+	await Promise.all(Array.from({ length: DETAIL_CONCURRENCY }, worker));
+	return details;
 }

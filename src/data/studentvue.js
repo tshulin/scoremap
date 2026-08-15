@@ -330,7 +330,7 @@ const friendlyGradebookMessage = (error) => {
   if (error.code === 'NO_ACTIVE_GRADING_PERIOD')
     return 'No active grading period. Grades will appear when the term starts.';
   if (error.code === 'PARSE_FAILED')
-    return 'Grades are not readable yet. Live gradebook support is still being finished.';
+    return 'The gradebook page did not look the way Scoremap expects. Try a refresh.';
   return error.message;
 };
 
