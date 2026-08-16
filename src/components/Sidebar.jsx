@@ -23,6 +23,7 @@ import {
   SunIcon,
 } from '../lib/icons.jsx';
 import PrivacyDialog from './PrivacyDialog.jsx';
+import ScoremapWordmark from './ScoremapWordmark.jsx';
 
 // Module-level (not inside Sidebar): a component defined inside the render
 // function gets a new identity every render, so React remounts its DOM node -
@@ -183,7 +184,7 @@ function Sidebar() {
       }}
     >
       <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.4px', color: 'var(--color-ink)', padding: '0 12px', marginBottom: 24 }}>
-        Scoremap
+        <ScoremapWordmark />
       </div>
 
       <nav style={{ flex: 1, overflowY: 'auto' }}>

@@ -22,6 +22,7 @@ import {
   FeatureCard,
 } from '../lib/ds.js';
 import PrivacyDialog from '../components/PrivacyDialog.jsx';
+import ScoremapWordmark from '../components/ScoremapWordmark.jsx';
 import { hasToken } from '../data/api.js';
 import { useSignIn } from '../data/SyncProvider.jsx';
 import { TEST_DISTRICT } from '../data/testAccount.js';
@@ -334,7 +335,7 @@ function Landing() {
       <HeroBand
         eyebrow={
           <div style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.4px', color: 'var(--color-ink)' }}>
-            Scoremap
+            <ScoremapWordmark />
           </div>
         }
         headline="The smarter way to see your grades."

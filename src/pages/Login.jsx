@@ -16,6 +16,7 @@ import { TextInput, Button } from '../lib/ds.js';
 import { useSignIn } from '../data/SyncProvider.jsx';
 import { hasToken, recallAuthNotice } from '../data/api.js';
 import BackButton from '../components/BackButton.jsx';
+import ScoremapWordmark from '../components/ScoremapWordmark.jsx';
 import { extractPortalDomain } from '../portal/domainInput';
 import { DISTRICTS } from '../data/districts.js';
 import { TEST_DISTRICT } from '../data/testAccount.js';
@@ -499,8 +500,7 @@ function Login() {
         }}
       >
         <div style={{ width: 420, maxWidth: '100%' }}>
-          {/* Wordmark (no logomark exists in the system - plain wordmark per
-              brand). Clicks back out to the landing page. */}
+          {/* Brand wordmark. Clicks back out to the landing page. */}
           <div
             onClick={() => navigate('/')}
             style={{
@@ -513,7 +513,7 @@ function Login() {
               cursor: 'pointer',
             }}
           >
-            Scoremap
+            <ScoremapWordmark />
           </div>
           <div
             style={{
