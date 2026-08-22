@@ -551,7 +551,46 @@ describe('parseLandingClasses', () => {
 	});
 });
 
+// Verbatim shape of a live Pleasanton row (captured 2026-08-21, values
+// sanitized): link cells are JSON-stringified LinkColumn objects whose
+// hrefAttributes embed the assignment's own data-focus, dates use 2-digit
+// years, and GBPoints carries the scaled score while GBScore holds the raw one.
+const GB_ROW_LIVE = {
+	gradeBookId: '396634',
+	studentId: '27729',
+	Teacher: 'Jane Doe',
+	Date: '8/14/26',
+	googleAssignmentLink:
+		'{"googleAssignmentLinkURL":"","googleAssignmentVisible":false,"dataType":"AssignmentColumnWithGoogleLink"}',
+	GBAssignment:
+		'{"href":"javascript:","hrefAttributes":"data-focus={\\"LoadParams\\":{\\"ControlName\\":\\"Gradebook_AssignmentDetails\\",\\"HideHeader\\":false},\\"FocusArgs\\":{\\"viewName\\":null,\\"studentGU\\":\\"00000000-0000-0000-0000-000000000000\\",\\"schoolID\\":16,\\"classID\\":14756,\\"markPeriodGU\\":\\"00000000-0000-0000-0000-000000000001\\",\\"gradePeriodGU\\":\\"00000000-0000-0000-0000-000000000002\\",\\"subjectID\\":-1,\\"teacherID\\":-1,\\"assignmentID\\":396634,\\"standardIdentifier\\":null,\\"AGU\\":\\"0\\",\\"OrgYearGU\\":\\"00000000-0000-0000-0000-000000000003\\",\\"gradingPeriodGroup\\":null}} data-action=GB.LoadControl","value":"Pre-Assessment","dataType":"LinkColumn"}',
+	GBAssignmentType: 'Test',
+	GBResources: '0',
+	GBSubject: '',
+	GBScore:
+		'{"href":"javascript:","hrefAttributes":"data-focus={\\"LoadParams\\":{\\"ControlName\\":\\"Gradebook_AssignmentDetails\\",\\"HideHeader\\":false},\\"FocusArgs\\":{\\"assignmentID\\":396634}} data-action=GB.LoadControl","value":"15 out of 19.0000","dataType":"LinkColumn"}',
+	GBScoreType: 'Raw Score',
+	GBPoints: '7.89/10.0000',
+	GBNotes: '',
+	GBDropBox: ''
+};
+
 describe('assignmentRowToDomain', () => {
+	it('adapts the live row shape (stringified LinkColumn cells, 2-digit year, scaled points)', () => {
+		const a = assignmentRowToDomain(GB_ROW_LIVE);
+		expect(a).toMatchObject({
+			id: '396634',
+			name: 'Pre-Assessment',
+			category: 'Test',
+			pointsEarned: 7.89,
+			pointsPossible: 10,
+			unscaledPoints: { pointsEarned: 15, pointsPossible: 19 },
+			extraCredit: false,
+			notForGrade: false,
+			date: '2026-08-14'
+		});
+	});
+
 	it('adapts a graded GB row', () => {
 		const a = assignmentRowToDomain(GB_ROW_GRADED);
 		expect(a).toMatchObject({
