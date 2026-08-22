@@ -88,11 +88,12 @@ export function rawAssignmentToDomain(row: Record<string, unknown>): Assignment 
 // The live class-detail fragments (captured 2026-08-14) column their assignment
 // grid with GB*-prefixed fields, not the legacy keys above. This adapter
 // translates a GB row into the legacy raw shape so rawAssignmentToDomain stays
-// the single owner of every score edge case. The shapes handled here are
-// corroborated by other scrapers' live data (flat string cells with
-// gradeBookId/GBAssignmentID keys, LinkColumn-wrapped cells, both points
-// conventions - see gradedata.md), but our own district's populated rows are
-// still unobserved - re-check against the first real capture.
+// the single owner of every score edge case. Live-verified 2026-08-21 against
+// real posted grades: flat string cells, a gradeBookId key, GBAssignment and
+// GBScore as JSON-stringified LinkColumn cells, GBPoints "7.89/10.0000" (the
+// scaled score) beside GBScore "15 out of 19.0000" (raw), 2-digit-year dates.
+// Other scrapers' conventions (GBAssignmentID, bare GBPoints + GBScore earned,
+// "Missing"/"Not Due") stay handled - see gradedata.md.
 const isGbRow = (row: Record<string, unknown>): boolean =>
 	'GBAssignment' in row || 'GBPoints' in row;
 

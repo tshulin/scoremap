@@ -1,7 +1,7 @@
-// Capture real portal pages for parser verification - run this ONCE TEACHERS POST
-// GRADES, then check the printed assignment-row keys against the GB-row adapter
-// (src/portal/pages/gradebook/assignment.ts). The parser is implemented; only the
-// populated row internals are unverified. See gradedata.md and ADDING_REAL_DATA.md.
+// Capture real portal pages for parser verification. The gradebook parser and its
+// GB-row adapter (src/portal/pages/gradebook/assignment.ts) were verified against
+// real posted grades on 2026-08-21; re-run this if a district renders rows
+// differently and diff the printed keys. See gradedata.md and ADDING_REAL_DATA.md.
 //
 // Start the relay first (it's the same one the app uses), then:
 //   RELAY_URL=ws://localhost:8080 \
