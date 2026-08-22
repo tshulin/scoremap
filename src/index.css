@@ -1,4 +1,4 @@
-/* App-level globals + the Scoremap color theme (see style_guide.md).
+/* App-level globals + the Scoremap color theme (see scripts/plans/style_guide.md).
    The design-system stylesheet (imported first in main.jsx) ships the token
    names and dark defaults; the :root block here re-colors them to the style
    guide, and the [data-theme='light'] block restates every token for light.
@@ -129,7 +129,7 @@ body {
   --color-text-disclaimer: #918da1;
   --color-trend-stroke: #413e4f;
 
-  /* Primary CTA - ink pill on light canvas (placeholder, see style_guide.md) */
+  /* Primary CTA - ink pill on light canvas (placeholder, see scripts/plans/style_guide.md) */
   --color-primary: #2e2b3a;
   --color-primary-active: #413e4f;
   --color-on-primary: #ffffff;

@@ -9,7 +9,7 @@
 //
 // SCOPE EXISTS TO SAVE REQUESTS. Every request the app makes is charged against
 // the portal's per-IP budget, which a whole school shares behind one NAT address
-// (see options.md). Refreshing the dashboard must therefore cost one request for
+// (see scripts/plans/options.md). Refreshing the dashboard must therefore cost one request for
 // the gradebook, not a fresh copy of the mailbox and the document list too.
 import * as api from './api.js';
 import { DEMO, DEMO_STUDENT } from './demo.js';

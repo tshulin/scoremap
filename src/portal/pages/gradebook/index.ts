@@ -17,7 +17,7 @@ import { loadControl } from './loadControl';
 export { rawAssignmentToDomain } from './assignment';
 
 // The full portal contract (endpoints, fragments, grid columns, request
-// budget) is documented in gradedata.md - verified live 2026-08-14, and the
+// budget) is documented in scripts/plans/gradedata.md - verified live 2026-08-14, and the
 // populated assignment-row shape against real posted grades on 2026-08-21
 // (see GB_ROW_LIVE in gradebook.test.ts).
 const LANDING = 'PXP2_Gradebook.aspx?AGU=0';
