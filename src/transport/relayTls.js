@@ -1,6 +1,6 @@
 // TLS-over-relay: run a TLS 1.3 client (subtls) in the browser, over a WebSocket
 // to the blind relay, so TLS terminates HERE and the relay sees only ciphertext.
-// The relay bridges the encrypted bytes to <host>:443. See ../../../idea.md.
+// The relay bridges the encrypted bytes to <host>:443. See ../../scripts/plans/idea.md.
 //
 // Portable on purpose: uses only Uint8Array + platform globals (WebSocket,
 // crypto.subtle), so the exact same code runs in the browser and under Node tests.

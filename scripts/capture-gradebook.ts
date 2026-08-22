@@ -1,7 +1,7 @@
 // Capture real portal pages for parser verification. The gradebook parser and its
 // GB-row adapter (src/portal/pages/gradebook/assignment.ts) were verified against
 // real posted grades on 2026-08-21; re-run this if a district renders rows
-// differently and diff the printed keys. See gradedata.md and ADDING_REAL_DATA.md.
+// differently and diff the printed keys. See scripts/plans/gradedata.md and scripts/plans/ADDING_REAL_DATA.md.
 //
 // Start the relay first (it's the same one the app uses), then:
 //   RELAY_URL=ws://localhost:8080 \
@@ -66,7 +66,7 @@ for (const p of PAGES) {
 // fragments, fetched through the same LoadControl POST the app uses. Only row
 // KEYS (column names) are printed - values are personal data and stay in the
 // files. Compare the printed keys against the adapter in
-// src/portal/pages/gradebook/assignment.ts (see gradedata.md).
+// src/portal/pages/gradebook/assignment.ts (see scripts/plans/gradedata.md).
 if (gradebookBody) {
 	try {
 		const landing = parseGradebookLanding(gradebookBody);

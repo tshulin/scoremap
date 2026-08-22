@@ -93,7 +93,7 @@ export function rawAssignmentToDomain(row: Record<string, unknown>): Assignment 
 // GBScore as JSON-stringified LinkColumn cells, GBPoints "7.89/10.0000" (the
 // scaled score) beside GBScore "15 out of 19.0000" (raw), 2-digit-year dates.
 // Other scrapers' conventions (GBAssignmentID, bare GBPoints + GBScore earned,
-// "Missing"/"Not Due") stay handled - see gradedata.md.
+// "Missing"/"Not Due") stay handled - see scripts/plans/gradedata.md.
 const isGbRow = (row: Record<string, unknown>): boolean =>
 	'GBAssignment' in row || 'GBPoints' in row;
 

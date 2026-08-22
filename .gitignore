@@ -8,6 +8,11 @@ CLAUDE.md
 CLAUDE.local.md
 .claude/
 
+# Plans, notes and other docs stay local (scripts/plans/); only READMEs are tracked.
+plans/
+*.md
+!README.md
+
 # Raw portal captures contain REAL personal data (names, IDs, grades). Never commit.
 captures/
 
