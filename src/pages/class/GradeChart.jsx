@@ -1,7 +1,9 @@
 // Grade-over-time, derived from the effective assignment list by replaying it
 // in date order (src/calc/series). No stored history: a retroactively-edited
 // score changes the "past" - inherent to a derived series, and how
-// GradeCompass behaved too. Renders only with 2+ points.
+// GradeCompass behaved too. A single point draws as a flat line across the
+// full width (the grade has simply held since that date), so a class with one
+// graded date still gets its chart.
 import React from 'react';
 import { useSession } from '../../data/SyncProvider.jsx';
 import { fmt2, shortDate, signed, weekdayDate } from './ui.jsx';
@@ -47,7 +49,8 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
   }, []);
   React.useEffect(() => setHover(null), [activeDates]);
   React.useEffect(() => setDotIndex(null), [series.length]);
-  if (series.length < 2) return null;
+  if (series.length === 0) return null;
+  const single = series.length === 1;
 
   const hoverable = (i) => !activeDates || activeDates.has(series[i].date);
 
@@ -60,7 +63,9 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
   let yMax = hi > 100 ? Math.ceil(hi) + 1 : Math.min(Math.ceil(hi) + 1, 100);
   if (yMax <= yMin) yMax = yMin + 2;
 
-  const xAt = (i) => padL + (i / (series.length - 1)) * (W - padL - padR);
+  // With one point the node sits at the right edge - where the next date would
+  // extend the line from - and the line runs back to the left edge.
+  const xAt = (i) => (single ? W - padR : padL + (i / (series.length - 1)) * (W - padL - padR));
   const yAt = (v) => padT + ((yMax - v) / (yMax - yMin)) * (H - padT - padB);
 
   // ~5 y ticks at a sensible step.
@@ -95,10 +100,11 @@ function GradeChart({ series, activeDates = null, activeType = null }) {
     onMove(evt, rect);
   };
 
-  const linePath = grades
-    .map((v, i) => `${i === 0 ? 'M' : 'L'} ${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)}`)
-    .join(' ');
-  const areaPath = `${linePath} L ${xAt(series.length - 1).toFixed(1)} ${H - padB} L ${xAt(0).toFixed(1)} ${H - padB} Z`;
+  const xStart = single ? padL : xAt(0);
+  const linePath = single
+    ? `M ${xStart.toFixed(1)} ${yAt(grades[0]).toFixed(1)} L ${xAt(0).toFixed(1)} ${yAt(grades[0]).toFixed(1)}`
+    : grades.map((v, i) => `${i === 0 ? 'M' : 'L'} ${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)}`).join(' ');
+  const areaPath = `${linePath} L ${xAt(series.length - 1).toFixed(1)} ${H - padB} L ${xStart.toFixed(1)} ${H - padB} Z`;
 
   const hovered = hover != null ? series[hover] : null;
   // How much this date moved the grade vs. the previous point (none for the first).

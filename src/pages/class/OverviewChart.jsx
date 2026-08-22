@@ -141,7 +141,10 @@ function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES
   let yMax = hi > 100 ? Math.ceil(hi) + 1 : Math.min(Math.ceil(hi) + 1, 100);
   if (yMax <= yMin) yMax = yMin + 2;
 
-  const xAt = (i) => padL + (dates.length === 1 ? 0.5 : i / (dates.length - 1)) * (W - padL - padR);
+  // A single date draws every line flat across the full width with its node
+  // at the right edge (same convention as GradeChart).
+  const single = dates.length === 1;
+  const xAt = (i) => (single ? W - padR : padL + (i / (dates.length - 1)) * (W - padL - padR));
   const yAt = (v) => padT + ((yMax - v) / (yMax - yMin)) * (H - padT - padB);
 
   const rawStep = (yMax - yMin) / 4;
@@ -173,9 +176,11 @@ function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES
   };
 
   const pathFor = (points) =>
-    points
-      .map((p, i) => `${i === 0 ? 'M' : 'L'} ${xAt(dateIndex.get(p.date)).toFixed(1)} ${yAt(p.grade).toFixed(1)}`)
-      .join(' ');
+    points.length === 1 && single
+      ? `M ${padL} ${yAt(points[0].grade).toFixed(1)} L ${xAt(0).toFixed(1)} ${yAt(points[0].grade).toFixed(1)}`
+      : points
+          .map((p, i) => `${i === 0 ? 'M' : 'L'} ${xAt(dateIndex.get(p.date)).toFixed(1)} ${yAt(p.grade).toFixed(1)}`)
+          .join(' ');
 
   const toggle = (key) =>
     setHidden((prev) => {
@@ -223,7 +228,7 @@ function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES
               const dashed = l.dashedFrom != null ? l.points.slice(l.dashedFrom) : [];
               return (
                 <g key={l.key}>
-                  {solid.length > 1 && (
+                  {(solid.length > 1 || (single && solid.length === 1)) && (
                     <path d={pathFor(solid)} fill="none" stroke={l.color} strokeWidth={l.width} strokeLinejoin="round" strokeLinecap="round" />
                   )}
                   {dashed.length > 1 && (
