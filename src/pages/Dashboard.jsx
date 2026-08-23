@@ -12,7 +12,7 @@
  * `export default DashboardPage` and import the DS components.
  */
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../lib/ds.js';
 import Sidebar from '../components/Sidebar.jsx';
 import TopBar from '../components/TopBar.jsx';
@@ -138,7 +138,7 @@ function DashboardPage() {
 
       {/* ---------- Main ---------- */}
       <main style={{ flex: 1, padding: '32px 40px 48px', boxSizing: 'border-box' }}>
-        <div style={{ maxWidth: 1160, margin: '0 auto' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
           {/* top bar: greeting · refresh pill · quarter selector */}
           <TopBar
             pillScope="gradebook"
@@ -289,14 +289,7 @@ function DashboardPage() {
           )}
 
           {/* footer */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 40, fontSize: 14, color: 'var(--color-body)' }}>
-            <a href="mailto:contact@scoremap.org?subject=Report%20an%20issue">Report an issue</a>
-            <span style={{ color: 'var(--color-muted)' }}>·</span>
-            <a href="mailto:contact@scoremap.org?subject=Feature%20suggestion">Suggest a feature</a>
-            <span style={{ color: 'var(--color-muted)' }}>·</span>
-            <Link to="/feedback">Provide feedback</Link>
-          </div>
-          <div style={{ textAlign: 'center', marginTop: 12, fontSize: 12, color: 'var(--color-text-disclaimer)' }}>
+          <div style={{ textAlign: 'center', marginTop: 40, fontSize: 12, color: 'var(--color-text-disclaimer)' }}>
             Scoremap is not affiliated with or endorsed by Edupoint Educational Systems LLC.
           </div>
         </div>
