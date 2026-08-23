@@ -290,9 +290,9 @@ function DashboardPage() {
 
           {/* footer */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 40, fontSize: 14, color: 'var(--color-body)' }}>
-            <a href="https://github.com/tshulin/grademax/issues/new" target="_blank" rel="noreferrer">Report an issue</a>
+            <a href="mailto:contact@scoremap.org?subject=Report%20an%20issue">Report an issue</a>
             <span style={{ color: 'var(--color-muted)' }}>·</span>
-            <a href="https://github.com/tshulin/grademax/issues/new" target="_blank" rel="noreferrer">Suggest a feature</a>
+            <a href="mailto:contact@scoremap.org?subject=Feature%20suggestion">Suggest a feature</a>
             <span style={{ color: 'var(--color-muted)' }}>·</span>
             <Link to="/feedback">Provide feedback</Link>
           </div>
