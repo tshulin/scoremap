@@ -11,7 +11,7 @@
  * account, captured by scripts - see public/landing/): rounded frameless
  * captures standing upright on a 3D ring, faces outward, so the facing slide
  * is head-on with its neighbors slanting away at either side. The ring
- * rotates between slides, with a caption underneath explaining each one.
+ * rotates between slides, with the active slide's title underneath.
  * Dark and light captures both ship; the slideshow serves whichever matches
  * the visitor's theme.
  */
@@ -33,38 +33,31 @@ import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, MoonIcon, SunIcon }
 const SLIDES = [
   {
     key: 'dashboard',
-    title: 'Every class at a glance',
-    text: 'Detailed percentages, letter grades, and color coded progress for every class, straight from StudentVUE. Know the second a grade has changed and never be surprised again.',
+    title: 'Every Class at a Glance',
   },
   {
     key: 'hypothetical',
-    title: 'Hypothetical mode',
-    text: "What would my grade be after this test? Find out using hypothetical mode. Scoremap's hypothetical calculator is 100% accurate and allows you to add finals, exams, assignments, even extra credit. Learn exactly how much each and every assignment is impacting your grade.",
+    title: 'Hypothetical Mode',
   },
   {
     key: 'overview',
-    title: 'Category overview',
-    text: 'Most classes have categories. See the trend in your grade in all of these categories to find what you need to improve on and how much the category is impacting your final grade.',
+    title: 'Category Overview',
   },
   {
     key: 'documents',
     title: 'Documents',
-    text: 'No StudentVUE clutter. See a simplified document center with all report cards, transcripts, test reports, right from your browser.',
   },
   {
     key: 'mail',
-    title: 'School mail',
-    text: "Clean. Scoremap's mailbox focuses on usability. We removed all the StudentVUE bloat so you can see what you need to see. Filter through sender and mail subject.",
+    title: 'School Mail',
   },
   {
     key: 'gpa',
-    title: 'GPA calculator',
-    text: 'Calculate your GPA for the semester. No need to manually type in your grades, use our import grade feature to immediately see your GPA.',
+    title: 'GPA Calculator',
   },
   {
     key: 'attendance',
-    title: 'Attendance calendar',
-    text: 'Absences, tardies, and school activities on a calendar, organized and color coded.',
+    title: 'Attendance Calendar',
   },
 ];
 
@@ -76,7 +69,7 @@ const SLIDE_W = 800; // the facing slide
 const SIDE_H = Math.round((SLIDE_W * 950) / 1440);
 
 // The hero visual: the facing screenshot head-on with its two neighbors
-// slanting away, blurred, at either side - with the active slide's caption
+// slanting away, blurred, at either side - with the active slide's title
 // underneath. Advances on a timer, pauses while hovered, and can be driven
 // by the arrows or dots.
 //
@@ -244,7 +237,7 @@ function ShowcaseCarousel() {
           </button>
         </div>
       </div>
-      {/* caption + controls */}
+      {/* title + controls */}
       <div className="gm-carousel-meta">
         <div className="gm-carousel-controls">
           <div className="gm-carousel-navigation">
@@ -289,16 +282,10 @@ function ShowcaseCarousel() {
             {theme === 'dark' ? <SunIcon size={15} /> : <MoonIcon size={15} />}
           </button>
         </div>
-        {/* fixed-height caption well - swapping slides must not shift the page */}
         <div className="gm-carousel-caption">
-          {/* Real heading/paragraph tags for search engines; the inline
-              margins restate what the plain divs had so nothing moves. */}
-          <h3 style={{ fontSize: 19, fontWeight: 600, color: 'var(--color-ink)', margin: '0 0 8px' }}>
+          <h3 style={{ fontSize: 19, fontWeight: 600, color: 'var(--color-ink)', margin: 0 }}>
             {active.title}
           </h3>
-          <p style={{ fontSize: 16, color: 'var(--color-body)', lineHeight: 1.55, maxWidth: 680, margin: '0 auto' }}>
-            {active.text}
-          </p>
         </div>
       </div>
     </div>

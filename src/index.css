@@ -230,7 +230,6 @@ body {
 
 .gm-carousel-caption {
   width: min(100%, 680px);
-  min-height: 132px;
   margin-inline: auto;
   text-align: center;
 }

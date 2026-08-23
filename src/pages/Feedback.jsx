@@ -1,11 +1,13 @@
 import React from 'react';
 import Sidebar from '../components/Sidebar.jsx';
-import { MailIcon, MessageSquareIcon } from '../lib/icons.jsx';
+import { MailIcon } from '../lib/icons.jsx';
 
 const CONTACT_EMAIL = 'contact@scoremap.org';
 
 const card = {
-  flex: '1 1 320px',
+  flex: '0 1 451px',
+  width: '100%',
+  maxWidth: 451,
   background: 'var(--color-surface-card)',
   border: '1px solid var(--color-hairline-strong)',
   borderRadius: 'var(--radius-xl)',
@@ -71,21 +73,12 @@ function Feedback() {
 
           <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap' }}>
             <FeedbackCard
-              icon={MessageSquareIcon}
-              title="Report a bug or suggest a feature"
-              href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Scoremap feedback')}`}
-              linkText="Email us"
-            >
-              To report a bug or suggest a feature, send us an email.
-            </FeedbackCard>
-
-            <FeedbackCard
               icon={MailIcon}
-              title="Contact us"
-              href={`mailto:${CONTACT_EMAIL}`}
+              title="Email us"
+              href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Scoremap feedback')}`}
               linkText={CONTACT_EMAIL}
             >
-              To contact us directly, send us an email.
+              Report a bug, suggest a feature, or contact us directly by email.
             </FeedbackCard>
           </div>
         </div>
