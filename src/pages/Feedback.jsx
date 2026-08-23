@@ -2,7 +2,6 @@ import React from 'react';
 import Sidebar from '../components/Sidebar.jsx';
 import { MailIcon, MessageSquareIcon } from '../lib/icons.jsx';
 
-const GITHUB_ISSUE_URL = 'https://github.com/tshulin/grademax/issues/new';
 const CONTACT_EMAIL = 'contact@scoremap.org';
 
 const card = {
@@ -74,11 +73,10 @@ function Feedback() {
             <FeedbackCard
               icon={MessageSquareIcon}
               title="Report a bug or suggest a feature"
-              href={GITHUB_ISSUE_URL}
-              linkText="Create an issue on GitHub ↗"
-              external
+              href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Scoremap feedback')}`}
+              linkText="Email us"
             >
-              To report a bug or suggest a feature, create an issue on GitHub.
+              To report a bug or suggest a feature, send us an email.
             </FeedbackCard>
 
             <FeedbackCard

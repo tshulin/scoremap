@@ -33,11 +33,8 @@ function PrivacyDialog({ onClose }) {
         </p>
 
         <p style={paragraph}>
-          If you have questions or concerns about Scoremap, you can contact us on{' '}
-          <a href="https://github.com/tshulin/grademax" target="_blank" rel="noreferrer">
-            GitHub
-          </a>
-          .
+          If you have questions or concerns about Scoremap, you can contact us at{' '}
+          <a href="mailto:contact@scoremap.org">contact@scoremap.org</a>.
         </p>
 
         <p
