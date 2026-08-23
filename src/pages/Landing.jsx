@@ -291,12 +291,14 @@ function ShowcaseCarousel() {
         </div>
         {/* fixed-height caption well - swapping slides must not shift the page */}
         <div className="gm-carousel-caption">
-          <div style={{ fontSize: 19, fontWeight: 600, color: 'var(--color-ink)', marginBottom: 8 }}>
+          {/* Real heading/paragraph tags for search engines; the inline
+              margins restate what the plain divs had so nothing moves. */}
+          <h3 style={{ fontSize: 19, fontWeight: 600, color: 'var(--color-ink)', margin: '0 0 8px' }}>
             {active.title}
-          </div>
-          <div style={{ fontSize: 16, color: 'var(--color-body)', lineHeight: 1.55, maxWidth: 680, margin: '0 auto' }}>
+          </h3>
+          <p style={{ fontSize: 16, color: 'var(--color-body)', lineHeight: 1.55, maxWidth: 680, margin: '0 auto' }}>
             {active.text}
-          </div>
+          </p>
         </div>
       </div>
     </div>
@@ -331,15 +333,23 @@ function Landing() {
   };
 
   return (
-    <div style={{ background: 'var(--color-canvas)' }}>
+    <main style={{ background: 'var(--color-canvas)' }}>
       <HeroBand
         eyebrow={
           <div style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.4px', color: 'var(--color-ink)' }}>
             <ScoremapWordmark />
           </div>
         }
-        headline="The smarter way to see your grades."
-        subhead="Scoremap reads your StudentVUE data and tells you what you actually need to know."
+        headline={
+          <h1 style={{ font: 'inherit', letterSpacing: 'inherit', color: 'inherit', margin: 0 }}>
+            The smarter way to see your grades.
+          </h1>
+        }
+        subhead={
+          <p style={{ font: 'inherit', color: 'inherit', margin: 0 }}>
+            Scoremap reads your StudentVUE data and tells you what you actually need to know.
+          </p>
+        }
         cta={
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
             {/* grid tracks stretch their items, so both buttons get the same
@@ -368,27 +378,27 @@ function Landing() {
       />
 
       {/* current works in progress */}
-      <div style={{ maxWidth: 'var(--container-max)', margin: '0 auto', padding: '16px 32px 64px' }}>
-        <div
+      <section style={{ maxWidth: 'var(--container-max)', margin: '0 auto', padding: '16px 32px 64px' }}>
+        <h2
           style={{
             textAlign: 'center',
             fontSize: 28,
             fontWeight: 600,
             letterSpacing: '-0.5px',
             color: 'var(--color-ink)',
-            marginBottom: 28,
+            margin: '0 0 28px',
           }}
         >
           Currently in the works
-        </div>
+        </h2>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, maxWidth: 880, margin: '0 auto' }}>
-          <FeatureCard title="Cumulative GPA Calculator">
+          <FeatureCard title={<h3 style={{ font: 'inherit', margin: 0 }}>Cumulative GPA Calculator</h3>}>
             <div style={{ fontStyle: 'italic', color: 'var(--color-muted)', marginBottom: 10 }}>Started: 7/11/2026</div>
             Want to calculate your cumulative GPA? Scoremap will parse your grades from any selected
             transcript, and calculate your cumulative GPA for different colleges. Save yourself from the
             hassle of manually typing out each individual grade.
           </FeatureCard>
-          <FeatureCard title="Scoremap Extension">
+          <FeatureCard title={<h3 style={{ font: 'inherit', margin: 0 }}>Scoremap Extension</h3>}>
             <div style={{ fontStyle: 'italic', color: 'var(--color-muted)', marginBottom: 10 }}>Started: 8/2/2026</div>
             Scoremap inside a browser's toolbar. Be notified when a grade changes, skip the loading queue
             and see your grades instantly. An extension will give us a lot more flexibility as well as the
@@ -399,9 +409,9 @@ function Landing() {
           Have feedback or suggestions? Email us at{' '}
           <a href="mailto:contact@scoremap.org">contact@scoremap.org</a>
         </div>
-      </div>
+      </section>
 
-      <div
+      <footer
         style={{
           borderTop: '1px solid var(--color-hairline)',
           padding: '32px',
@@ -460,10 +470,10 @@ function Landing() {
             </div>
           )}
         </div>
-      </div>
+      </footer>
 
       {privacyOpen && <PrivacyDialog onClose={() => setPrivacyOpen(false)} />}
-    </div>
+    </main>
   );
 }
 

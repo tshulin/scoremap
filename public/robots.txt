@@ -1,0 +1,13 @@
+# Scoremap - https://www.scoremap.org
+# Only the landing page is public; everything else needs a StudentVUE sign-in.
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /grades/
+Disallow: /attendance
+Disallow: /documents
+Disallow: /gpa-calculator
+Disallow: /mail
+Disallow: /feedback
+
+Sitemap: https://www.scoremap.org/sitemap.xml

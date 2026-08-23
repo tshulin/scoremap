@@ -8,10 +8,123 @@
     <link rel="icon" type="image/png" sizes="16x16" href="%BASE_URL%favicon-16x16.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="%BASE_URL%apple-touch-icon.png" />
     <link rel="manifest" href="%BASE_URL%site.webmanifest" />
-    <title>Scoremap</title>
+    <meta name="theme-color" content="#111113" />
+
+    <!-- Search / share metadata. The landing copy itself is React-rendered,
+         so the head carries what crawlers and link previews need up front. -->
+    <title>Scoremap - StudentVUE grade tracker, what-if grade calculator &amp; GPA tool</title>
+    <meta
+      name="description"
+      content="Scoremap reads your StudentVUE grades and shows every class at a glance: live percentages, a 100% accurate hypothetical (what-if) grade calculator, category breakdowns, a GPA calculator, attendance calendar, documents and school mail - private by design."
+    />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://www.scoremap.org/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Scoremap" />
+    <meta property="og:url" content="https://www.scoremap.org/" />
+    <meta property="og:title" content="Scoremap - The smarter way to see your StudentVUE grades" />
+    <meta
+      property="og:description"
+      content="Live grades, a what-if grade calculator, category trends, GPA, attendance, documents and mail - all read straight from StudentVUE."
+    />
+    <meta property="og:image" content="https://www.scoremap.org/landing/dashboard-dark.png" />
+    <meta property="og:image:width" content="2850" />
+    <meta property="og:image:height" content="1880" />
+    <meta property="og:image:alt" content="Scoremap dashboard showing every class with percentages and letter grades" />
+    <meta property="og:locale" content="en_US" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Scoremap - The smarter way to see your StudentVUE grades" />
+    <meta
+      name="twitter:description"
+      content="Live grades, a what-if grade calculator, category trends, GPA, attendance, documents and mail - all read straight from StudentVUE."
+    />
+    <meta name="twitter:image" content="https://www.scoremap.org/landing/dashboard-dark.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Scoremap",
+        "url": "https://www.scoremap.org/",
+        "description": "Scoremap reads your StudentVUE data and tells you what you actually need to know: every class at a glance, a hypothetical grade calculator, category overviews, a GPA calculator, an attendance calendar, documents and school mail.",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires JavaScript",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "image": "https://www.scoremap.org/landing/dashboard-dark.png",
+        "featureList": [
+          "Every class at a glance - percentages, letter grades and color coded progress",
+          "Hypothetical (what-if) grade calculator",
+          "Category overview and trends",
+          "Documents - report cards, transcripts and test reports",
+          "School mail",
+          "GPA calculator",
+          "Attendance calendar"
+        ]
+      }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Static copy of the landing page text for crawlers and link-preview
+           bots that do not run JavaScript. React's createRoot() replaces the
+           whole #root subtree on mount, so this is never shown to visitors and
+           never painted (it is display:none until then). Keep it in sync with
+           src/pages/Landing.jsx. -->
+      <div style="display: none" aria-hidden="true">
+        <h1>The smarter way to see your grades.</h1>
+        <p>Scoremap reads your StudentVUE data and tells you what you actually need to know.</p>
+        <h2>Every class at a glance</h2>
+        <p>
+          Detailed percentages, letter grades, and color coded progress for every class, straight from
+          StudentVUE. Know the second a grade has changed and never be surprised again.
+        </p>
+        <h2>Hypothetical mode</h2>
+        <p>
+          What would my grade be after this test? Find out using hypothetical mode. Scoremap's
+          hypothetical calculator is 100% accurate and allows you to add finals, exams, assignments, even
+          extra credit. Learn exactly how much each and every assignment is impacting your grade.
+        </p>
+        <h2>Category overview</h2>
+        <p>
+          Most classes have categories. See the trend in your grade in all of these categories to find
+          what you need to improve on and how much the category is impacting your final grade.
+        </p>
+        <h2>Documents</h2>
+        <p>
+          No StudentVUE clutter. See a simplified document center with all report cards, transcripts,
+          test reports, right from your browser.
+        </p>
+        <h2>School mail</h2>
+        <p>
+          Clean. Scoremap's mailbox focuses on usability. We removed all the StudentVUE bloat so you can
+          see what you need to see. Filter through sender and mail subject.
+        </p>
+        <h2>GPA calculator</h2>
+        <p>
+          Calculate your GPA for the semester. No need to manually type in your grades, use our import
+          grade feature to immediately see your GPA.
+        </p>
+        <h2>Attendance calendar</h2>
+        <p>Absences, tardies, and school activities on a calendar, organized and color coded.</p>
+        <h2>Currently in the works</h2>
+        <h3>Cumulative GPA Calculator</h3>
+        <p>
+          Want to calculate your cumulative GPA? Scoremap will parse your grades from any selected
+          transcript, and calculate your cumulative GPA for different colleges. Save yourself from the
+          hassle of manually typing out each individual grade.
+        </p>
+        <h3>Scoremap Extension</h3>
+        <p>
+          Scoremap inside a browser's toolbar. Be notified when a grade changes, skip the loading queue
+          and see your grades instantly.
+        </p>
+        <p>Private by design. Your info is only viewed by you and StudentVUE.</p>
+        <p>&copy; 2026 Scoremap. Not affiliated with Edupoint or StudentVUE.</p>
+      </div>
+    </div>
     <!-- GitHub Pages SPA fallback: 404.html re-encodes deep links as
          /?/path; this restores the real URL before React Router boots.
          (https://github.com/rafgraph/spa-github-pages) -->
