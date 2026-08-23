@@ -183,9 +183,26 @@ function Sidebar() {
         fontFamily: 'var(--font-sans)',
       }}
     >
-      <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.4px', color: 'var(--color-ink)', padding: '0 12px', marginBottom: 24 }}>
+      <button
+        type="button"
+        aria-label="Go to dashboard"
+        onClick={() => navigate('/dashboard')}
+        style={{
+          alignSelf: 'flex-start',
+          background: 'transparent',
+          border: 0,
+          cursor: 'pointer',
+          fontFamily: 'inherit',
+          fontSize: 20,
+          fontWeight: 600,
+          letterSpacing: '-0.4px',
+          color: 'var(--color-ink)',
+          padding: '0 12px',
+          marginBottom: 24,
+        }}
+      >
         <ScoremapWordmark />
-      </div>
+      </button>
 
       <nav style={{ flex: 1, overflowY: 'auto' }}>
         <NavItem icon={BookOpenIcon} label="Grades" active={section === 'grades' && !activeClassId} onClick={() => navigate('/dashboard')} />
