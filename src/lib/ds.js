@@ -10,7 +10,7 @@
 // Import order matters: ./reactGlobal must run first so `window.React` exists
 // when the bundle IIFE executes.
 import './reactGlobal.js';
-import '../../_ds/grademax-design-system-faa73b3c-8cbd-4d15-a90c-3c40aa25b10c/_ds_bundle.js';
+import '../../ds/_ds_bundle.js';
 
 const ns = window.ScoremapDesignSystem_faa73b || {};
 
