@@ -27,7 +27,9 @@ import { hasToken } from '../data/api.js';
 import { useSignIn } from '../data/SyncProvider.jsx';
 import { TEST_DISTRICT } from '../data/testAccount.js';
 import { DISPLAY_USERNAME, DISPLAY_PASSWORD } from '../data/displayAccount.js';
-import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, MoonIcon, SunIcon } from '../lib/icons.jsx';
+import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, GitHubIcon, MoonIcon, SunIcon } from '../lib/icons.jsx';
+
+const GITHUB_REPO_URL = 'https://github.com/tshulin/scoremap';
 
 // One entry per screenshot in public/landing/ ({key}-dark.png / {key}-light.png).
 const SLIDES = [
@@ -321,7 +323,8 @@ function Landing() {
 
   return (
     <main style={{ background: 'var(--color-canvas)' }}>
-      <HeroBand
+      <section style={{ position: 'relative' }}>
+        <HeroBand
         eyebrow={
           <div style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.4px', color: 'var(--color-ink)' }}>
             <ScoremapWordmark />
@@ -362,7 +365,59 @@ function Landing() {
           </div>
         }
         mockup={<ShowcaseCarousel />}
-      />
+        />
+      </section>
+
+      <section
+        style={{
+          maxWidth: 760,
+          margin: '0 auto',
+          padding: '12px 32px 56px',
+          textAlign: 'center',
+        }}
+      >
+        <h2
+          style={{
+            margin: '0 0 14px',
+            fontSize: 24,
+            fontWeight: 600,
+            letterSpacing: '-0.4px',
+            color: 'var(--color-ink)',
+          }}
+        >
+          Completely Open Source
+        </h2>
+        <p
+          style={{
+            margin: '0 auto 18px',
+            maxWidth: 680,
+            color: 'var(--color-body)',
+            fontSize: 16,
+            lineHeight: 1.6,
+          }}
+        >
+          Scoremap is completely open source. You can see how our app works, from signing in to how we
+          fetch your grades. Feel free to check it out!
+        </p>
+        <a
+          href={GITHUB_REPO_URL}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Open Scoremap on GitHub"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            color: 'var(--color-ink)',
+            fontSize: 15,
+            fontWeight: 500,
+            textDecoration: 'none',
+          }}
+        >
+          <GitHubIcon size={19} />
+          View on GitHub
+        </a>
+      </section>
 
       {/* current works in progress */}
       <section style={{ maxWidth: 'var(--container-max)', margin: '0 auto', padding: '16px 32px 64px' }}>
