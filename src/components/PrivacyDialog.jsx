@@ -7,8 +7,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { Dialog } from '../pages/class/ui.jsx';
 
-// TODO: destination for the technical explainer - Tiger will add the link.
-const LEARN_MORE_URL = '#';
+const LEARN_MORE_URL = 'https://github.com/tshulin/scoremap';
 
 function PrivacyDialog({ onClose }) {
   const paragraph = {
@@ -29,7 +28,7 @@ function PrivacyDialog({ onClose }) {
         <p style={paragraph}>
           Your password, login info, and grades are only ever viewed by StudentVUE and you.
           Scoremap doesn't have access to any of it.{' '}
-          <a href={LEARN_MORE_URL}>Learn more ↗</a>
+          <a href={LEARN_MORE_URL} target="_blank" rel="noreferrer">Learn more ↗</a>
         </p>
 
         <p style={paragraph}>

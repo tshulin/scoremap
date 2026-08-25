@@ -1,8 +1,9 @@
 import React from 'react';
 import Sidebar from '../components/Sidebar.jsx';
-import { MailIcon } from '../lib/icons.jsx';
+import { GitHubIcon, MailIcon } from '../lib/icons.jsx';
 
 const CONTACT_EMAIL = 'contact@scoremap.org';
+const GITHUB_ISSUE_URL = 'https://github.com/tshulin/scoremap/issues/new';
 
 const card = {
   flex: '0 1 451px',
@@ -72,6 +73,15 @@ function Feedback() {
           </header>
 
           <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap' }}>
+            <FeedbackCard
+              icon={GitHubIcon}
+              title="Report a bug or suggest a feature"
+              href={GITHUB_ISSUE_URL}
+              linkText="Create an issue on GitHub ↗"
+              external
+            >
+              To report a bug or suggest a feature, create an issue on GitHub.
+            </FeedbackCard>
             <FeedbackCard
               icon={MailIcon}
               title="Email us"
