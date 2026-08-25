@@ -27,7 +27,9 @@ import { hasToken } from '../data/api.js';
 import { useSignIn } from '../data/SyncProvider.jsx';
 import { TEST_DISTRICT } from '../data/testAccount.js';
 import { DISPLAY_USERNAME, DISPLAY_PASSWORD } from '../data/displayAccount.js';
-import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, MoonIcon, SunIcon } from '../lib/icons.jsx';
+import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, GitHubIcon, MoonIcon, SunIcon } from '../lib/icons.jsx';
+
+const GITHUB_REPO_URL = 'https://github.com/tshulin/scoremap';
 
 // One entry per screenshot in public/landing/ ({key}-dark.png / {key}-light.png).
 const SLIDES = [
@@ -321,7 +323,31 @@ function Landing() {
 
   return (
     <main style={{ background: 'var(--color-canvas)' }}>
-      <HeroBand
+      <section style={{ position: 'relative' }}>
+        <a
+          href={GITHUB_REPO_URL}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Open Scoremap on GitHub"
+          style={{
+            position: 'absolute',
+            top: 28,
+            right: 32,
+            zIndex: 2,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            color: '#fff',
+            fontSize: 15,
+            fontWeight: 500,
+            lineHeight: 1,
+            textDecoration: 'none',
+          }}
+        >
+          <GitHubIcon size={19} />
+          Open Source
+        </a>
+        <HeroBand
         eyebrow={
           <div style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.4px', color: 'var(--color-ink)' }}>
             <ScoremapWordmark />
@@ -362,7 +388,8 @@ function Landing() {
           </div>
         }
         mockup={<ShowcaseCarousel />}
-      />
+        />
+      </section>
 
       {/* current works in progress */}
       <section style={{ maxWidth: 'var(--container-max)', margin: '0 auto', padding: '16px 32px 64px' }}>
