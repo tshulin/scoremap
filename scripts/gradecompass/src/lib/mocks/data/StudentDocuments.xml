@@ -1,9 +1,0 @@
-<StudentDocuments xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" StudentGU="GU-DEMO-0001">
-  <StudentDocumentDatas>
-    <StudentDocumentData DocumentGU="DOC-0003" DocumentFileName="Official Transcript" DocumentDate="02/15/2026" DocumentType="Transcript" StudentGU="GU-DEMO-0001" DocumentComment="Official High School Transcript" />
-    <StudentDocumentData DocumentGU="DOC-0001" DocumentFileName="Report Card Q1" DocumentDate="10/28/2025" DocumentType="Report Card" StudentGU="GU-DEMO-0001" DocumentComment="Report Card - Quarter 1" />
-    <StudentDocumentData DocumentGU="DOC-0002" DocumentFileName="Report Card Q2" DocumentDate="01/20/2026" DocumentType="Report Card" StudentGU="GU-DEMO-0001" DocumentComment="Report Card - Quarter 2" />
-    <StudentDocumentData DocumentGU="DOC-0004" DocumentFileName="MAP Growth Report" DocumentDate="03/05/2026" DocumentType="MAP Growth Family Report" StudentGU="GU-DEMO-0001" DocumentComment="MAP Growth Family Report - Spring" />
-    <StudentDocumentData DocumentGU="DOC-0005" DocumentFileName="Immunization Letter" DocumentDate="09/01/2025" DocumentType="Health" StudentGU="GU-DEMO-0001" DocumentComment="Immunization Compliance Letter" />
-  </StudentDocumentDatas>
-</StudentDocuments>

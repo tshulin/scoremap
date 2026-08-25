@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 // Design-system token + font CSS (colors, typography, spacing, radius, shadows,
 // Inter faces). styles.css @imports all of them.
-import '../_ds/grademax-design-system-faa73b3c-8cbd-4d15-a90c-3c40aa25b10c/styles.css';
+import '../ds/styles.css';
 import './index.css';
 
 import App from './App.jsx';
