@@ -1,8 +1,0 @@
-<!-- Reference example of the legacy report-card / document-contents inner XML. -->
-<!-- Produced by translate.ts reportCardXml(); consumed by src/lib/types/ReportCard.ts. -->
-<!-- Base64Code is the base64-encoded document bytes (usually a PDF). The UI sniffs -->
-<!-- the MIME type from the bytes, so it must start with a real file signature (e.g. %PDF). -->
-<!-- Placeholder below is NOT a real PDF; regenerate a valid one with generate-mock-fixtures.mjs. -->
-<DocumentData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" DocumentGU="DOC-0001" FileName="report-card.pdf" DocFileName="report-card.pdf" DocType="Document">
-	<Base64Code>JVBERi0xLjQgcGxhY2Vob2xkZXI=</Base64Code>
-</DocumentData>
