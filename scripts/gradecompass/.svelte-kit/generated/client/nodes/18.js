@@ -1,1 +1,0 @@
-export { default as component } from "../../../../src/routes/migrate/import/+page.svelte";

@@ -1,9 +1,0 @@
-<!-- Reference example of the legacy StudentInfo inner XML (synthetic data). -->
-<!-- Produced by translate.ts studentInfoXml(); consumed by src/lib/types/StudentInfo.ts. -->
-<StudentInfo xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Type="StudentInfo">
-	<FormattedName>Sample Student</FormattedName>
-	<PermID>000000</PermID>
-	<Gender>Not specified</Gender>
-	<Grade>11</Grade>
-	<Photo></Photo>
-</StudentInfo>
