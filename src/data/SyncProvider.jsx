@@ -73,13 +73,14 @@ export function SyncProvider({ children }) {
     setData(snapshot);
   }, []);
 
-  const runSync = useCallback(async (knownStudent, scope) => {
+  const runSync = useCallback(async (knownStudent, scope, { onGrades } = {}) => {
     setStatus('syncing');
     setError(null);
     try {
       const fresh = await syncStudentVue(knownStudent, {
         scope,
         previous: latest.current,
+        onGrades,
         // Partial snapshots paint as they land - grades seconds before the
         // sync completes. They update the screen and the merge base only; the
         // localStorage mirror waits for the completed snapshot below.
@@ -137,12 +138,32 @@ export function SyncProvider({ children }) {
   // onProgress (optional) hears the real phases as they start: 'signingIn'
   // while the portal login runs, 'syncing' once it succeeded and the first
   // data sync begins - so the login page can show live progress.
+  //
+  // Resolves the second grades are on screen, not when the whole sync is done:
+  // the login page navigates to the dashboard right then, while assignments,
+  // attendance, documents, and mail keep streaming in behind it (the pill
+  // narrates). A sync that never reaches grades - gradebook failure, built-in
+  // accounts - resolves (or rejects) with the full sync as before. The sync
+  // itself keeps running after the early resolution; its errors are already
+  // routed into provider state by runSync, so nothing is left unhandled.
   const signIn = useCallback(
     async (credentials, onProgress) => {
       if (onProgress) onProgress('signingIn');
       const student = await api.login(credentials);
       if (onProgress) onProgress('syncing');
-      return runSync(student);
+      return new Promise((resolve, reject) => {
+        let settled = false;
+        const settle = (fn) => (value) => {
+          if (!settled) {
+            settled = true;
+            fn(value);
+          }
+        };
+        runSync(student, undefined, { onGrades: settle(resolve) }).then(
+          settle(resolve),
+          settle(reject),
+        );
+      });
     },
     [runSync],
   );

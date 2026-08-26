@@ -373,15 +373,18 @@ function knownIdentity(knownStudent, previous) {
 
 // Progressive sync. `onUpdate` (optional) receives a freshly-copied merged
 // snapshot every time something usable lands: the gradebook landing page
-// first (every class with its grade, assignments still empty), then each
-// class detail as its assignments arrive, then each background resource - so
-// the app paints grades seconds before the sync completes. `onStage`
-// (optional) hears the current STAGE_ORDER stage (null when done). The
-// returned promise still resolves with the final snapshot exactly as before;
-// a caller passing neither callback gets the old all-at-once behavior.
+// first (every class with its grade - one emission, all classes together),
+// then the completed gradebook (every assignment at once), then each
+// background resource - so the app paints grades seconds before the sync
+// completes without grades ever popping in class by class. `onStage`
+// (optional) hears the current STAGE_ORDER stage (null when done).
+// `onGrades` (optional) fires exactly once, the moment grades are on screen -
+// the sign-in flow uses it to enter the app right then. The returned promise
+// still resolves with the final snapshot exactly as before; a caller passing
+// no callbacks gets the old all-at-once behavior.
 export async function sync(
   knownStudent,
-  { scope = ALL_RESOURCES, previous = null, onUpdate, onStage } = {},
+  { scope = ALL_RESOURCES, previous = null, onUpdate, onStage, onGrades } = {},
 ) {
   if (DEMO) {
     const snapshot = demoSnapshot();
@@ -416,6 +419,12 @@ export async function sync(
   };
   const emit = () => {
     if (onUpdate) onUpdate({ ...data, session: { ...data.session }, meta: { ...data.meta } });
+  };
+  let gradesAnnounced = false;
+  const announceGrades = () => {
+    if (gradesAnnounced) return;
+    gradesAnnounced = true;
+    if (onGrades) onGrades();
   };
 
   const apply = {
@@ -471,8 +480,9 @@ export async function sync(
       api.getGradebook({
         onPartial: (gradebook) => {
           apply.gradebook({ gradebook, placeholder: false });
-          finish('grades'); // grades are on screen from the first partial on
+          finish('grades'); // grades are on screen from the landing page on
           emit();
+          announceGrades();
         },
       }),
     attendance: () => api.getAttendance(),
@@ -493,6 +503,9 @@ export async function sync(
           apply[name](value);
           for (const stage of RESOURCE_STAGES[name]) finish(stage);
           emit();
+          // A gradebook that never emitted a partial (the placeholder path)
+          // still counts as grades arriving.
+          if (name === 'gradebook') announceGrades();
           return value;
         },
         (error) => {

@@ -718,7 +718,7 @@ describe('assignmentRowToDomain', () => {
 });
 
 describe('fetchGradebook progressive partials', () => {
-	it('emits a grades-only gradebook off the landing page, then again per class detail', async () => {
+	it('emits a grades-only gradebook once, off the landing page - never per class detail', async () => {
 		const { fetchImpl } = fakeFetch([
 			fakeResponse({
 				body: landingPage(
@@ -742,17 +742,16 @@ describe('fetchGradebook progressive partials', () => {
 			onPartial: (gb) => partials.push(gb)
 		});
 
-		// One for the landing page, one for the single class with work.
-		expect(partials).toHaveLength(2);
-		// The first partial already carries every class with its landing mark -
+		// Exactly one: the landing page. Class details must NOT re-emit - grades
+		// arrive as one visual update, assignments as one more (the return value).
+		expect(partials).toHaveLength(1);
+		// That one partial already carries every class with its landing mark -
 		// and no assignments anywhere.
 		expect(partials[0]!.courses).toHaveLength(2);
 		expect(partials[0]!.courses[0]!.marks[0]!.letter).toBe('B+');
 		expect(partials[0]!.courses.every((c) => c.marks[0]!.assignments.length === 0)).toBe(true);
-		// The second partial has the detailed class filled in.
-		expect(partials[1]!.courses[0]!.marks[0]!.assignments.length).toBeGreaterThan(0);
-		// The final gradebook matches the last partial.
-		expect(gradebook).toEqual(partials[1]);
+		// The final gradebook carries the assignments the partial lacked.
+		expect(gradebook.courses[0]!.marks[0]!.assignments.length).toBeGreaterThan(0);
 	});
 
 	it('makes no partial emissions when no hook is passed', async () => {

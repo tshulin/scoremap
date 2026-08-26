@@ -269,3 +269,33 @@ describe('progressive sync', () => {
     expect(data.mail.messages).toHaveLength(1);
   });
 });
+
+describe('onGrades', () => {
+  it('fires exactly once, the moment the first gradebook partial paints', async () => {
+    const order = [];
+    api.getGradebook.mockImplementation(async ({ onPartial } = {}) => {
+      if (onPartial) {
+        order.push('partial');
+        onPartial(SAMPLE_GRADEBOOK);
+      }
+      return { gradebook: SAMPLE_GRADEBOOK, placeholder: false };
+    });
+    let fired = 0;
+    await sync(STUDENT, { onGrades: () => { fired++; order.push('grades-ready'); } });
+    expect(fired).toBe(1);
+    expect(order).toEqual(['partial', 'grades-ready']);
+  });
+
+  it('still fires when the gradebook resolves without partials (placeholder path)', async () => {
+    let fired = 0;
+    await sync(STUDENT, { onGrades: () => fired++ });
+    expect(fired).toBe(1);
+  });
+
+  it('does not fire when the gradebook fails', async () => {
+    api.getGradebook.mockRejectedValue(Object.assign(new Error('portal down'), { status: 502 }));
+    let fired = 0;
+    await sync(STUDENT, { onGrades: () => fired++ });
+    expect(fired).toBe(0);
+  });
+});

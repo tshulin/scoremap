@@ -28,12 +28,12 @@ const SCHOOL_CLASSES = 'Gradebook_SchoolClasses';
 // fetchShim.js); more workers would only queue behind the pool.
 const DETAIL_CONCURRENCY = 3;
 
-// Progress hooks for the sync layer. `onPartial` receives a complete, valid
-// Gradebook after the landing page parses (every class with its current mark,
-// no assignments yet) and again as each class detail lands (that class now
-// carrying its assignments) - so the app can paint grades the moment they
-// exist and stream assignments in behind them. The object passed is built
-// fresh each call; the final return value supersedes them all.
+// Progress hook for the sync layer. `onPartial` receives a complete, valid
+// Gradebook exactly once, the moment the landing page parses: every class
+// with its current mark, assignments still empty. It deliberately does NOT
+// fire per class detail - grades must land as ONE visual update, not pop in
+// class by class - so the next thing the app hears is the final return value,
+// carrying every assignment at once.
 export interface GradebookHooks {
 	onPartial?: (gradebook: Gradebook) => void;
 }
@@ -93,9 +93,7 @@ export async function fetchGradebook(
 	// assignments) - hand it out before spending a single detail request.
 	if (hooks.onPartial) hooks.onPartial(build());
 
-	await fetchDetails(session, classes, options, details, () => {
-		if (hooks.onPartial) hooks.onPartial(build());
-	});
+	await fetchDetails(session, classes, options, details);
 
 	return build();
 }
@@ -184,15 +182,14 @@ const markShortName = (cls: LandingClass, period: GradingPeriod | undefined): st
 	cls.markPeriodName || period?.markPeriods[0]?.name || (period ? period.name : '');
 
 // One detail request per class that may have work, none for the rest, filled
-// into `details` in place with `onDetail` fired after each one lands. An
-// unreadable detail (ParseError only) degrades that course; anything else -
-// session expiry, portal errors - fails the sync and must surface.
+// into `details` in place. An unreadable detail (ParseError only) degrades
+// that course; anything else - session expiry, portal errors - fails the sync
+// and must surface.
 async function fetchDetails(
 	session: PortalSession,
 	classes: LandingClass[],
 	options: FetchFollowOptions,
-	details: Array<ClassDetail | 'unreadable' | undefined>,
-	onDetail: () => void
+	details: Array<ClassDetail | 'unreadable' | undefined>
 ): Promise<void> {
 	const queue = classes.map((cls, index) => ({ cls, index })).filter(({ cls }) => cls.mayHaveWork);
 
@@ -208,7 +205,6 @@ async function fetchDetails(
 				if (!(error instanceof ParseError)) throw error;
 				details[next.index] = 'unreadable';
 			}
-			onDetail();
 		}
 	};
 	await Promise.all(Array.from({ length: DETAIL_CONCURRENCY }, worker));
