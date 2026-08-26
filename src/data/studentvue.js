@@ -426,17 +426,57 @@ export async function sync(
     gradesAnnounced = true;
     if (onGrades) onGrades();
   };
+  // Are these classes worth calling "grades" on screen? Yes when at least one
+  // carries a real percentage (a cache merge or an informative landing page),
+  // or when every class is genuinely ungraded (start of term - N/A is the
+  // honest answer). A letter-only landing page on a first sign-in fails this,
+  // so "Loading grades" holds and sign-in waits for the full gradebook rather
+  // than dropping the student onto a wall of 0% bars.
+  const presentableGrades = (classes) =>
+    classes.some((c) => c.pct != null && c.pct > 0) ||
+    (classes.length > 0 && classes.every((c) => c.pct == null));
 
   const apply = {
-    gradebook(value) {
+    // `partial` marks a landing-page gradebook: for some districts the landing
+    // rows carry a letter but no percentage (and never any assignments), so
+    // applying it verbatim over a cached snapshot would slam every grade bar
+    // to 0% and blank the assignment lists until the full gradebook lands.
+    // A partial therefore MERGES per class: the fresh value wins only when it
+    // is informative; otherwise the class keeps what the last sync showed, and
+    // the final (non-partial) apply replaces everything in one step -
+    // last-visit grades -> current grades, nothing in between.
+    gradebook(value, { partial = false } = {}) {
       const mapped = mapGradebook(value.gradebook);
-      data.classes = mapped.classes;
-      data.assignmentsByClass = mapped.assignmentsByClass;
+      let classes = mapped.classes;
+      let assignmentsByClass = mapped.assignmentsByClass;
+      if (partial) {
+        const prevById = new Map(data.classes.map((c) => [c.id, c]));
+        classes = classes.map((c) => {
+          const prev = prevById.get(c.id);
+          if (!prev || prev.pct == null) return c;
+          const uninformative = c.pct == null || c.pct === 0;
+          if (!uninformative) return c;
+          return {
+            ...c,
+            grade: prev.grade,
+            pct: prev.pct,
+            categories: c.categories ?? prev.categories,
+          };
+        });
+        assignmentsByClass = Object.fromEntries(
+          classes.map((c) => {
+            const fresh = mapped.assignmentsByClass[c.id];
+            return [c.id, (fresh && fresh.length > 0 ? fresh : data.assignmentsByClass[c.id]) || []];
+          }),
+        );
+      }
+      data.classes = classes;
+      data.assignmentsByClass = assignmentsByClass;
       data.semesters = mapped.semesters;
       data.session.semester = mapped.semester;
       // Every sync teaches the per-class grade index a little more - the
       // portal's letters are the only honest source of each teacher's scale.
-      harvestFromClasses(mapped.classes);
+      harvestFromClasses(classes);
       data.meta.gradebook = {
         ok: true,
         placeholder: value.placeholder,
@@ -479,10 +519,12 @@ export async function sync(
     gradebook: () =>
       api.getGradebook({
         onPartial: (gradebook) => {
-          apply.gradebook({ gradebook, placeholder: false });
-          finish('grades'); // grades are on screen from the landing page on
+          apply.gradebook({ gradebook, placeholder: false }, { partial: true });
           emit();
-          announceGrades();
+          if (presentableGrades(data.classes)) {
+            finish('grades'); // grades are on screen from the landing page on
+            announceGrades();
+          }
         },
       }),
     attendance: () => api.getAttendance(),

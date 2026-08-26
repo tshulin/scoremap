@@ -299,3 +299,72 @@ describe('onGrades', () => {
     expect(fired).toBe(0);
   });
 });
+
+describe('landing partial merge', () => {
+  // A landing-page gradebook the way some districts render it: letters only,
+  // percentage 0, no assignments anywhere.
+  const landingOnly = () => {
+    const gb = JSON.parse(JSON.stringify(SAMPLE_GRADEBOOK));
+    for (const course of gb.courses)
+      for (const mark of course.marks) {
+        mark.percentage = 0;
+        mark.assignments = [];
+        delete mark.categories;
+      }
+    return gb;
+  };
+
+  it('a refresh keeps last-visit grades on screen instead of dropping them to 0%', async () => {
+    const full = await sync(STUDENT);
+    const known = full.classes.find((c) => c.pct != null && c.pct > 0);
+    expect(known).toBeTruthy();
+
+    const updates = [];
+    api.getGradebook.mockImplementation(async ({ onPartial } = {}) => {
+      if (onPartial) onPartial(landingOnly());
+      return { gradebook: SAMPLE_GRADEBOOK, placeholder: false };
+    });
+    const next = await sync(undefined, { previous: full, onUpdate: (s) => updates.push(s) });
+
+    // The first emission is the landing partial - it must still show the
+    // cached grade and the cached assignments, never a 0% wipe.
+    const partial = updates[0].classes.find((c) => c.id === known.id);
+    expect(partial.pct).toBe(known.pct);
+    expect(partial.grade).toBe(known.grade);
+    expect(updates[0].assignmentsByClass[known.id].length).toBe(
+      full.assignmentsByClass[known.id].length,
+    );
+    // And the final snapshot carries the real fresh values.
+    expect(next.classes.find((c) => c.id === known.id).pct).toBe(known.pct);
+  });
+
+  it('with no cache, a letter-only landing defers grades-ready to the full gradebook', async () => {
+    const events = [];
+    api.getGradebook.mockImplementation(async ({ onPartial } = {}) => {
+      if (onPartial) {
+        events.push('partial');
+        onPartial(landingOnly());
+      }
+      events.push('resolve');
+      return { gradebook: SAMPLE_GRADEBOOK, placeholder: false };
+    });
+    await sync(STUDENT, { onGrades: () => events.push('grades-ready') });
+    // Not announced at the uninformative partial - only once real grades exist.
+    expect(events.indexOf('grades-ready')).toBeGreaterThan(events.indexOf('resolve'));
+    expect(events.filter((e) => e === 'grades-ready')).toHaveLength(1);
+  });
+
+  it('an informative landing partial still announces grades immediately', async () => {
+    const events = [];
+    api.getGradebook.mockImplementation(async ({ onPartial } = {}) => {
+      if (onPartial) {
+        events.push('partial');
+        onPartial(SAMPLE_GRADEBOOK);
+      }
+      events.push('resolve');
+      return { gradebook: SAMPLE_GRADEBOOK, placeholder: false };
+    });
+    await sync(STUDENT, { onGrades: () => events.push('grades-ready') });
+    expect(events.indexOf('grades-ready')).toBeLessThan(events.indexOf('resolve'));
+  });
+});
