@@ -323,26 +323,29 @@ function Landing() {
 
   return (
     <main style={{ background: 'var(--color-canvas)' }}>
-      {/* announcement banner */}
-      <div
-        style={{
-          background: 'var(--color-tint-good)',
-          color: 'var(--color-grade-good)',
-          textAlign: 'center',
-          padding: '8px 16px',
-          fontSize: 14,
-          fontWeight: 600,
-          letterSpacing: '-0.1px',
-        }}
-      >
-        ⚡ Faster than ever
-      </div>
-
       <section style={{ position: 'relative' }}>
         <HeroBand
         eyebrow={
-          <div style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.4px', color: 'var(--color-ink)' }}>
-            <ScoremapWordmark />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+            <div style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.4px', color: 'var(--color-ink)' }}>
+              <ScoremapWordmark />
+            </div>
+            {/* announcement pill - same box as the app's refresh/sync pill */}
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                padding: '7px 14px',
+                borderRadius: 'var(--radius-pill)',
+                border: '1px solid var(--color-hairline-strong)',
+                background: 'var(--color-surface-card)',
+                fontSize: 13,
+                fontWeight: 500,
+                color: 'var(--color-text-updated)',
+              }}
+            >
+              Faster than ever
+            </span>
           </div>
         }
         headline={
