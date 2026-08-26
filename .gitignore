@@ -3,11 +3,6 @@ dist
 .DS_Store
 *.local
 
-# Claude working files - never commit
-CLAUDE.md
-CLAUDE.local.md
-.claude/
-
 # Plans, notes and other docs stay local (scripts/plans/); only READMEs are tracked.
 plans/
 *.md

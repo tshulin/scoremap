@@ -1,8 +1,5 @@
-# Claude working files — never commit
-CLAUDE.md
-CLAUDE.local.md
+# Local execution plan
 execution-plan.md
-.claude/
 
 # Reference clone of the original GradeCompass (has its own .git) — never commit
 gradecompass/
