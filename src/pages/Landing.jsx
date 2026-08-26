@@ -323,6 +323,21 @@ function Landing() {
 
   return (
     <main style={{ background: 'var(--color-canvas)' }}>
+      {/* announcement banner */}
+      <div
+        style={{
+          background: 'var(--color-tint-good)',
+          color: 'var(--color-grade-good)',
+          textAlign: 'center',
+          padding: '8px 16px',
+          fontSize: 14,
+          fontWeight: 600,
+          letterSpacing: '-0.1px',
+        }}
+      >
+        ⚡ Faster than ever
+      </div>
+
       <section style={{ position: 'relative' }}>
         <HeroBand
         eyebrow={
@@ -433,7 +448,7 @@ function Landing() {
         >
           Currently in the works
         </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, maxWidth: 880, margin: '0 auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24, maxWidth: 1200, margin: '0 auto' }}>
           <FeatureCard title={<h3 style={{ font: 'inherit', margin: 0 }}>Cumulative GPA Calculator</h3>}>
             <div style={{ fontStyle: 'italic', color: 'var(--color-muted)', marginBottom: 10 }}>Started: 7/11/2026</div>
             Want to calculate your cumulative GPA? Scoremap will parse your grades from any selected
@@ -445,6 +460,12 @@ function Landing() {
             Scoremap inside a browser's toolbar. Be notified when a grade changes, skip the loading queue
             and see your grades instantly. An extension will give us a lot more flexibility as well as the
             user a lot more versatility.
+          </FeatureCard>
+          <FeatureCard title={<h3 style={{ font: 'inherit', margin: 0 }}>Mobile Support</h3>}>
+            <div style={{ fontStyle: 'italic', color: 'var(--color-muted)', marginBottom: 10 }}>Started: 8/26/2026</div>
+            Scoremap in your pocket. Every page is being reworked to feel at home on a phone -
+            tap-friendly charts, layouts that fit your screen, and the same instant sync - so checking
+            your grades between classes takes seconds.
           </FeatureCard>
         </div>
         <div style={{ textAlign: 'center', marginTop: 32, fontSize: 15, color: 'var(--color-body)' }}>
