@@ -9,6 +9,7 @@ import type { PortalSession } from '../../login';
 import { assignmentRowToDomain } from './assignment';
 import { parseLandingClasses } from './landing';
 import { fetchGradebook } from './index';
+import type { Gradebook } from '../../../domain/index';
 
 const session = (): PortalSession => ({ domain: 'ca-test-psv.edupoint.com', jar: new CookieJar() });
 
@@ -713,5 +714,52 @@ describe('assignmentRowToDomain', () => {
 			Notes: ''
 		});
 		expect(a).toMatchObject({ id: '99', name: 'Essay', pointsEarned: 18, pointsPossible: 20 });
+	});
+});
+
+describe('fetchGradebook progressive partials', () => {
+	it('emits a grades-only gradebook off the landing page, then again per class detail', async () => {
+		const { fetchImpl } = fakeFetch([
+			fakeResponse({
+				body: landingPage(
+					classRow({ classId: 101, title: '1: AP Statistics (HP)', mark: 'B+', lastUpdate: '08/21/2026' }) +
+						classRow({ classId: 102, title: '2: AP Chemistry (HP)' })
+				)
+			}),
+			fakeResponse({
+				body: envelope(
+					detailFragment({
+						mark: 'B+',
+						score: '87.30%',
+						assignments: [GB_ROW_GRADED]
+					})
+				)
+			})
+		]);
+
+		const partials: Gradebook[] = [];
+		const gradebook = await fetchGradebook(session(), undefined, { fetchImpl }, {
+			onPartial: (gb) => partials.push(gb)
+		});
+
+		// One for the landing page, one for the single class with work.
+		expect(partials).toHaveLength(2);
+		// The first partial already carries every class with its landing mark -
+		// and no assignments anywhere.
+		expect(partials[0]!.courses).toHaveLength(2);
+		expect(partials[0]!.courses[0]!.marks[0]!.letter).toBe('B+');
+		expect(partials[0]!.courses.every((c) => c.marks[0]!.assignments.length === 0)).toBe(true);
+		// The second partial has the detailed class filled in.
+		expect(partials[1]!.courses[0]!.marks[0]!.assignments.length).toBeGreaterThan(0);
+		// The final gradebook matches the last partial.
+		expect(gradebook).toEqual(partials[1]);
+	});
+
+	it('makes no partial emissions when no hook is passed', async () => {
+		const { fetchImpl } = fakeFetch([
+			fakeResponse({ body: landingPage(classRow({ classId: 101, title: '1: AP Statistics (HP)' })) })
+		]);
+		const gradebook = await fetchGradebook(session(), undefined, { fetchImpl });
+		expect(gradebook.courses).toHaveLength(1);
 	});
 });

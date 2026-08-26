@@ -48,6 +48,9 @@ export function SyncProvider({ children }) {
     cached ? 'ready' : api.hasToken() ? 'syncing' : 'signedOut',
   );
   const [error, setError] = useState(null);
+  // Which sync stage is in flight ('grades' | 'assignments' | 'attendance' |
+  // 'documents' | 'mail' | null) - the pill narrates it live.
+  const [stage, setStage] = useState(null);
   const [changes, setChanges] = useState({ list: [], baseline: false });
   // Seeded from the restored mirror so the first refresh after a reload can
   // still report movement against what the student was last shown.
@@ -74,7 +77,21 @@ export function SyncProvider({ children }) {
     setStatus('syncing');
     setError(null);
     try {
-      const fresh = await syncStudentVue(knownStudent, { scope, previous: latest.current });
+      const fresh = await syncStudentVue(knownStudent, {
+        scope,
+        previous: latest.current,
+        // Partial snapshots paint as they land - grades seconds before the
+        // sync completes. They update the screen and the merge base only; the
+        // localStorage mirror waits for the completed snapshot below.
+        onUpdate: (partial) => {
+          if (!alive.current) return;
+          latest.current = partial;
+          setData(partial);
+        },
+        onStage: (s) => {
+          if (alive.current) setStage(s);
+        },
+      });
       if (!alive.current) return fresh;
       // Deltas only when this sync actually re-fetched the gradebook - a
       // mail/attendance-scoped refresh reuses the merged classes untouched
@@ -86,9 +103,11 @@ export function SyncProvider({ children }) {
       }
       store(fresh);
       setStatus('ready');
+      setStage(null);
       return fresh;
     } catch (e) {
       if (!alive.current) throw e;
+      setStage(null);
       if (e.status === 401) {
         api.clearToken();
         prevClassesRef.current = null;
@@ -147,8 +166,8 @@ export function SyncProvider({ children }) {
   );
 
   const value = useMemo(
-    () => ({ ...data, status, error, changes, signIn, signOut, refresh }),
-    [data, status, error, changes, signIn, signOut, refresh],
+    () => ({ ...data, status, stage, error, changes, signIn, signOut, refresh }),
+    [data, status, stage, error, changes, signIn, signOut, refresh],
   );
   return <SyncContext.Provider value={value}>{children}</SyncContext.Provider>;
 }
@@ -170,8 +189,8 @@ export const useDocuments = () => useSync().documents;
 export const useMail = () => useSync().mail;
 export const useSyncMeta = () => useSync().meta;
 export const useSyncStatus = () => {
-  const { status, error, refresh } = useSync();
-  return { status, error, refresh };
+  const { status, stage, error, refresh } = useSync();
+  return { status, stage, error, refresh };
 };
 export const useSignIn = () => useSync().signIn;
 export const useSignOut = () => useSync().signOut;

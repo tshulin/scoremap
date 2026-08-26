@@ -216,3 +216,56 @@ describe('student identity', () => {
     expect(data.session.domain).toBe('ca-x-psv.edupoint.com');
   });
 });
+
+describe('progressive sync', () => {
+  it('paints grades from the first partial, before any background resource lands', async () => {
+    // The gradebook hands out its landing-page partial synchronously; mail
+    // stalls until everything else is over.
+    api.getGradebook.mockImplementation(async ({ onPartial } = {}) => {
+      if (onPartial) onPartial(SAMPLE_GRADEBOOK);
+      return { gradebook: SAMPLE_GRADEBOOK, placeholder: false };
+    });
+
+    const updates = [];
+    const stages = [];
+    const data = await sync(STUDENT, {
+      onUpdate: (snapshot) => updates.push(snapshot),
+      onStage: (stage) => stages.push(stage),
+    });
+
+    // The first update carries the mapped classes and none of the mail that
+    // had not arrived yet.
+    expect(updates.length).toBeGreaterThan(1);
+    expect(updates[0].classes.length).toBeGreaterThan(0);
+    expect(updates[0].mail.messages).toHaveLength(0);
+    // Every emission is a fresh object, so React re-renders on identity.
+    expect(updates[0]).not.toBe(updates[1]);
+    // The final resolution matches the last emission's data.
+    expect(data.classes).toEqual(updates[updates.length - 1].classes);
+    expect(data.mail.messages).toHaveLength(1);
+
+    // The pill narrates: grades first, immediately - then each stage falls
+    // away in display order, ending quiet.
+    expect(stages[0]).toBe('grades');
+    expect(stages[1]).toBe('assignments');
+    expect(stages[stages.length - 1]).toBeNull();
+    expect(stages).toContain('attendance');
+    expect(stages).toContain('mail');
+  });
+
+  it('announces only the scoped stages on a scoped refresh', async () => {
+    const full = await sync(STUDENT);
+    const stages = [];
+    await sync(undefined, { scope: ['mail'], previous: full, onStage: (s) => stages.push(s) });
+    expect(stages[0]).toBe('mail');
+    expect(stages[stages.length - 1]).toBeNull();
+    expect(stages).not.toContain('grades');
+    expect(stages).not.toContain('attendance');
+  });
+
+  it('still resolves all-at-once for callers passing no callbacks', async () => {
+    const data = await sync(STUDENT);
+    expect(data.classes.length).toBeGreaterThan(0);
+    expect(data.mail.messages).toHaveLength(1);
+  });
+});

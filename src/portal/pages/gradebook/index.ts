@@ -24,8 +24,19 @@ const LANDING = 'PXP2_Gradebook.aspx?AGU=0';
 const CLASS_DETAILS = 'Gradebook_ClassDetails';
 const SCHOOL_CLASSES = 'Gradebook_SchoolClasses';
 
-// Matches the transport's connection pool; more workers would only queue.
-const DETAIL_CONCURRENCY = 2;
+// Matches the transport's per-relay connection pool (MAX_CONNECTIONS in
+// fetchShim.js); more workers would only queue behind the pool.
+const DETAIL_CONCURRENCY = 3;
+
+// Progress hooks for the sync layer. `onPartial` receives a complete, valid
+// Gradebook after the landing page parses (every class with its current mark,
+// no assignments yet) and again as each class detail lands (that class now
+// carrying its assignments) - so the app can paint grades the moment they
+// exist and stream assignments in behind them. The object passed is built
+// fresh each call; the final return value supersedes them all.
+export interface GradebookHooks {
+	onPartial?: (gradebook: Gradebook) => void;
+}
 
 // Every request is charged against a shared per-IP budget at the portal, so
 // the sync fetches as little as it can prove it needs:
@@ -37,7 +48,8 @@ const DETAIL_CONCURRENCY = 2;
 export async function fetchGradebook(
 	session: PortalSession,
 	periodIndex?: number,
-	options: FetchFollowOptions = {}
+	options: FetchFollowOptions = {},
+	hooks: GradebookHooks = {}
 ): Promise<Gradebook> {
 	const page = await getPage(session, LANDING, options);
 
@@ -74,12 +86,30 @@ export async function fetchGradebook(
 		currentIndex = periodIndex;
 	}
 
-	const details = await fetchDetails(session, classes, options);
+	const details = new Array<ClassDetail | 'unreadable' | undefined>(classes.length);
+	const build = () => buildGradebook(landing.periods, currentIndex, classes, details);
 
+	// Grades-first: the landing page alone is a complete gradebook (marks, no
+	// assignments) - hand it out before spending a single detail request.
+	if (hooks.onPartial) hooks.onPartial(build());
+
+	await fetchDetails(session, classes, options, details, () => {
+		if (hooks.onPartial) hooks.onPartial(build());
+	});
+
+	return build();
+}
+
+function buildGradebook(
+	periods: GradingPeriod[],
+	currentIndex: number,
+	classes: LandingClass[],
+	details: Array<ClassDetail | 'unreadable' | undefined>
+): Gradebook {
 	let unreadableCourses = 0;
 	let unreadableAssignments = 0;
 	let unreadableCategories = 0;
-	const period = landing.periods[currentIndex];
+	const period = periods[currentIndex];
 	const courses: Course[] = classes.map((cls, i) => {
 		const detail = details[i];
 		// Some districts render the landing mark as "A- 91.8%"; split it so the
@@ -139,7 +169,7 @@ export async function fetchGradebook(
 	return validate(
 		GradebookSchema,
 		{
-			reportingPeriods: landing.periods.map((p, index) => ({ index, name: p.name })),
+			reportingPeriods: periods.map((p, index) => ({ index, name: p.name })),
 			currentPeriodIndex: currentIndex,
 			courses,
 			unreadableCourses,
@@ -153,15 +183,17 @@ export async function fetchGradebook(
 const markShortName = (cls: LandingClass, period: GradingPeriod | undefined): string =>
 	cls.markPeriodName || period?.markPeriods[0]?.name || (period ? period.name : '');
 
-// One detail request per class that may have work, none for the rest. An
+// One detail request per class that may have work, none for the rest, filled
+// into `details` in place with `onDetail` fired after each one lands. An
 // unreadable detail (ParseError only) degrades that course; anything else -
 // session expiry, portal errors - fails the sync and must surface.
 async function fetchDetails(
 	session: PortalSession,
 	classes: LandingClass[],
-	options: FetchFollowOptions
-): Promise<Array<ClassDetail | 'unreadable' | undefined>> {
-	const details = new Array<ClassDetail | 'unreadable' | undefined>(classes.length);
+	options: FetchFollowOptions,
+	details: Array<ClassDetail | 'unreadable' | undefined>,
+	onDetail: () => void
+): Promise<void> {
 	const queue = classes.map((cls, index) => ({ cls, index })).filter(({ cls }) => cls.mayHaveWork);
 
 	const worker = async (): Promise<void> => {
@@ -176,8 +208,8 @@ async function fetchDetails(
 				if (!(error instanceof ParseError)) throw error;
 				details[next.index] = 'unreadable';
 			}
+			onDetail();
 		}
 	};
 	await Promise.all(Array.from({ length: DETAIL_CONCURRENCY }, worker));
-	return details;
 }

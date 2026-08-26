@@ -39,6 +39,12 @@ jobs:
           # Project sites are served from /<repo>/; a custom domain serves from /.
           VITE_BASE: ${{ vars.VITE_BASE || '/grademax/' }}
           VITE_RELAY_URL: ${{ vars.VITE_RELAY_URL || 'wss://REPLACE-WITH-YOUR-RELAY-DOMAIN' }}
+          # Both coast relays: when set, the app routes the hot lane (grades)
+          # through the relay nearest the user and background resources
+          # through the other (src/transport/relayRouter.js). Leave unset to
+          # serve everything from VITE_RELAY_URL.
+          VITE_RELAY_WEST_URL: ${{ vars.VITE_RELAY_WEST_URL || '' }}
+          VITE_RELAY_EAST_URL: ${{ vars.VITE_RELAY_EAST_URL || '' }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

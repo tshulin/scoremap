@@ -23,10 +23,20 @@ const AVOID_GAP = 24; // matches TopBar's columnGap
 const fmtTime = (date) =>
   date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 
+// What the pill says while each sync stage is in flight - live narration of
+// the progressive sync (grades paint first, everything else streams behind).
+const STAGE_LABELS = {
+  grades: 'Loading grades…',
+  assignments: 'Loading assignments…',
+  attendance: 'Loading attendance…',
+  documents: 'Loading documents…',
+  mail: 'Loading mail…',
+};
+
 function SyncPill({ note, scope, below, delta, avoid }) {
   const session = useSession();
   const meta = useSyncMeta();
-  const { status, refresh } = useSyncStatus();
+  const { status, stage, refresh } = useSyncStatus();
 
   const wrapRef = React.useRef(null);
   const [shift, setShift] = React.useState(0);
@@ -68,7 +78,7 @@ function SyncPill({ note, scope, below, delta, avoid }) {
   const failed = status === 'error';
   const label =
     status === 'syncing'
-      ? 'Updating…'
+      ? STAGE_LABELS[stage] || 'Updating…'
       : failed
         ? session.lastUpdated
           ? `Couldn't update. Showing ${fmtTime(session.lastUpdated)}`

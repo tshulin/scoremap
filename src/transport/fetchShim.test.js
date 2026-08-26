@@ -436,7 +436,7 @@ describe('createRelayFetch', () => {
 		});
 	});
 
-	it('holds at most two connections by default', async () => {
+	it('holds at most three connections by default', async () => {
 		let release;
 		const gate = new Promise((resolve) => {
 			release = resolve;
@@ -449,12 +449,13 @@ describe('createRelayFetch', () => {
 
 		const all = Array.from({ length: 8 }, () => relayFetch(URL_A, {}));
 		await vi.waitFor(() => expect(opened.length).toBeGreaterThan(0));
-		// The default cap is what bounds a tab's share of the school's relay slots.
-		expect(opened).toHaveLength(2);
+		// The default per-pool cap is what bounds a tab's share of the school's
+		// relay slots (one pool per relay - see relayRouter.js).
+		expect(opened).toHaveLength(3);
 
 		release();
 		await Promise.all(all);
-		expect(opened).toHaveLength(2);
+		expect(opened).toHaveLength(3);
 	});
 
 	it('honours an abort signal instead of hanging forever', async () => {

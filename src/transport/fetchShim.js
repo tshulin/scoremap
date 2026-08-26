@@ -21,12 +21,13 @@ import { openTlsThroughRelay } from './relayTls.js';
 const USER_AGENT =
 	'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 
-// Kept well under the relay's per-IP concurrent cap (8 by default): idle pooled
-// connections still occupy a slot, and the student may have more than one tab.
-// A whole school shares one public IP, so this number is really "how many of the
-// school's 8 slots may one browser tab hold" - 2 lets four students sync at once
-// instead of two, and a sync is only a handful of requests now anyway.
-const MAX_CONNECTIONS = 2;
+// Per-POOL cap, and the app now runs one pool per relay (see relayRouter.js),
+// so a dual-relay build can hold up to twice this many. The deployed relays
+// allow 64 concurrent per IP - the number here stays small anyway because a
+// whole school shares one public IP behind NAT, and idle pooled connections
+// still occupy relay slots. 3 covers the gradebook landing page plus a full
+// wave of class-detail requests without queueing.
+const MAX_CONNECTIONS = 3;
 
 // An idle pooled connection is worth keeping for the next request in a burst,
 // and worth nothing after that - but it still occupies one of the relay's

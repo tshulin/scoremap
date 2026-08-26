@@ -11,7 +11,8 @@
 // AUTH_FAILED clears everything and the app returns to the login page with a
 // notice. Relay/portal outages never clear it - a dead relay must not log
 // anyone out.
-import { createRelayFetch } from '../transport/fetchShim';
+import { createRelayRouter } from '../transport/relayRouter';
+import { userRegion } from '../transport/region';
 import { CookieJar } from '../portal/http';
 import { login as portalLogin } from '../portal/login';
 import { fetchStudentInfo } from '../portal/pages/studentInfo';
@@ -50,8 +51,14 @@ import {
   displayMailAttachmentContent,
 } from './displayAccount';
 
-// Set at build time (deploy workflow); wss:// in production, ws://localhost in dev.
+// Set at build time (deploy workflow). Production sets BOTH coast relays and
+// the router serves the hot lane (login, student info, gradebook) from the
+// relay nearest the user with the cold lane (attendance, documents, mail) on
+// the other one - see transport/relayRouter.js. With only VITE_RELAY_URL set
+// (dev: ws://localhost) both lanes share the single relay.
 const RELAY_URL = import.meta.env.VITE_RELAY_URL || 'ws://localhost:8080';
+const RELAY_WEST_URL = import.meta.env.VITE_RELAY_WEST_URL || '';
+const RELAY_EAST_URL = import.meta.env.VITE_RELAY_EAST_URL || '';
 const SESSION_KEY = 'grademax-session'; // sessionStorage: the live cookie jar
 const TEST_SESSION_KEY = 'grademax-test-session';
 const STUDENT_KEY = 'grademax-student';
@@ -82,7 +89,21 @@ export class ApiError extends Error {
   }
 }
 
-const options = { fetchImpl: createRelayFetch({ relayUrl: RELAY_URL }) };
+const router = createRelayRouter({
+  relays:
+    RELAY_WEST_URL && RELAY_EAST_URL
+      ? [
+          { url: RELAY_WEST_URL, region: 'west' },
+          { url: RELAY_EAST_URL, region: 'east' },
+        ]
+      : [{ url: RELAY_URL }],
+  preferRegion: userRegion(),
+});
+// Hot lane: what the student is waiting to see.
+const options = { fetchImpl: router.primary };
+// Cold lane: background resources, kept off the hot lane's relay so they
+// never queue ahead of grades.
+const backgroundOptions = { fetchImpl: router.secondary };
 let session = null; // in-memory { domain, jar: CookieJar }
 // 'test' | 'display' | null - signed in as a built-in account (no portal
 // session). The marker value 'true' predates the display account and still
@@ -419,7 +440,7 @@ export function getStudent() {
 }
 
 export function getDocuments() {
-  return withSession((s) => fetchDocuments(s, options));
+  return withSession((s) => fetchDocuments(s, backgroundOptions));
 }
 
 // Returns { attendance, placeholder }. With VITE_PLACEHOLDER_DATA on and no real
@@ -427,7 +448,7 @@ export function getDocuments() {
 // otherwise returns the real (possibly empty) attendance.
 export async function getAttendance() {
   return withSession(async (s) => {
-    const attendance = await fetchAttendance(s, options);
+    const attendance = await fetchAttendance(s, backgroundOptions);
     if (PLACEHOLDER_DATA && attendance.absences.length === 0) {
       return {
         attendance: { ...SAMPLE_ATTENDANCE, schoolName: attendance.schoolName || SAMPLE_ATTENDANCE.schoolName },
@@ -443,10 +464,14 @@ export async function getAttendance() {
 // (parser not written yet) - AND VITE_PLACEHOLDER_DATA is on do we serve
 // SAMPLE_GRADEBOOK, flagged as sample. Once the parser lands and the term is active,
 // this fallback is never reached.
-export async function getGradebook() {
+// `onPartial` (optional) hears complete-but-still-filling gradebooks as the
+// portal pages land - the landing page first (grades, no assignments), then
+// one per class detail - so the sync layer can paint grades immediately.
+export async function getGradebook({ onPartial } = {}) {
   return withSession(async (s) => {
     try {
-      return { gradebook: await fetchGradebook(s, undefined, options), placeholder: false };
+      const hooks = onPartial ? { onPartial } : {};
+      return { gradebook: await fetchGradebook(s, undefined, options, hooks), placeholder: false };
     } catch (e) {
       const blocked = e instanceof NoActiveGradingPeriodError || e instanceof ParseError;
       if (PLACEHOLDER_DATA && blocked) return { gradebook: SAMPLE_GRADEBOOK, placeholder: true };
@@ -456,7 +481,7 @@ export async function getGradebook() {
 }
 
 export function getMail() {
-  return withSession((s) => fetchMail(s, options));
+  return withSession((s) => fetchMail(s, backgroundOptions));
 }
 
 // One message with its body and attachments. The list call carries neither, so
@@ -468,7 +493,7 @@ export function getMailMessage(id, isSystemMessage = false) {
     if (!message) throw new ApiError('NOT_FOUND', 'Message not found.', 404);
     return Promise.resolve(message);
   }
-  return withSession((s) => fetchMailMessage(s, id, isSystemMessage, options));
+  return withSession((s) => fetchMailMessage(s, id, isSystemMessage, backgroundOptions));
 }
 
 export async function downloadMailAttachment(token) {
@@ -478,7 +503,7 @@ export async function downloadMailAttachment(token) {
     return { blob: new Blob([bytes], { type: mimeType }), fileName };
   }
   return withSession(async (s) => {
-    const { bytes, mimeType, fileName } = await portalDownloadMailAttachment(s, token, options);
+    const { bytes, mimeType, fileName } = await portalDownloadMailAttachment(s, token, backgroundOptions);
     return { blob: new Blob([bytes], { type: mimeType }), fileName };
   });
 }
@@ -490,7 +515,7 @@ export async function downloadDocument(docToken) {
     return { blob: new Blob([bytes], { type: mimeType }), fileName };
   }
   return withSession(async (s) => {
-    const { bytes, mimeType, fileName } = await portalDownloadDocument(s, docToken, options);
+    const { bytes, mimeType, fileName } = await portalDownloadDocument(s, docToken, backgroundOptions);
     return { blob: new Blob([bytes], { type: mimeType }), fileName };
   });
 }

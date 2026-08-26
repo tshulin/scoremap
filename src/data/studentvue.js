@@ -344,11 +344,17 @@ const friendlyMailMessage = (error) => {
 // initial sign-in sync takes them all.
 export const ALL_RESOURCES = ['gradebook', 'attendance', 'documents', 'mail'];
 
-const FETCHERS = {
-  gradebook: () => api.getGradebook(),
-  attendance: () => api.getAttendance(),
-  documents: () => api.getDocuments(),
-  mail: () => api.getMail(),
+// The sync-pill stages, in the order the student cares about them. The
+// current stage is the FIRST of these still pending, so "Loading grades"
+// gives way to "Loading assignments" the moment the gradebook landing page
+// paints - even while attendance and mail are still in flight on the other
+// relay's lane.
+const STAGE_ORDER = ['grades', 'assignments', 'attendance', 'documents', 'mail'];
+const RESOURCE_STAGES = {
+  gradebook: ['grades', 'assignments'],
+  attendance: ['attendance'],
+  documents: ['documents'],
+  mail: ['mail'],
 };
 
 // Who is signed in, without asking the portal if we can avoid it. Sign-in
@@ -365,7 +371,18 @@ function knownIdentity(knownStudent, previous) {
   return null;
 }
 
-export async function sync(knownStudent, { scope = ALL_RESOURCES, previous = null } = {}) {
+// Progressive sync. `onUpdate` (optional) receives a freshly-copied merged
+// snapshot every time something usable lands: the gradebook landing page
+// first (every class with its grade, assignments still empty), then each
+// class detail as its assignments arrive, then each background resource - so
+// the app paints grades seconds before the sync completes. `onStage`
+// (optional) hears the current STAGE_ORDER stage (null when done). The
+// returned promise still resolves with the final snapshot exactly as before;
+// a caller passing neither callback gets the old all-at-once behavior.
+export async function sync(
+  knownStudent,
+  { scope = ALL_RESOURCES, previous = null, onUpdate, onStage } = {},
+) {
   if (DEMO) {
     const snapshot = demoSnapshot();
     harvestFromClasses(snapshot.classes);
@@ -380,9 +397,111 @@ export async function sync(knownStudent, { scope = ALL_RESOURCES, previous = nul
   const base = previous || emptySnapshot;
   const identity = knownIdentity(knownStudent, base);
 
+  // The working snapshot. Merged over the previous one, not rebuilt from
+  // empty: a scoped refresh must leave the sections it did not fetch exactly
+  // as they were. Mutated in place as resources land; every emission hands
+  // out fresh top-level copies so React sees a new object.
+  const data = {
+    ...base,
+    meta: { ...base.meta },
+    session: { ...base.session, lastUpdated: new Date() },
+  };
+
+  const pending = new Set(scope.flatMap((name) => RESOURCE_STAGES[name] || []));
+  const announce = () => {
+    if (onStage) onStage(STAGE_ORDER.find((s) => pending.has(s)) || null);
+  };
+  const finish = (stage) => {
+    if (pending.delete(stage)) announce();
+  };
+  const emit = () => {
+    if (onUpdate) onUpdate({ ...data, session: { ...data.session }, meta: { ...data.meta } });
+  };
+
+  const apply = {
+    gradebook(value) {
+      const mapped = mapGradebook(value.gradebook);
+      data.classes = mapped.classes;
+      data.assignmentsByClass = mapped.assignmentsByClass;
+      data.semesters = mapped.semesters;
+      data.session.semester = mapped.semester;
+      // Every sync teaches the per-class grade index a little more - the
+      // portal's letters are the only honest source of each teacher's scale.
+      harvestFromClasses(mapped.classes);
+      data.meta.gradebook = {
+        ok: true,
+        placeholder: value.placeholder,
+        message: value.placeholder
+          ? 'Sample gradebook. The portal has no active grading period yet.'
+          : '',
+      };
+    },
+    attendance(value) {
+      const att = value.attendance;
+      data.attendance = {
+        schoolName: att.schoolName,
+        records: att.absences.map(mapAbsence),
+        unreadableAbsences: att.unreadableAbsences,
+      };
+      data.meta.attendance = { ok: true, placeholder: value.placeholder, message: '' };
+    },
+    documents(value) {
+      data.documents = value.map((d) => ({
+        id: d.docToken,
+        docToken: d.docToken,
+        title: d.title,
+        category: d.category,
+        date: d.uploadDate,
+      }));
+      data.meta.documents = { ok: true, message: '' };
+    },
+    mail(value) {
+      data.mail = {
+        messages: value.messages.map(mapMailMessage),
+        unreadableMessages: value.unreadableMessages,
+      };
+      data.meta.mail = { ok: true, placeholder: false, message: '' };
+    },
+  };
+
+  // Built per-sync so the gradebook fetcher can stream partial gradebooks
+  // into this sync's snapshot as the portal pages land.
+  const FETCHERS = {
+    gradebook: () =>
+      api.getGradebook({
+        onPartial: (gradebook) => {
+          apply.gradebook({ gradebook, placeholder: false });
+          finish('grades'); // grades are on screen from the first partial on
+          emit();
+        },
+      }),
+    attendance: () => api.getAttendance(),
+    documents: () => api.getDocuments(),
+    mail: () => api.getMail(),
+  };
+
+  announce(); // the pill shows its first stage before any bytes move
+
   // Only the requested resources are fetched, plus student info if - and only
-  // if - nobody knows the name yet.
-  const jobs = scope.filter((name) => FETCHERS[name]).map((name) => [name, FETCHERS[name]()]);
+  // if - nobody knows the name yet. Success applies the resource to the
+  // snapshot and emits immediately; the settled loop below handles failures.
+  const jobs = scope
+    .filter((name) => FETCHERS[name])
+    .map((name) => {
+      const promise = FETCHERS[name]().then(
+        (value) => {
+          apply[name](value);
+          for (const stage of RESOURCE_STAGES[name]) finish(stage);
+          emit();
+          return value;
+        },
+        (error) => {
+          for (const stage of RESOURCE_STAGES[name]) finish(stage);
+          throw error;
+        },
+      );
+      return [name, promise];
+    });
   if (!identity) jobs.unshift(['student', api.getStudent()]);
 
   const settled = await Promise.allSettled(jobs.map(([, promise]) => promise));
@@ -394,14 +513,6 @@ export async function sync(knownStudent, { scope = ALL_RESOURCES, previous = nul
   for (const r of settled) {
     if (r.status === 'rejected' && r.reason && r.reason.status === 401) throw r.reason;
   }
-
-  // Merged over the previous snapshot, not rebuilt from empty: a scoped refresh
-  // must leave the sections it did not fetch exactly as they were.
-  const data = {
-    ...base,
-    meta: { ...base.meta },
-    session: { ...base.session, lastUpdated: new Date() },
-  };
 
   // A sync that loses only the student-info request must not blank the name out
   // of the chrome - the app already knows who is signed in, and after a reload
@@ -418,64 +529,23 @@ export async function sync(knownStudent, { scope = ALL_RESOURCES, previous = nul
   const creds = api.recallCredentials();
   if (creds) data.session = { ...data.session, username: creds.username, domain: creds.domain };
 
+  // A failed resource keeps its previous section; meta says why. (Successes
+  // were already applied the moment they landed.)
   const { gradebook, attendance, documents, mail } = results;
-
-  if (gradebook && gradebook.status === 'fulfilled') {
-    const mapped = mapGradebook(gradebook.value.gradebook);
-    data.classes = mapped.classes;
-    data.assignmentsByClass = mapped.assignmentsByClass;
-    data.semesters = mapped.semesters;
-    data.session.semester = mapped.semester;
-    // Every sync teaches the per-class grade index a little more - the
-    // portal's letters are the only honest source of each teacher's scale.
-    harvestFromClasses(mapped.classes);
-    data.meta.gradebook = {
-      ok: true,
-      placeholder: gradebook.value.placeholder,
-      message: gradebook.value.placeholder
-        ? 'Sample gradebook. The portal has no active grading period yet.'
-        : '',
-    };
-  } else if (gradebook) {
+  if (gradebook && gradebook.status === 'rejected') {
     data.meta.gradebook = {
       ok: false,
       placeholder: false,
       message: friendlyGradebookMessage(gradebook.reason),
     };
   }
-
-  if (attendance && attendance.status === 'fulfilled') {
-    const att = attendance.value.attendance;
-    data.attendance = {
-      schoolName: att.schoolName,
-      records: att.absences.map(mapAbsence),
-      unreadableAbsences: att.unreadableAbsences,
-    };
-    data.meta.attendance = { ok: true, placeholder: attendance.value.placeholder, message: '' };
-  } else if (attendance) {
+  if (attendance && attendance.status === 'rejected') {
     data.meta.attendance = { ok: false, placeholder: false, message: attendance.reason.message };
   }
-
-  if (documents && documents.status === 'fulfilled') {
-    data.documents = documents.value.map((d) => ({
-      id: d.docToken,
-      docToken: d.docToken,
-      title: d.title,
-      category: d.category,
-      date: d.uploadDate,
-    }));
-    data.meta.documents = { ok: true, message: '' };
-  } else if (documents) {
+  if (documents && documents.status === 'rejected') {
     data.meta.documents = { ok: false, message: documents.reason.message };
   }
-
-  if (mail && mail.status === 'fulfilled') {
-    data.mail = {
-      messages: mail.value.messages.map(mapMailMessage),
-      unreadableMessages: mail.value.unreadableMessages,
-    };
-    data.meta.mail = { ok: true, placeholder: false, message: '' };
-  } else if (mail) {
+  if (mail && mail.status === 'rejected') {
     data.meta.mail = { ok: false, placeholder: false, message: friendlyMailMessage(mail.reason) };
   }
 
