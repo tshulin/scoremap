@@ -49,6 +49,7 @@ export function createRelayRouter({
 
 	const preferred = nodes.find((n) => n.region && n.region === preferRegion) ?? nodes[0];
 	const other = nodes.find((n) => n !== preferred) ?? preferred;
+	let failovers = 0; // times a request had to leave its lane's relay
 
 	const laneFetch = (order) => {
 		const lane = async (url, init) => {
@@ -65,6 +66,7 @@ export function createRelayRouter({
 					lastError = e;
 					if (!isRelayError(e)) throw e;
 					node.benchedUntil = now() + benchMs;
+					failovers++;
 				}
 			}
 			throw lastError;
@@ -79,6 +81,8 @@ export function createRelayRouter({
 		primary: laneFetch(single ? [preferred] : [preferred, other]),
 		secondary: laneFetch(single ? [preferred] : [other, preferred]),
 		relays: nodes.map((n) => ({ url: n.url, region: n.region })),
-		preferredUrl: preferred.url
+		preferredUrl: preferred.url,
+		preferredRegion: preferred.region,
+		failovers: () => failovers
 	};
 }
