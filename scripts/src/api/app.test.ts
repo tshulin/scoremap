@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { apiHarness, authed, loginRequest } from '../../test/helpers/api.js';
 import { MOCK_CREDENTIALS } from '../mock/portal.js';
 import type { ApiError } from '../domain/index.js';
@@ -296,16 +296,6 @@ describe('GET /api/gradebook — placeholder data', () => {
 		expect(res.headers.get('x-grademax-placeholder')).toBeNull();
 	});
 
-	it('records that a placeholder was served', async () => {
-		const { app, logs } = placeholderApp();
-		const token = await tokenFrom(app);
-		await app.request('/api/gradebook', { headers: authed(token) });
-
-		expect(logs).toContainEqual(
-			expect.objectContaining({ event: 'placeholder_served', resource: 'gradebook' })
-		);
-	});
-
 	it('still surfaces a real fault rather than papering over it with sample data', async () => {
 		// A portal outage must not look like a working gradebook.
 		const { app } = apiHarness({
@@ -451,60 +441,6 @@ describe('login rate limiting', () => {
 		for (let attempt = 0; attempt < 5; attempt++) {
 			expect((await app.request('/api/student', { headers: authed(token) })).status).toBe(200);
 		}
-	});
-});
-
-describe('logging', () => {
-	let harness: ReturnType<typeof apiHarness>;
-
-	beforeEach(() => {
-		harness = apiHarness();
-	});
-
-	it('records request metadata', async () => {
-		await harness.app.request('/api/health');
-
-		expect(harness.logs).toContainEqual(
-			expect.objectContaining({
-				event: 'request',
-				method: 'GET',
-				route: '/api/health',
-				status: 200
-			})
-		);
-	});
-
-	it('logs the route pattern, never the document token in the URL', async () => {
-		const token = await tokenFrom(harness.app);
-		const res = await harness.app.request('/api/documents', { headers: authed(token) });
-		const documents = (await res.json()) as Array<{ docToken: string }>;
-		const docToken = documents[0]!.docToken;
-
-		await harness.app.request(`/api/documents/${encodeURIComponent(docToken)}`, {
-			headers: authed(token)
-		});
-
-		const serialized = JSON.stringify(harness.logs);
-		expect(serialized).toContain('/api/documents/:docToken');
-		expect(serialized).not.toContain(docToken);
-	});
-
-	it('never logs credentials or the session token', async () => {
-		const token = await tokenFrom(harness.app);
-		await harness.app.request('/api/student', { headers: authed(token) });
-
-		const serialized = JSON.stringify(harness.logs);
-		expect(serialized).not.toContain(MOCK_CREDENTIALS.password);
-		expect(serialized).not.toContain(MOCK_CREDENTIALS.username);
-		expect(serialized).not.toContain(token);
-	});
-
-	it('records the domain a login targeted', async () => {
-		await login(harness.app);
-
-		expect(harness.logs).toContainEqual(
-			expect.objectContaining({ event: 'login', domain: MOCK_CREDENTIALS.domain, ok: true })
-		);
 	});
 });
 

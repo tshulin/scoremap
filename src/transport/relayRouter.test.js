@@ -127,15 +127,14 @@ describe('createRelayRouter', () => {
 		expect((await router.primary('https://d.edupoint.com/b')).via).toBe('ws://west');
 	});
 
-	it('counts failovers and exposes the preferred region', async () => {
+	it('fails over without exposing usage counters', async () => {
 		const router = createRelayRouter({
 			relays: RELAYS,
 			preferRegion: 'east',
 			fetchFactory: factory({ 'ws://east': relayDown })
 		});
-		expect(router.preferredRegion).toBe('east');
-		expect(router.failovers()).toBe(0);
-		await router.primary('https://d.edupoint.com/a');
-		expect(router.failovers()).toBe(1);
+		expect((await router.primary('https://d.edupoint.com/a')).via).toBe('ws://west');
+		expect(router).not.toHaveProperty('failovers');
+		expect(router).not.toHaveProperty('preferredRegion');
 	});
 });
