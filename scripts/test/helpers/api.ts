@@ -1,5 +1,4 @@
 import { createApp, type CreateAppOptions } from '../../src/api/app.js';
-import type { LogRecord } from '../../src/api/logging.js';
 import {
 	createMockPortal,
 	mockPortalFetch,
@@ -8,21 +7,19 @@ import {
 import type { FetchLike } from '../../src/portal/http.js';
 
 export interface HarnessOptions extends MockPortalOptions {
-	app?: Omit<CreateAppOptions, 'fetchOptions' | 'log'>;
+	app?: Omit<CreateAppOptions, 'fetchOptions'>;
 	fetchImpl?: FetchLike;
 }
 
 export function apiHarness(options: HarnessOptions = {}) {
 	const { app: appOptions, fetchImpl, ...portalOptions } = options;
-	const logs: LogRecord[] = [];
 
 	const app = createApp({
 		...appOptions,
-		fetchOptions: { fetchImpl: fetchImpl ?? mockPortalFetch(createMockPortal(portalOptions)) },
-		log: (record) => logs.push(record)
+		fetchOptions: { fetchImpl: fetchImpl ?? mockPortalFetch(createMockPortal(portalOptions)) }
 	});
 
-	return { app, logs };
+	return { app };
 }
 
 export const loginRequest = (body: unknown): Request =>

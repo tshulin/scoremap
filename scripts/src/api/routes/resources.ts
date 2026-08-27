@@ -53,18 +53,9 @@ export function resourceRoutes(deps: ApiDeps) {
 	});
 
 	app.get('/attendance', requireSession, async (c) => {
-		const attendance = await withSession(c.get('token'), (s) =>
-			fetchAttendance(s, deps.fetchOptions)
+		return c.json(
+			await withSession(c.get('token'), (s) => fetchAttendance(s, deps.fetchOptions))
 		);
-		// How we find out the reconstructed row shape is wrong, once real absences exist.
-		if (attendance.unreadableAbsences > 0) {
-			deps.log({
-				event: 'unreadable_rows',
-				resource: 'attendance',
-				count: attendance.unreadableAbsences
-			});
-		}
-		return c.json(attendance);
 	});
 
 	app.get('/gradebook', requireSession, async (c) => {
@@ -75,7 +66,6 @@ export function resourceRoutes(deps: ApiDeps) {
 			);
 		} catch (error) {
 			if (!deps.config.placeholderData || !isGradebookBlocked(error)) throw error;
-			deps.log({ event: 'placeholder_served', resource: 'gradebook', because: error.name });
 			c.header(PLACEHOLDER_HEADER, 'true');
 			return c.json(SAMPLE_GRADEBOOK);
 		}

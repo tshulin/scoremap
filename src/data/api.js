@@ -102,36 +102,6 @@ const router = createRelayRouter({
 // Hot lane: what the student is waiting to see.
 const options = { fetchImpl: router.primary };
 
-// ---- anonymous usage beacon ----
-// Counters only, posted to the hot-lane relay after a sign-in or a sync: which
-// resources loaded, how long until grades were on screen, which coast served
-// the hot lane, whether failover kicked in. No user id, no cookie, no grades,
-// no district - nothing that identifies a student. Fire-and-forget: a failed
-// beacon is silently dropped and can never affect the app. Built-in and demo
-// accounts never report (they would only inflate the numbers).
-const BEACON_URL = router.preferredUrl.replace(/^ws(s?):\/\//, 'http$1://').replace(/\/$/, '') + '/beacon';
-let reportedFailovers = 0;
-export function reportUsage(event) {
-  if (DEMO || isTestSession()) return;
-  const failovers = router.failovers();
-  const payload = JSON.stringify({
-    ...event,
-    region: router.preferredRegion || undefined,
-    failovers: failovers - reportedFailovers,
-  });
-  reportedFailovers = failovers;
-  try {
-    // text/plain keeps it a "simple" request (no CORS preflight); the relay
-    // pins the Origin header the browser attaches regardless.
-    const body = new Blob([payload], { type: 'text/plain' });
-    if (typeof navigator !== 'undefined' && navigator.sendBeacon && navigator.sendBeacon(BEACON_URL, body)) return;
-    if (typeof fetch === 'function') {
-      fetch(BEACON_URL, { method: 'POST', body, mode: 'no-cors', keepalive: true }).catch(() => {});
-    }
-  } catch {
-    /* never let telemetry surface */
-  }
-}
 // Cold lane: background resources, kept off the hot lane's relay so they
 // never queue ahead of grades.
 const backgroundOptions = { fetchImpl: router.secondary };

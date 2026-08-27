@@ -13,7 +13,6 @@ import {
 	PortalShapeError,
 	SessionExpiredError
 } from '../portal/errors.js';
-import type { LogSink } from './logging.js';
 
 export class RequestValidationError extends Error {
 	constructor(message: string) {
@@ -89,12 +88,7 @@ export function apiErrorFor(error: unknown): ApiErrorResponse {
 	return { status: 500, body: envelope('INTERNAL', 'Something went wrong.'), headers: {} };
 }
 
-export const errorHandler =
-	(log: LogSink) =>
-	(error: Error, c: Context): Response => {
-		const { status, body, headers } = apiErrorFor(error);
-		if (status >= 500) {
-			log({ event: 'error', route: c.req.routePath, status, name: error.name, stack: error.stack });
-		}
-		return c.json(body, status, headers);
-	};
+export const errorHandler = (error: Error, c: Context): Response => {
+	const { status, body, headers } = apiErrorFor(error);
+	return c.json(body, status, headers);
+};

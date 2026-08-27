@@ -34,7 +34,6 @@ export function authRoutes(deps: ApiDeps) {
 			const student = await deps.sessions.withSession(token, (session) =>
 				checkLogin(session, deps.fetchOptions)
 			);
-			deps.log({ event: 'login', domain: credentials.domain, ok: true });
 			return c.json({ token, student });
 		} catch (error) {
 			deps.sessions.delete(token);

@@ -76,17 +76,11 @@ export function SyncProvider({ children }) {
   const runSync = useCallback(async (knownStudent, scope, { onGrades } = {}) => {
     setStatus('syncing');
     setError(null);
-    // Timings for the anonymous usage beacon (api.reportUsage): how long
-    // until grades were on screen, and how long the whole sync took.
-    const startedAt = Date.now();
-    let gradesAt = null;
-    const resources = scope || ALL_RESOURCES;
     try {
       const fresh = await syncStudentVue(knownStudent, {
         scope,
         previous: latest.current,
         onGrades: () => {
-          gradesAt = Date.now();
           if (onGrades) onGrades();
         },
         // Partial snapshots paint as they land - grades seconds before the
@@ -113,16 +107,8 @@ export function SyncProvider({ children }) {
       store(fresh);
       setStatus('ready');
       setStage(null);
-      api.reportUsage({
-        event: 'sync',
-        ok: true,
-        resources,
-        ms: Date.now() - startedAt,
-        ...(gradesAt ? { msToGrades: gradesAt - startedAt } : {}),
-      });
       return fresh;
     } catch (e) {
-      api.reportUsage({ event: 'sync', ok: false, resources, ms: Date.now() - startedAt });
       if (!alive.current) throw e;
       setStage(null);
       if (e.status === 401) {
@@ -166,7 +152,6 @@ export function SyncProvider({ children }) {
     async (credentials, onProgress) => {
       if (onProgress) onProgress('signingIn');
       const student = await api.login(credentials);
-      api.reportUsage({ event: 'signin' });
       if (onProgress) onProgress('syncing');
       return new Promise((resolve, reject) => {
         let settled = false;
