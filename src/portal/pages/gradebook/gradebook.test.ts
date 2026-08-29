@@ -377,6 +377,7 @@ describe('fetchGradebook', () => {
 			}
 		]);
 		expect(gradebook.unreadableCategories).toBe(0);
+		expect(mark.categoriesUnreadable).toBeUndefined();
 	});
 
 	it('drops the whole category list when any row is unreadable, and counts it', async () => {
@@ -402,6 +403,9 @@ describe('fetchGradebook', () => {
 		const gradebook = await fetchGradebook(session(), undefined, { fetchImpl });
 		expect(gradebook.courses[0]!.marks[0]!.categories).toBeUndefined();
 		expect(gradebook.unreadableCategories).toBe(2);
+		// The per-course flag is what lets the class page warn instead of
+		// silently presenting a weighted class as total-points.
+		expect(gradebook.courses[0]!.marks[0]!.categoriesUnreadable).toBe(true);
 	});
 
 	it('degrades an unreadable assignment row, not the course', async () => {

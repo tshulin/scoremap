@@ -98,6 +98,22 @@ describe('courseGrade - weighted', () => {
 	it('is 0 when nothing is graded', () => {
 		expect(courseGrade([], categories)).toBe(0);
 	});
+
+	// The weights grid and the assignment Type cells are separate portal grids
+	// and have been seen to disagree on case and spacing.
+	it('matches category names despite case and spacing differences', () => {
+		const grade = courseGrade(
+			[graded(10, 10, { category: 'homework ' }), graded(80, 100, { category: ' TESTS' })],
+			categories
+		);
+		expect(grade).toBeCloseTo(88);
+	});
+
+	it('treats an empty category list as total-points grading', () => {
+		// [] used to mean "weighted with no weights" and zeroed the grade while
+		// categoryOverview treated it as total points; the semantics now agree.
+		expect(courseGrade([graded(8, 10), graded(9, 10)], [])).toBe(85);
+	});
 });
 
 describe('markGrade', () => {

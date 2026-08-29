@@ -6,7 +6,7 @@
 // weight into the renormalized grade - exactly "how much can finals hurt me".
 import React from 'react';
 import GradeNumber from '../../components/GradeNumber.jsx';
-import { gradeBounds, inferScale, isCalculable, resolveLetter } from '../../calc/index';
+import { categoryKey, gradeBounds, inferScale, isCalculable, resolveLetter } from '../../calc/index';
 import { scoreBandColor as bandColor } from '../../lib/grades.js';
 import { Check, Dialog, ScoreInput, fmt2 } from './ui.jsx';
 
@@ -19,14 +19,15 @@ function currentPctByCategory(assignments, categories) {
   for (const a of assignments.filter(isCalculable)) {
     const name = weighted ? a.category : 'All';
     if (name === undefined) continue;
-    const t = totals.get(name) ?? { earned: 0, possible: 0 };
+    const key = categoryKey(name);
+    const t = totals.get(key) ?? { earned: 0, possible: 0 };
     t.earned += a.pointsEarned;
     if (!a.extraCredit) t.possible += a.pointsPossible;
-    totals.set(name, t);
+    totals.set(key, t);
   }
   const pct = new Map();
-  for (const [name, t] of totals) {
-    if (t.possible > 0) pct.set(name, Math.round((t.earned / t.possible) * 10000) / 100);
+  for (const [key, t] of totals) {
+    if (t.possible > 0) pct.set(key, Math.round((t.earned / t.possible) * 10000) / 100);
   }
   return pct;
 }
@@ -48,7 +49,7 @@ function BoundsDialog({ onClose, baseAssignments, effective, hypothetical, categ
       const current = currentPctByCategory(source, categories);
       const rows = {};
       for (const name of rowNames) {
-        const pct = current.get(name);
+        const pct = current.get(categoryKey(name));
         rows[name] = {
           remaining: '0',
           // No graded work yet → the honest a-priori bounds.

@@ -38,6 +38,11 @@ export const MarkSchema = z.object({
 	letter: z.string(),
 	percentage: z.number(),
 	categories: z.array(CategorySchema).optional(),
+	// True when the portal showed category rows the parser could not read: the
+	// weights were dropped (see classDetail.ts) and computed grades fall back
+	// to total points - the UI must say so rather than let a weighted class
+	// silently read as total-points.
+	categoriesUnreadable: z.boolean().optional(),
 	assignments: z.array(AssignmentSchema)
 });
 

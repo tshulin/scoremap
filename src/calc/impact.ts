@@ -2,6 +2,7 @@ import type { Assignment, Category } from '../domain/index';
 import { courseGradeFromCategories, gradePercentage } from './grade';
 import {
 	addToCategory,
+	categoryKey,
 	isCalculable,
 	isCategorized,
 	pointsByCategory,
@@ -27,7 +28,8 @@ export function assignmentImpacts(
 
 	const impacts = new Map<number, number>();
 
-	if (categories === undefined) {
+	// An empty category list is total-points grading, same as courseGrade.
+	if (categories === undefined || categories.length === 0) {
 		let earned = 0;
 		let possible = 0;
 		for (const { assignment, index } of chronological) {
@@ -69,15 +71,17 @@ export function hiddenPoints(
 	const discrepancies: PointDiscrepancy[] = [];
 
 	for (const category of categories) {
-		const seen = visible.get(category.name);
-		if (seen === undefined) continue;
+		const key = categoryKey(category.name);
+		// A category with totals but no visible assignments is entirely hidden
+		// work, not "nothing to report" - it still gets a discrepancy row.
+		const seen = visible.get(key) ?? { pointsEarned: 0, pointsPossible: 0 };
 
 		const pointsEarned = category.pointsEarned - seen.pointsEarned;
 		const pointsPossible = category.pointsPossible - seen.pointsPossible;
 		if (pointsEarned === 0 && pointsPossible === 0) continue;
 
 		const before = courseGradeFromCategories(running, categories);
-		running.set(category.name, {
+		running.set(key, {
 			pointsEarned: category.pointsEarned,
 			pointsPossible: category.pointsPossible
 		});
@@ -88,4 +92,52 @@ export function hiddenPoints(
 	}
 
 	return discrepancies;
+}
+
+// Portal category totals render at two decimals, so a sub-0.005-point gap is
+// display rounding, not hidden work.
+const POINT_EPSILON = 0.005;
+
+// The portal's category totals are authoritative - they include assignments it
+// hides from the list. Reconcile by appending one synthetic assignment per
+// category carrying the unaccounted points, so every downstream computation
+// (grade, chart, impacts, target, bounds) works from the same totals the
+// portal itself grades on. The synthetic rows are dated last: the chart
+// absorbs the gap at its endpoint and earlier impacts stay untouched. Deltas
+// can be negative (visible work exceeding the totals) - the arithmetic still
+// lands each category exactly on its declared totals.
+export function withHiddenAssignments(
+	assignments: Assignment[],
+	categories?: Category[]
+): Assignment[] {
+	if (categories === undefined || categories.length === 0) return assignments;
+
+	const visible = pointsByCategory(assignments);
+	let lastDate = '';
+	for (const a of assignments) {
+		if (isCalculable(a) && a.date > lastDate) lastDate = a.date;
+	}
+
+	const synthetic: Assignment[] = [];
+	for (const category of categories) {
+		const key = categoryKey(category.name);
+		const seen = visible.get(key) ?? { pointsEarned: 0, pointsPossible: 0 };
+		const pointsEarned = category.pointsEarned - seen.pointsEarned;
+		const pointsPossible = category.pointsPossible - seen.pointsPossible;
+		if (Math.abs(pointsEarned) < POINT_EPSILON && Math.abs(pointsPossible) < POINT_EPSILON) {
+			continue;
+		}
+		synthetic.push({
+			id: `hidden-${key}`,
+			name: `Hidden assignments (${category.name})`,
+			pointsEarned,
+			pointsPossible,
+			extraCredit: false,
+			notForGrade: false,
+			category: category.name,
+			date: lastDate || new Date().toISOString().slice(0, 10)
+		});
+	}
+
+	return synthetic.length === 0 ? assignments : [...assignments, ...synthetic];
 }

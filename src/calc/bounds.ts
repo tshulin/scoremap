@@ -1,6 +1,6 @@
 import type { Assignment, Category } from '../domain/index';
 import { courseGrade } from './grade';
-import { isCalculable } from './points';
+import { categoryKey, isCalculable } from './points';
 
 export interface RemainingWork {
 	// Omitted for unweighted classes (one overall row).
@@ -64,7 +64,7 @@ export function gradeBounds(options: GradeBoundsOptions): GradeBounds {
 			let possible = 0;
 			for (const a of assignments.filter(isCalculable)) {
 				const label = categories && categories.length > 0 ? a.category : 'All';
-				if (label !== name) continue;
+				if (label === undefined || categoryKey(label) !== categoryKey(name)) continue;
 				earned += a.pointsEarned!;
 				if (!a.extraCredit) possible += a.pointsPossible!;
 			}

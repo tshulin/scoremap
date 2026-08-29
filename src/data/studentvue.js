@@ -117,6 +117,9 @@ function mapGradebook(rawGradebook) {
       // Weighted-category config for src/calc/; undefined = straight points.
       categories:
         mark && mark.categories && mark.categories.length > 0 ? mark.categories : undefined,
+      // The portal showed category weights we could not read - calc/ falls
+      // back to total points and the class page warns about it.
+      categoriesUnreadable: !!(mark && mark.categoriesUnreadable),
     });
     assignmentsByClass[id] = (mark ? mark.assignments : []).map(mapAssignment);
   }
@@ -461,6 +464,7 @@ export async function sync(
             grade: prev.grade,
             pct: prev.pct,
             categories: c.categories ?? prev.categories,
+            categoriesUnreadable: c.categoriesUnreadable || prev.categoriesUnreadable || false,
           };
         });
         assignmentsByClass = Object.fromEntries(

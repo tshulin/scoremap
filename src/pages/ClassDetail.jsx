@@ -20,6 +20,7 @@ import {
   hiddenPoints,
   isCalculable,
   resolveLetter,
+  withHiddenAssignments,
 } from '../calc/index';
 import { useGradeIndex } from '../data/gradeIndexStore.js';
 import AssignmentList from './class/AssignmentList.jsx';
@@ -55,7 +56,15 @@ function ClassDetail() {
   const categories = cls ? cls.categories : undefined;
 
   const baseRaws = React.useMemo(() => ASSIGNMENTS.filter((a) => a.raw).map((a) => a.raw), [ASSIGNMENTS]);
-  const scenario = useScenario(baseRaws);
+  // The portal's category totals are authoritative - they include assignments
+  // it hides from the list. Reconciling them into the working set keeps the
+  // computed grade, chart, impacts, and calculators on the official numbers
+  // instead of renormalizing over only the visible work.
+  const baseWithHidden = React.useMemo(
+    () => withHiddenAssignments(baseRaws, categories),
+    [baseRaws, categories],
+  );
+  const scenario = useScenario(baseWithHidden);
   const { hypothetical, effective } = scenario;
   // Per-class letter scale: portal letters observed on sync, overridable.
   const { scale } = useGradeIndex(classId);
@@ -367,6 +376,14 @@ function ClassDetail() {
               activeType={filter === 'All' ? null : filter}
             />
 
+            {cls && cls.categoriesUnreadable && (
+              <div style={{ fontSize: 13, color: 'var(--color-grade-mid)', marginBottom: 12 }}>
+                This class has category weights the portal sent in a form Scoremap couldn't
+                read, so everything computed here (hypotheticals, targets, the chart) uses
+                straight point totals and may not match the official weighted grade.
+              </div>
+            )}
+
             {/* toggles hug the graph's edges: Hypothetical mode (and Reset)
                 flush with its left edge, the calculators flush with its right
                 (Pin chart deliberately omitted) */}
@@ -434,7 +451,7 @@ function ClassDetail() {
         {boundsOpen && (
           <BoundsDialog
             onClose={() => setBoundsOpen(false)}
-            baseAssignments={baseRaws}
+            baseAssignments={baseWithHidden}
             effective={effective}
             hypothetical={hypothetical}
             categories={categories}

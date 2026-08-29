@@ -1,5 +1,5 @@
 import type { Assignment, Category, Mark } from '../domain/index';
-import { isCalculable, pointsByCategory, pointTotals, type Points } from './points';
+import { categoryKey, isCalculable, pointsByCategory, pointTotals, type Points } from './points';
 
 export function gradePercentage(pointsEarned: number, pointsPossible: number): number {
 	const percentage = (pointsEarned / pointsPossible) * 100;
@@ -18,8 +18,8 @@ export function courseGradeFromCategories(
 	let weightedTotal = 0;
 	let includedWeight = 0;
 
-	for (const [name, categoryPoints] of points) {
-		const category = categories.find((candidate) => candidate.name === name);
+	for (const [key, categoryPoints] of points) {
+		const category = categories.find((candidate) => categoryKey(candidate.name) === key);
 		if (!category) continue;
 		if (categoryPoints.pointsPossible === 0) continue;
 
@@ -34,7 +34,10 @@ export function courseGradeFromCategories(
 }
 
 export function courseGrade(assignments: Assignment[], categories?: Category[]): number {
-	return categories === undefined
+	// An empty category list means the same as none - straight points. Weighted
+	// math over zero categories would zero the grade, and the overview already
+	// treats the two alike.
+	return categories === undefined || categories.length === 0
 		? courseGradeFromTotals(assignments)
 		: courseGradeFromCategories(pointsByCategory(assignments), categories);
 }

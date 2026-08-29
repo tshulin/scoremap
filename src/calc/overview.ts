@@ -1,5 +1,5 @@
 import type { Assignment, Category } from '../domain/index';
-import { isCalculable, pointsByCategory } from './points';
+import { categoryKey, isCalculable, pointsByCategory } from './points';
 
 export interface CategoryOverviewRow {
 	name: string;
@@ -22,11 +22,11 @@ export interface CategoryOverviewRow {
 
 function weightedOverview(assignments: Assignment[], categories: Category[]): CategoryOverviewRow[] {
 	const visible = pointsByCategory(assignments);
-	const counted = categories.filter((c) => (visible.get(c.name)?.pointsPossible ?? 0) > 0);
+	const counted = categories.filter((c) => (visible.get(categoryKey(c.name))?.pointsPossible ?? 0) > 0);
 	const totalWeight = counted.reduce((n, c) => n + c.weightPercentage, 0);
 
 	return categories.map((c) => {
-		const pts = visible.get(c.name) ?? { pointsEarned: 0, pointsPossible: 0 };
+		const pts = visible.get(categoryKey(c.name)) ?? { pointsEarned: 0, pointsPossible: 0 };
 		const isCounted = pts.pointsPossible > 0 && totalWeight > 0;
 		const currentPct = pts.pointsPossible > 0 ? (pts.pointsEarned / pts.pointsPossible) * 100 : null;
 		const effectiveWeightPct = isCounted ? (c.weightPercentage / totalWeight) * 100 : 0;

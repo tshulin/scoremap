@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { assignment, category, graded } from '../../test/helpers/grades';
 import { courseGrade } from './grade';
-import { assignmentImpacts, hiddenPoints } from './impact';
+import { assignmentImpacts, hiddenPoints, withHiddenAssignments } from './impact';
 
 describe('assignmentImpacts - unweighted', () => {
 	it('reports how much each assignment moved the grade', () => {
@@ -45,6 +45,12 @@ describe('assignmentImpacts - unweighted', () => {
 		]);
 
 		expect(impacts[2]?.gradeImpact).toBe(-50);
+	});
+
+	it('treats an empty category list as unweighted, matching courseGrade', () => {
+		const impacts = assignmentImpacts([graded(10, 10)], []);
+
+		expect(impacts[0]?.gradeImpact).toBe(100);
 	});
 
 	it('impacts sum to the final grade when everything counts', () => {
@@ -142,10 +148,20 @@ describe('hiddenPoints', () => {
 		expect(hiddenPoints(categories, [graded(40, 45, { category: 'Homework' })])).toEqual([]);
 	});
 
-	it('skips categories with no visible assignments at all', () => {
-		const categories = [category('Tests', 100, { pointsEarned: 90, pointsPossible: 100 })];
+	it('reports a category whose assignments are all hidden', () => {
+		// Regression: these used to be skipped entirely - a fully hidden category
+		// produced no warning row at all.
+		const categories = [
+			category('Homework', 50, { pointsEarned: 9, pointsPossible: 10 }),
+			category('Tests', 50, { pointsEarned: 80, pointsPossible: 100 })
+		];
 
-		expect(hiddenPoints(categories, [graded(9, 10, { category: 'Homework' })])).toEqual([]);
+		const rows = hiddenPoints(categories, [graded(9, 10, { category: 'Homework' })]);
+
+		expect(rows).toHaveLength(1);
+		expect(rows[0]).toMatchObject({ category: 'Tests', pointsEarned: 80, pointsPossible: 100 });
+		// 90% homework alone, then Tests' 50% joins at 80%: 85 - 90 = -5.
+		expect(rows[0]?.gradeImpact).toBeCloseTo(-5);
 	});
 
 	it('reports negative hidden points when visible work exceeds the total', () => {
@@ -154,5 +170,84 @@ describe('hiddenPoints', () => {
 		const [discrepancy] = hiddenPoints(categories, [graded(40, 45, { category: 'Homework' })]);
 
 		expect(discrepancy?.pointsEarned).toBe(-5);
+	});
+});
+
+describe('withHiddenAssignments', () => {
+	// The audit's motivating case: the portal grades Tests 8/10 (50%) and
+	// Assignments 10/10 (50%) for an official 90%, but the Tests assignment is
+	// hidden from the list. Renormalizing over only the visible work reported
+	// 100% the moment hypothetical mode recomputed the grade.
+	it('reconciles the computed grade with the portal category totals', () => {
+		const categories = [
+			category('Tests', 50, { pointsEarned: 8, pointsPossible: 10 }),
+			category('Assignments', 50, { pointsEarned: 10, pointsPossible: 10 })
+		];
+		const visible = [graded(10, 10, { category: 'Assignments', date: '2026-02-01' })];
+
+		expect(courseGrade(visible, categories)).toBe(100);
+		expect(courseGrade(withHiddenAssignments(visible, categories), categories)).toBe(90);
+	});
+
+	it('returns the list untouched when the visible work explains the totals', () => {
+		const categories = [category('Homework', 100, { pointsEarned: 40, pointsPossible: 45 })];
+		const visible = [graded(40, 45, { category: 'Homework' })];
+
+		expect(withHiddenAssignments(visible, categories)).toBe(visible);
+	});
+
+	it('covers a category whose assignments are all hidden', () => {
+		const categories = [
+			category('Homework', 50, { pointsEarned: 9, pointsPossible: 10 }),
+			category('Tests', 50, { pointsEarned: 80, pointsPossible: 100 })
+		];
+		const visible = [graded(9, 10, { category: 'Homework' })];
+
+		expect(courseGrade(withHiddenAssignments(visible, categories), categories)).toBeCloseTo(85);
+	});
+
+	it('dates synthetic rows no earlier than the visible work, so the chart endpoint lands on the official grade', () => {
+		const categories = [category('Homework', 100, { pointsEarned: 45, pointsPossible: 50 })];
+		const visible = [
+			graded(20, 20, { category: 'Homework', date: '2026-01-10' }),
+			graded(20, 25, { category: 'Homework', date: '2026-02-10' })
+		];
+
+		const synthetic = withHiddenAssignments(visible, categories).filter((a) =>
+			a.id.startsWith('hidden-')
+		);
+		expect(synthetic).toHaveLength(1);
+		expect(synthetic[0]).toMatchObject({ pointsEarned: 5, pointsPossible: 5, date: '2026-02-10' });
+	});
+
+	it('subtracts when the visible work exceeds the declared totals', () => {
+		const categories = [category('Homework', 100, { pointsEarned: 35, pointsPossible: 45 })];
+		const visible = [graded(40, 45, { category: 'Homework' })];
+
+		const grade = courseGrade(withHiddenAssignments(visible, categories), categories);
+		expect(grade).toBeCloseTo((35 / 45) * 100);
+	});
+
+	it('ignores sub-rounding-precision gaps in the declared totals', () => {
+		const categories = [
+			category('Homework', 100, { pointsEarned: 40.001, pointsPossible: 45.001 })
+		];
+		const visible = [graded(40, 45, { category: 'Homework' })];
+
+		expect(withHiddenAssignments(visible, categories)).toBe(visible);
+	});
+
+	it('matches category totals to assignments despite name case differences', () => {
+		const categories = [category('Tests', 100, { pointsEarned: 45, pointsPossible: 50 })];
+		const visible = [graded(45, 50, { category: 'tests' })];
+
+		expect(withHiddenAssignments(visible, categories)).toBe(visible);
+	});
+
+	it('is a no-op for unweighted classes and empty category lists', () => {
+		const visible = [graded(8, 10)];
+
+		expect(withHiddenAssignments(visible)).toBe(visible);
+		expect(withHiddenAssignments(visible, [])).toBe(visible);
 	});
 });

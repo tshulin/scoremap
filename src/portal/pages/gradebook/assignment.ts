@@ -63,6 +63,12 @@ export function rawAssignmentToDomain(row: Record<string, unknown>): Assignment 
 
 	const comments = notes.replace(NOT_FOR_GRADING_PREFIX, '').trim();
 
+	// stripTags also decodes entities and collapses whitespace, so the category
+	// matches the weights grid's name however the cell was formatted; a
+	// whitespace-only Type means uncategorized, same as an absent one.
+	const categoryText = optionalString(row['Type']);
+	const category = categoryText === undefined ? undefined : stripTags(categoryText);
+
 	return validate(
 		AssignmentSchema,
 		{
@@ -73,7 +79,7 @@ export function rawAssignmentToDomain(row: Record<string, unknown>): Assignment 
 			extraCredit: pointPossible === '',
 			notForGrade: notes.startsWith(NOT_FOR_GRADING_PREFIX),
 			...(unscaledPoints === undefined ? {} : { unscaledPoints }),
-			...(optionalString(row['Type']) === undefined ? {} : { category: row['Type'] }),
+			...(category === undefined || category === '' ? {} : { category }),
 			date: toIsoDate(optionalString(row['Date']) ?? ''),
 			...(optionalString(row['DueDate']) === undefined
 				? {}

@@ -7,11 +7,12 @@ export {
 	markGrade
 } from './grade';
 
-export { assignmentImpacts, hiddenPoints } from './impact';
+export { assignmentImpacts, hiddenPoints, withHiddenAssignments } from './impact';
 export type { AssignmentImpact, PointDiscrepancy } from './impact';
 
 export {
 	addToCategory,
+	categoryKey,
 	isCalculable,
 	isCategorized,
 	pointsByCategory,

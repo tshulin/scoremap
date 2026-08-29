@@ -5,7 +5,7 @@
 // line jumps there today, dashed, as if the assignments landed now, and the
 // cumulative line follows.
 import React from 'react';
-import { gradeSeries } from '../../calc/index';
+import { categoryKey, gradeSeries } from '../../calc/index';
 import { useSession } from '../../data/SyncProvider.jsx';
 import { fmt2, shortDate, todayIso, weekdayDate } from './ui.jsx';
 import { useCursorTooltip } from './useCursorTooltip.js';
@@ -62,7 +62,7 @@ function OverviewChart({ assignments, categories, rows, overrides = NO_OVERRIDES
     // cumulative line - drawing it twice would just shadow the ink line.
     const catRows = !weighted && rows.length === 1 ? [] : rows;
     for (const r of catRows) {
-      const base = gradeSeries(assignments.filter((a) => (a.category ?? 'All') === r.name));
+      const base = gradeSeries(assignments.filter((a) => categoryKey(a.category ?? 'All') === categoryKey(r.name)));
       const points = base.map((p) => ({ date: p.date, grade: p.grade }));
       if (points.length) latest = points[points.length - 1].date > latest ? points[points.length - 1].date : latest;
       built.push({

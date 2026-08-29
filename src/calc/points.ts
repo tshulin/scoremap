@@ -13,6 +13,13 @@ export type CalculableAssignment = Assignment & { pointsEarned: number; notForGr
 
 export type CategorizedAssignment = CalculableAssignment & { category: string };
 
+// Category names arrive from two independent portal grids (the weights grid
+// and each assignment's Type cell) whose casing and spacing can disagree, so
+// every match and every map key goes through this normalization.
+export function categoryKey(name: string): string {
+	return name.replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
 export function isCalculable(assignment: Assignment): assignment is CalculableAssignment {
 	if (assignment.notForGrade || assignment.pointsEarned === undefined) return false;
 	return assignment.extraCredit || assignment.pointsPossible !== undefined;
@@ -33,12 +40,14 @@ export function pointTotals(assignments: CalculableAssignment[]): Points {
 	return { pointsEarned, pointsPossible };
 }
 
+// `running` is keyed by categoryKey, never the raw name.
 export function addToCategory(
 	running: Map<string, Points>,
 	assignment: CategorizedAssignment
 ): void {
-	const current = running.get(assignment.category) ?? { pointsEarned: 0, pointsPossible: 0 };
-	running.set(assignment.category, {
+	const key = categoryKey(assignment.category);
+	const current = running.get(key) ?? { pointsEarned: 0, pointsPossible: 0 };
+	running.set(key, {
 		pointsEarned: current.pointsEarned + assignment.pointsEarned,
 		pointsPossible:
 			current.pointsPossible + (assignment.extraCredit ? 0 : assignment.pointsPossible)

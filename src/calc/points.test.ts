@@ -9,7 +9,7 @@ import { assignment, graded } from '../../test/helpers/grades';
 import type { Assignment } from '../domain/index';
 import { rawAssignmentToDomain } from '../portal/pages/gradebook/index';
 import { courseGrade } from './grade';
-import { isCalculable, pointTotals } from './points';
+import { categoryKey, isCalculable, pointsByCategory, pointTotals } from './points';
 
 describe('isCalculable', () => {
 	it('accepts a graded assignment', () => {
@@ -32,6 +32,22 @@ describe('isCalculable', () => {
 		// Nothing reads pointsPossible for extra credit - it never enters the denominator -
 		// so requiring it would drop the student's bonus points for no reason.
 		expect(isCalculable(assignment({ pointsEarned: 3, extraCredit: true }))).toBe(true);
+	});
+});
+
+describe('categoryKey', () => {
+	it('normalizes case and collapses whitespace', () => {
+		expect(categoryKey('  Lab   Reports ')).toBe('lab reports');
+		expect(categoryKey('TESTS')).toBe(categoryKey('tests'));
+	});
+
+	it('merges differently-written spellings of one category into one bucket', () => {
+		const points = pointsByCategory([
+			graded(8, 10, { category: 'Tests' }),
+			graded(9, 10, { category: 'tests ' })
+		]);
+
+		expect(points.get('tests')).toEqual({ pointsEarned: 17, pointsPossible: 20 });
 	});
 });
 

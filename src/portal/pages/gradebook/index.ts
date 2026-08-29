@@ -120,6 +120,7 @@ function buildGradebook(
 			letter = letter.slice(0, combined.index).trim();
 		}
 		let categories: Category[] | undefined;
+		let categoriesUnreadable = false;
 		const assignments: Assignment[] = [];
 
 		if (detail === 'unreadable') {
@@ -130,6 +131,7 @@ function buildGradebook(
 			letter = detail.letter;
 			percentage = detail.percentage;
 			categories = detail.categories;
+			categoriesUnreadable = detail.unreadableCategories > 0;
 			unreadableCategories += detail.unreadableCategories;
 			for (const [rowIndex, raw] of detail.rawAssignments.entries()) {
 				try {
@@ -158,6 +160,7 @@ function buildGradebook(
 					letter,
 					percentage,
 					...(categories ? { categories } : {}),
+					...(categoriesUnreadable ? { categoriesUnreadable: true } : {}),
 					assignments
 				}
 			]

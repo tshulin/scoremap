@@ -57,6 +57,30 @@ describe('pointsNeededForTargetGrade - unweighted', () => {
 
 		expect(needed).toBe(100);
 	});
+
+	it('matches the target category despite case and spacing differences', () => {
+		const needed = pointsNeededForTargetGrade({
+			targetPercentage: 90,
+			assignmentPointsPossible: 100,
+			assignmentCategory: ' TESTS',
+			otherAssignments: [graded(90, 100, { category: 'homework ' })],
+			categories: [category('Homework', 50), category('Tests', 50)]
+		});
+
+		expect(needed).toBe(90);
+	});
+
+	it('treats an empty category list as unweighted, matching courseGrade', () => {
+		const needed = pointsNeededForTargetGrade({
+			targetPercentage: 90,
+			assignmentPointsPossible: 100,
+			categories: [],
+			assignmentCategory: 'Tests',
+			otherAssignments: [graded(80, 100)]
+		});
+
+		expect(needed).toBe(100);
+	});
 });
 
 describe('pointsNeededForTargetGrade - weighted', () => {
