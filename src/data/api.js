@@ -19,6 +19,8 @@ import { fetchStudentInfo } from '../portal/pages/studentInfo';
 import { fetchDocuments, downloadDocument as portalDownloadDocument } from '../portal/pages/documents';
 import { fetchAttendance } from '../portal/pages/attendance';
 import { fetchGradebook } from '../portal/pages/gradebook/index';
+import { mobileLogin } from '../portal/mobile/client';
+import { fetchMobileGradebook } from '../portal/mobile/gradebook';
 import {
   fetchMail,
   fetchMailMessage,
@@ -110,6 +112,47 @@ let session = null; // in-memory { domain, jar: CookieJar }
 // session). The marker value 'true' predates the display account and still
 // means the test account, so existing sessions survive.
 let builtinSession = null;
+
+// The gradebook is fetched from the StudentVUE mobile API when it can be - one
+// request that carries the category weights the web scrape can't see on districts
+// that hide the weights grid (see portal/mobile). Everything else stays on the web
+// portal. `mobile` is a short-lived bearer session minted lazily from the saved
+// credentials; `mobileDisabled` latches the moment the mobile path misbehaves, so
+// the rest of the session falls straight back to the web gradebook.
+let mobile = null; // in-memory { domain, token, expiresAt }
+let mobileDisabled = false;
+let mobileLoginInFlight = null;
+
+function resetMobile() {
+  mobile = null;
+  mobileDisabled = false;
+  mobileLoginInFlight = null;
+}
+
+// A live mobile session, minted from the saved credentials, or null when there is
+// nothing to mint from or the mobile path has been switched off for this session.
+// A mobile login failure never touches the web session or the saved sign-in - it
+// just disables the mobile path so the web gradebook takes over.
+function ensureMobile() {
+  if (mobileDisabled) return Promise.resolve(null);
+  if (mobile && mobile.expiresAt > Date.now()) return Promise.resolve(mobile);
+  const creds = recallCredentials();
+  if (!creds) return Promise.resolve(null);
+  if (!mobileLoginInFlight) {
+    mobileLoginInFlight = (async () => {
+      try {
+        mobile = await mobileLogin(creds, options);
+        return mobile;
+      } catch {
+        mobileDisabled = true;
+        return null;
+      } finally {
+        mobileLoginInFlight = null;
+      }
+    })();
+  }
+  return mobileLoginInFlight;
+}
 
 const MARKER_TO_ACCOUNT = { true: 'test', display: 'display' };
 
@@ -259,6 +302,7 @@ export function clearToken({ authFailed = false } = {}) {
   const creds = authFailed ? recallCredentials() : null;
   session = null;
   builtinSession = null;
+  resetMobile();
   try {
     sessionStorage.removeItem(SESSION_KEY);
     localStorage.removeItem(TEST_SESSION_KEY);
@@ -469,9 +513,28 @@ export async function getAttendance() {
 // portal pages land - the landing page first (grades, no assignments), then
 // one per class detail - so the sync layer can paint grades immediately.
 export async function getGradebook({ onPartial } = {}) {
+  const hooks = onPartial ? { onPartial } : {};
+
+  // Mobile first: one request, and the only source of category weights on districts
+  // that hide the web weights grid. The second it stops working - a bad token, a
+  // rejected request, an unreadable shape - switch back to the website API and stay
+  // there for the rest of the session. Out-of-term is not a mobile fault: fall back
+  // for this call (the web path decides out-of-term authoritatively) but leave the
+  // mobile path armed.
+  const m = await ensureMobile();
+  if (m) {
+    try {
+      return { gradebook: await fetchMobileGradebook(m, options, hooks), placeholder: false };
+    } catch (e) {
+      if (!(e instanceof NoActiveGradingPeriodError)) {
+        mobileDisabled = true;
+        mobile = null;
+      }
+    }
+  }
+
   return withSession(async (s) => {
     try {
-      const hooks = onPartial ? { onPartial } : {};
       return { gradebook: await fetchGradebook(s, undefined, options, hooks), placeholder: false };
     } catch (e) {
       const blocked = e instanceof NoActiveGradingPeriodError || e instanceof ParseError;
