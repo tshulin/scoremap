@@ -23,6 +23,7 @@ import {
   withHiddenAssignments,
 } from '../calc/index';
 import { useGradeIndex } from '../data/gradeIndexStore.js';
+import { useProfilePreferences } from '../data/profilePreferences.js';
 import AssignmentList from './class/AssignmentList.jsx';
 import BoundsDialog from './class/BoundsDialog.jsx';
 import GradeChart from './class/GradeChart.jsx';
@@ -69,6 +70,7 @@ function ClassDetail() {
   const { hypothetical, effective } = scenario;
   // Per-class letter scale: portal letters observed on sync, overridable.
   const { scale } = useGradeIndex(classId);
+  const { preferences } = useProfilePreferences();
 
   // Sticky-header geometry. Both header blocks hug their own text (the name
   // block sizes to the course name, GradeCompass-style). The assignment lane,
@@ -137,6 +139,13 @@ function ClassDetail() {
   // Category filter lives here so the chart can follow it too.
   const [filter, setFilter] = React.useState('All');
   React.useEffect(() => setFilter('All'), [classId]);
+  React.useEffect(() => {
+    if (!preferences.showGradeIndex && tab === 'index') setTab('assignments');
+  }, [preferences.showGradeIndex, tab]);
+
+  const visibleTabs = preferences.showGradeIndex
+    ? TABS
+    : TABS.filter(([id]) => id !== 'index');
 
   // Hypothetical mode is scoped to the Assignments tab of one class: leaving
   // the tab (or the class) turns it off and discards the scenario, so
@@ -335,7 +344,7 @@ function ClassDetail() {
                 border: '1px solid var(--color-hairline-strong)',
               }}
             >
-              {TABS.map(([id, label]) => (
+              {visibleTabs.map(([id, label]) => (
                 <button
                   key={id}
                   onClick={() => setTab(id)}
@@ -395,7 +404,9 @@ function ClassDetail() {
               </div>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
                 <PillButton onClick={() => setTargetOpen(true)}>Target calculator</PillButton>
-                <PillButton onClick={() => setBoundsOpen(true)}>Max/Min grade</PillButton>
+                {preferences.showMaxMinGrade && (
+                  <PillButton onClick={() => setBoundsOpen(true)}>Max/Min grade</PillButton>
+                )}
               </div>
             </div>
 

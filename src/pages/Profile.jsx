@@ -1,22 +1,8 @@
 import React from 'react';
 import Sidebar from '../components/Sidebar.jsx';
 import { useSession } from '../data/SyncProvider.jsx';
+import { useProfilePreferences } from '../data/profilePreferences.js';
 import { PersonIcon } from '../lib/icons.jsx';
-
-const STORAGE_KEY = 'scoremap-profile-feature-toggles-v1';
-const DEFAULT_TOGGLES = {
-  featurePreview: false,
-  compactView: false,
-  extraInsights: false,
-};
-
-const loadToggles = () => {
-  try {
-    return { ...DEFAULT_TOGGLES, ...JSON.parse(localStorage.getItem(STORAGE_KEY)) };
-  } catch {
-    return DEFAULT_TOGGLES;
-  }
-};
 
 function FeatureToggle({ checked, description, label, onChange }) {
   return (
@@ -76,17 +62,7 @@ function FeatureToggle({ checked, description, label, onChange }) {
 
 export default function Profile() {
   const session = useSession();
-  const [toggles, setToggles] = React.useState(loadToggles);
-
-  React.useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(toggles));
-    } catch {
-      // Preferences remain usable for this session when storage is unavailable.
-    }
-  }, [toggles]);
-
-  const updateToggle = (key, value) => setToggles((current) => ({ ...current, [key]: value }));
+  const { preferences, setPreference } = useProfilePreferences();
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-canvas)', fontFamily: 'var(--font-sans)' }}>
@@ -153,26 +129,20 @@ export default function Profile() {
                 Feature preferences
               </h2>
               <p style={{ margin: '5px 0 0', color: 'var(--color-body)', fontSize: 14, lineHeight: 1.5 }}>
-                These are placeholder controls for features added later.
+                Choose which tools appear on your class pages.
               </p>
             </div>
             <FeatureToggle
-              label="Feature preview"
-              description="Try upcoming Scoremap features when they become available."
-              checked={toggles.featurePreview}
-              onChange={(value) => updateToggle('featurePreview', value)}
+              label="Max/min grade"
+              description="Show the Max/Min grade calculator button."
+              checked={preferences.showMaxMinGrade}
+              onChange={(value) => setPreference('showMaxMinGrade', value)}
             />
             <FeatureToggle
-              label="Compact view"
-              description="Reserve a preference for a denser page layout."
-              checked={toggles.compactView}
-              onChange={(value) => updateToggle('compactView', value)}
-            />
-            <FeatureToggle
-              label="Extra insights"
-              description="Reserve a preference for additional grade insights."
-              checked={toggles.extraInsights}
-              onChange={(value) => updateToggle('extraInsights', value)}
+              label="Grade index"
+              description="Show the Grade index tab."
+              checked={preferences.showGradeIndex}
+              onChange={(value) => setPreference('showGradeIndex', value)}
             />
           </section>
         </div>
