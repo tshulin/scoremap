@@ -16,6 +16,7 @@ import React, { useMemo, useState } from 'react';
 import Sidebar from '../components/Sidebar.jsx';
 import SyncPill from '../components/SyncPill.jsx';
 import { useAttendance, useClasses, useSyncMeta } from '../data/SyncProvider.jsx';
+import { displayCourseName } from '../lib/courseNames.js';
 
 // StudentVUE status bands → design-system band colors.
 const STATUS = {
@@ -74,7 +75,7 @@ function Attendance() {
 
   // Period number → class name, from the synced gradebook (empty out of term).
   const periodClass = useMemo(
-    () => Object.fromEntries(classes.map((c) => [c.periodNum, c.name])),
+    () => Object.fromEntries(classes.map((c) => [c.periodNum, displayCourseName(c.name)])),
     [classes],
   );
 

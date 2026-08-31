@@ -31,6 +31,7 @@ import OverviewTab from './class/OverviewTab.jsx';
 import TargetDialog from './class/TargetDialog.jsx';
 import { Check, PillButton, fmt2 } from './class/ui.jsx';
 import { useScenario } from './class/useScenario.js';
+import { displayCourseName } from '../lib/courseNames.js';
 
 const TABS = [
   ['assignments', 'Assignments'],
@@ -51,7 +52,7 @@ function ClassDetail() {
   const cls = useClass(classId);
   const ASSIGNMENTS = useAssignments(classId);
 
-  const CLASS_NAME = cls ? cls.name : 'Class';
+  const CLASS_NAME = cls ? displayCourseName(cls.name) : 'Class';
   const GRADE = cls ? (cls.pct != null ? `${cls.grade} ${cls.pct}%` : 'N/A') : '';
   const categories = cls ? cls.categories : undefined;
 
@@ -295,7 +296,7 @@ function ClassDetail() {
               key={`ghost-name-${c.id}`}
               style={{ display: 'inline-block', padding: '0 16px', fontFamily: 'var(--font-sans)', fontSize: NAME_FONT, fontWeight: 600, letterSpacing: '-0.7px', lineHeight: 1.2 }}
             >
-              {c.name}
+              {displayCourseName(c.name)}
             </span>
           ))}
           {classes.map((c) => (

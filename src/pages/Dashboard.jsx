@@ -20,6 +20,7 @@ import GradeNumber from '../components/GradeNumber.jsx';
 import { ChangeTicker } from '../components/RefreshDelta.jsx';
 import { useClasses, useSemesters, useSession, useSyncChanges, useSyncMeta, useSyncStatus } from '../data/SyncProvider.jsx';
 import { gradeBandColor } from '../lib/grades.js';
+import { displayCourseName } from '../lib/courseNames.js';
 import { ChevronLeftIcon, ChevronRightIcon, MapPinIcon, PersonIcon } from '../lib/icons.jsx';
 
 // Portals hand back names as "First Last" or "Last, First" - greet with the
@@ -248,7 +249,7 @@ function DashboardPage() {
                     </div>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.3px', color: 'var(--color-ink)', marginBottom: 6 }}>
-                        {c.name}
+                        {displayCourseName(c.name)}
                       </div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                         <Chip><PersonIcon size={14} />{c.teacher}</Chip>
