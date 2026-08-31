@@ -337,6 +337,9 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
         <div style={{ flex: '1 1 220px', maxWidth: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 10 }}>
           <div style={metricRow}>
             <ImpactChip impact={impact} />
+            <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)', textAlign: 'right' }}>
+              {pct != null ? `${pct}%` : 'N/A'}
+            </span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, textAlign: 'right' }}>
               <ScoreInput
                 value={edit.earned ?? (a.pointsEarned !== undefined ? String(a.pointsEarned) : '')}
@@ -355,9 +358,6 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
                   />
                 </>
               )}
-            </span>
-            <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)', textAlign: 'right' }}>
-              {pct != null ? `${pct}%` : 'N/A'}
             </span>
           </div>
           <ScoreBar pct={pct} extraCredit={a.extraCredit} />
@@ -445,13 +445,26 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
         <div style={{ flex: '1 1 220px', maxWidth: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 10 }}>
           <div style={metricRow}>
             <ImpactChip impact={impact} />
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textAlign: 'right' }}>
-              {!editable && a.scaledScore && <span style={{ fontSize: 15, color: 'var(--color-muted)' }}>{a.scaledScore}</span>}
-              {scoreCell(raw, a)}
-            </span>
-            <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)', textAlign: 'right' }}>
-              {pct != null ? `${pct}%` : 'N/A'}
-            </span>
+            {editable ? (
+              <>
+                <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)', textAlign: 'right' }}>
+                  {pct != null ? `${pct}%` : 'N/A'}
+                </span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textAlign: 'right' }}>
+                  {scoreCell(raw, a)}
+                </span>
+              </>
+            ) : (
+              <>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textAlign: 'right' }}>
+                  {a.scaledScore && <span style={{ fontSize: 15, color: 'var(--color-muted)' }}>{a.scaledScore}</span>}
+                  {scoreCell(raw, a)}
+                </span>
+                <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-ink)', textAlign: 'right' }}>
+                  {pct != null ? `${pct}%` : 'N/A'}
+                </span>
+              </>
+            )}
           </div>
           <ScoreBar pct={pct} extraCredit={eff ? eff.extraCredit : a.extraCredit} />
         </div>
