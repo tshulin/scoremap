@@ -19,8 +19,8 @@ import TopBar from '../components/TopBar.jsx';
 import GradeNumber from '../components/GradeNumber.jsx';
 import { ChangeTicker } from '../components/RefreshDelta.jsx';
 import { useClasses, useSemesters, useSession, useSyncChanges, useSyncMeta, useSyncStatus } from '../data/SyncProvider.jsx';
+import { courseDisplayName, useCourseNameOverrides } from '../data/courseNameOverrides.js';
 import { gradeBandColor } from '../lib/grades.js';
-import { displayCourseName } from '../lib/courseNames.js';
 import { ChevronLeftIcon, ChevronRightIcon, MapPinIcon, PersonIcon } from '../lib/icons.jsx';
 
 // Portals hand back names as "First Last" or "Last, First" - greet with the
@@ -41,6 +41,7 @@ const greetingForHour = (hour) => {
 function DashboardPage() {
   const navigate = useNavigate();
   const classes = useClasses();
+  const { overrides: courseNameOverrides } = useCourseNameOverrides();
   const session = useSession();
   const semesters = useSemesters();
   const meta = useSyncMeta();
@@ -249,7 +250,7 @@ function DashboardPage() {
                     </div>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.3px', color: 'var(--color-ink)', marginBottom: 6 }}>
-                        {displayCourseName(c.name)}
+                        {courseDisplayName(c, courseNameOverrides)}
                       </div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                         <Chip><PersonIcon size={14} />{c.teacher}</Chip>

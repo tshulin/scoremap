@@ -16,7 +16,7 @@ import React, { useMemo, useState } from 'react';
 import Sidebar from '../components/Sidebar.jsx';
 import SyncPill from '../components/SyncPill.jsx';
 import { useAttendance, useClasses, useSyncMeta } from '../data/SyncProvider.jsx';
-import { displayCourseName } from '../lib/courseNames.js';
+import { courseDisplayName, useCourseNameOverrides } from '../data/courseNameOverrides.js';
 
 // StudentVUE status bands → design-system band colors.
 const STATUS = {
@@ -68,6 +68,7 @@ function Attendance() {
   const { records, unreadableAbsences } = useAttendance();
   const meta = useSyncMeta();
   const classes = useClasses();
+  const { overrides: courseNameOverrides } = useCourseNameOverrides();
 
   const [view, setView] = useState('calendar');
   const [cursor, setCursor] = useState(new Date(now.getFullYear(), now.getMonth(), 1));
@@ -75,8 +76,8 @@ function Attendance() {
 
   // Period number → class name, from the synced gradebook (empty out of term).
   const periodClass = useMemo(
-    () => Object.fromEntries(classes.map((c) => [c.periodNum, displayCourseName(c.name)])),
-    [classes],
+    () => Object.fromEntries(classes.map((c) => [c.periodNum, courseDisplayName(c, courseNameOverrides)])),
+    [classes, courseNameOverrides],
   );
 
   const byDate = useMemo(() => {

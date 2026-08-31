@@ -24,6 +24,7 @@ import {
 } from '../calc/index';
 import { useGradeIndex } from '../data/gradeIndexStore.js';
 import { useProfilePreferences } from '../data/profilePreferences.js';
+import { courseDisplayName, useCourseNameOverrides } from '../data/courseNameOverrides.js';
 import AssignmentList from './class/AssignmentList.jsx';
 import BoundsDialog from './class/BoundsDialog.jsx';
 import GradeChart from './class/GradeChart.jsx';
@@ -32,7 +33,6 @@ import OverviewTab from './class/OverviewTab.jsx';
 import TargetDialog from './class/TargetDialog.jsx';
 import { Check, PillButton, fmt2 } from './class/ui.jsx';
 import { useScenario } from './class/useScenario.js';
-import { displayCourseName } from '../lib/courseNames.js';
 
 const TABS = [
   ['assignments', 'Assignments'],
@@ -52,8 +52,9 @@ function ClassDetail() {
   const { classId } = useParams();
   const cls = useClass(classId);
   const ASSIGNMENTS = useAssignments(classId);
+  const { overrides: courseNameOverrides } = useCourseNameOverrides();
 
-  const CLASS_NAME = cls ? displayCourseName(cls.name) : 'Class';
+  const CLASS_NAME = cls ? courseDisplayName(cls, courseNameOverrides) : 'Class';
   const GRADE = cls ? (cls.pct != null ? `${cls.grade} ${cls.pct}%` : 'N/A') : '';
   const categories = cls ? cls.categories : undefined;
 
@@ -311,7 +312,7 @@ function ClassDetail() {
               key={`ghost-name-${c.id}`}
               style={{ display: 'inline-block', padding: '0 16px', fontFamily: 'var(--font-sans)', fontSize: NAME_FONT, fontWeight: 600, letterSpacing: '-0.7px', lineHeight: 1.2 }}
             >
-              {displayCourseName(c.name)}
+              {courseDisplayName(c, courseNameOverrides)}
             </span>
           ))}
           {classes.map((c) => (
