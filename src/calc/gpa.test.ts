@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { gpaPoints, isWeightedCourseName, semesterGpa, toGpaGrade } from './gpa';
+import { gpaPoints, isWeightedCourseName, projectCumulativeGpa, semesterGpa, toGpaGrade } from './gpa';
 
 describe('gpaPoints', () => {
 	it('uses the standard four-point scale for unweighted courses', () => {
@@ -85,5 +85,25 @@ describe('isWeightedCourseName', () => {
 		expect(isWeightedCourseName('Geometry')).toBe(false);
 		expect(isWeightedCourseName('Graphic Design')).toBe(false);
 		expect(isWeightedCourseName('Japanese 2')).toBe(false);
+	});
+});
+
+describe('projectCumulativeGpa', () => {
+	it('combines historical and current grade points using completed credits', () => {
+		const result = projectCumulativeGpa([
+			{ grade: 'A', weighted: true, credits: 5 },
+			{ grade: 'B', weighted: false, credits: 5 }
+		], { unweighted: 4, weighted: 4.25, credits: 100 });
+
+		expect(result?.semester).toEqual({ unweighted: 3.5, weighted: 4 });
+		expect(result?.projected.unweighted).toBeCloseTo(3.9545, 4);
+		expect(result?.projected.weighted).toBeCloseTo(4.2273, 4);
+	});
+
+	it('rejects incomplete or invalid historical values', () => {
+		const courses = [{ grade: 'A', weighted: false, credits: 5 }] as const;
+		expect(projectCumulativeGpa([...courses], { unweighted: Number.NaN, weighted: 4, credits: 100 })).toBeNull();
+		expect(projectCumulativeGpa([...courses], { unweighted: 4, weighted: Number.NaN, credits: 100 })).toBeNull();
+		expect(projectCumulativeGpa([...courses], { unweighted: 4, weighted: 4, credits: 0 })).toBeNull();
 	});
 });

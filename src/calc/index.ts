@@ -38,5 +38,8 @@ export type { GradeBounds, GradeBoundsOptions, RemainingWork } from './bounds';
 export { DEFAULT_SCALE, LETTER_ORDER, inferScale, mergeObservations, resolveLetter } from './letters';
 export type { Letter, Observation, ScaleRow } from './letters';
 
-export { GPA_GRADES, gpaPoints, isWeightedCourseName, semesterGpa, toGpaGrade } from './gpa';
-export type { GpaCourse, GpaGrade, SemesterGpa } from './gpa';
+export { GPA_GRADES, gpaPoints, isWeightedCourseName, projectCumulativeGpa, semesterGpa, toGpaGrade } from './gpa';
+export type { CumulativeProjection, GpaCourse, GpaGrade, HistoricalGpa, SemesterGpa } from './gpa';
+
+export { parsePleasantonTranscriptText } from './transcript';
+export type { TranscriptGpa } from './transcript';

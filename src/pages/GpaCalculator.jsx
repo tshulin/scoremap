@@ -1,225 +1,146 @@
-/**
- * GPA calculator - a device-local, one-semester planning tool.
- *
- * Every course is weighted equally. A weighted course adds one grade point to
- * passing grades for the weighted result; the unweighted result always uses
- * the standard four-point scale. "Import current grades" seeds the table from
- * the synced class list; edits stay local and never touch the portal data.
- */
-import React, { useEffect, useMemo, useState } from 'react';
-import { GPA_GRADES, gpaPoints, isWeightedCourseName, semesterGpa, toGpaGrade } from '../calc/index';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { GPA_GRADES, isWeightedCourseName, parsePleasantonTranscriptText, projectCumulativeGpa, semesterGpa, toGpaGrade } from '../calc/index';
 import Sidebar from '../components/Sidebar.jsx';
-import { useClasses } from '../data/SyncProvider.jsx';
+import { useClasses, useDocuments } from '../data/SyncProvider.jsx';
+import { downloadDocument } from '../data/api.js';
+import { extractPdfText } from '../data/transcriptPdf.js';
 import './GpaCalculator.css';
 
 const STORAGE_KEY = 'grademax-gpa-calculator-v1';
-let courseSequence = 0;
-
-const newCourse = () => ({
-  id: `gpa-course-${Date.now()}-${courseSequence++}`,
-  name: '',
-  grade: 'A',
-  weighted: false,
-});
-
+const BASELINE_KEY = 'scoremap-cumulative-gpa-baseline-v1';
+let sequence = 0;
+const newCourse = () => ({ id: `gpa-${Date.now()}-${sequence++}`, name: '', grade: 'A', weighted: false, credits: 5 });
 const defaultCourses = () => Array.from({ length: 6 }, newCourse);
-
 const loadCourses = () => {
   try {
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (!Array.isArray(stored) || stored.length === 0) return defaultCourses();
-
-    const courses = stored
-      .filter((course) => course && GPA_GRADES.includes(course.grade))
-      .map((course) => ({
-        id: typeof course.id === 'string' ? course.id : newCourse().id,
-        name: typeof course.name === 'string' ? course.name : '',
-        grade: course.grade,
-        weighted: course.weighted === true,
-      }));
-
-    return courses.length > 0 ? courses : defaultCourses();
-  } catch {
-    return defaultCourses();
-  }
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (!Array.isArray(saved) || !saved.length) return defaultCourses();
+    return saved.filter((c) => c && GPA_GRADES.includes(c.grade)).map((c) => ({
+      id: c.id || newCourse().id, name: c.name || '', grade: c.grade,
+      weighted: c.weighted === true, credits: Number(c.credits) > 0 ? Number(c.credits) : 5,
+    }));
+  } catch { return defaultCourses(); }
 };
+const loadBaseline = () => {
+  try {
+    const value = JSON.parse(localStorage.getItem(BASELINE_KEY));
+    return { unweighted: value?.unweighted ?? '', weighted: value?.weighted ?? '', credits: value?.credits ?? '' };
+  } catch { return { unweighted: '', weighted: '', credits: '' }; }
+};
+const format = (value) => value == null || !Number.isFinite(value) ? 'N/A' : value.toFixed(2);
+const formatChange = (value) => {
+  if (value == null || !Number.isFinite(value)) return '';
+  if (Math.abs(value) < 0.005) return 'No change';
+  return `${value > 0 ? '+' : ''}${value.toFixed(2)}`;
+};
+const tokenFor = (doc) => doc?.docToken || doc?.token || doc?.documentToken || doc?.id || '';
 
-const formatGpa = (value) => (value == null ? 'N/A' : value.toFixed(2));
-
-function GpaCalculator() {
+export default function GpaCalculator() {
   const [courses, setCourses] = useState(loadCourses);
+  const [baseline, setBaseline] = useState(loadBaseline);
+  const [selectedToken, setSelectedToken] = useState('');
+  const [status, setStatus] = useState('');
+  const [busy, setBusy] = useState(false);
+  const fileRef = useRef(null);
   const classes = useClasses();
+  const documents = useDocuments();
 
-  // Classes without a letter yet (ungraded, pass/fail) cannot enter the GPA.
-  const importableCourses = useMemo(
-    () =>
-      classes
-        .map((c) => ({ name: c.name, grade: toGpaGrade(c.grade || ''), weighted: isWeightedCourseName(c.name) }))
-        .filter((c) => c.grade !== null),
-    [classes],
-  );
-
-  const importCurrentGrades = () => {
-    if (importableCourses.length === 0) return;
-    setCourses(importableCourses.map((c) => ({ ...newCourse(), ...c })));
-  };
-
+  const transcripts = useMemo(() => (documents || []).filter((d) =>
+    /transcript/i.test([d.title, d.name, d.type, d.category, d.documentCategory, d.documentName].filter(Boolean).join(' '))
+  ), [documents]);
   useEffect(() => {
+    const availableTokens = transcripts.map(tokenFor).filter(Boolean);
+    if (!availableTokens.includes(selectedToken)) setSelectedToken(availableTokens[0] || '');
+  }, [selectedToken, transcripts]);
+  useEffect(() => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(courses)); } catch {} }, [courses]);
+  useEffect(() => { try { localStorage.setItem(BASELINE_KEY, JSON.stringify(baseline)); } catch {} }, [baseline]);
+
+  const importable = useMemo(() => (classes || []).map((c) => ({
+    name: c.name, grade: toGpaGrade(c.grade || ''), weighted: isWeightedCourseName(c.name || ''), credits: 5,
+  })).filter((c) => c.grade), [classes]);
+  const semester = useMemo(() => semesterGpa(courses), [courses]);
+  const historical = {
+    unweighted: Number(baseline.unweighted), weighted: Number(baseline.weighted), credits: Number(baseline.credits),
+  };
+  const projection = useMemo(() => projectCumulativeGpa(courses, historical), [courses, baseline]);
+
+  const applyTranscript = async (blob) => {
+    setBusy(true); setStatus('Reading transcript on this device…');
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(courses));
-    } catch {
-      // The calculator remains usable when browser storage is unavailable.
-    }
-  }, [courses]);
-
-  const results = useMemo(() => semesterGpa(courses), [courses]);
-  const weightedCount = courses.filter((course) => course.weighted).length;
-
-  const updateCourse = (id, field, value) => {
-    setCourses((current) =>
-      current.map((course) => (course.id === id ? { ...course, [field]: value } : course)),
-    );
+      const text = await extractPdfText(blob);
+      const parsed = parsePleasantonTranscriptText(text);
+      if (parsed.unweighted == null || parsed.weighted == null || parsed.credits == null) {
+        throw new Error('The GPA summary or completed credits could not be found.');
+      }
+      setBaseline({ unweighted: parsed.unweighted, weighted: parsed.weighted, credits: parsed.credits });
+      setStatus('Transcript GPA and completed credits imported.');
+    } catch (error) { setStatus(error?.message || 'Could not read this transcript.'); }
+    finally { setBusy(false); }
   };
-
-  const removeCourse = (id) => {
-    setCourses((current) => (current.length > 1 ? current.filter((course) => course.id !== id) : current));
+  const readSelected = async () => {
+    if (!selectedToken) return;
+    setBusy(true); setStatus('Downloading transcript…');
+    try {
+      const result = await downloadDocument(selectedToken);
+      await applyTranscript(result.blob);
+    } catch (error) { setStatus(error?.message || 'Could not download this transcript.'); setBusy(false); }
   };
+  const updateCourse = (id, field, value) => setCourses((all) => all.map((c) => c.id === id ? { ...c, [field]: value } : c));
 
-  return (
-    <div className="gpa-page">
-      <Sidebar />
+  return <div className="gpa-page">
+    <Sidebar />
+    <main className="gpa-main"><div className="gpa-shell">
+      <header className="gpa-header"><div><h1>GPA calculator</h1><p>See how this semester could affect your cumulative GPA.</p></div></header>
 
-      <main className="gpa-main">
-        <div className="gpa-shell">
-          <header className="gpa-header">
-            <div>
-              <h1>GPA calculator</h1>
-              <p>Estimate your weighted and unweighted GPA for one semester.</p>
-            </div>
-          </header>
-
-          <div className="gpa-layout">
-            <section className="gpa-course-card" aria-labelledby="semester-courses-heading">
-              <div className="gpa-card-heading">
-                <div>
-                  <h2 id="semester-courses-heading">Semester courses</h2>
-                  <p>
-                    {courses.length} {courses.length === 1 ? 'course' : 'courses'} · {weightedCount}{' '}
-                    weighted
-                  </p>
-                </div>
-                <div className="gpa-heading-actions">
-                  <button type="button" className="gpa-add-button" onClick={() => setCourses((current) => [...current, newCourse()])}>
-                    Add course
-                  </button>
-                  <button
-                    type="button"
-                    className="gpa-add-button gpa-import-button"
-                    disabled={importableCourses.length === 0}
-                    title={
-                      importableCourses.length === 0
-                        ? 'No graded classes to import yet'
-                        : 'Replace the table with your synced classes and grades'
-                    }
-                    onClick={importCurrentGrades}
-                  >
-                    Import current grades
-                  </button>
-                </div>
-              </div>
-
-              <div className="gpa-table" role="table" aria-label="Semester courses">
-                <div className="gpa-table-header" role="row">
-                  <span role="columnheader">Course</span>
-                  <span role="columnheader">Grade</span>
-                  <span role="columnheader">Type</span>
-                  <span role="columnheader" className="gpa-remove-heading">
-                    Remove
-                  </span>
-                </div>
-
-                <div role="rowgroup">
-                  {courses.map((course, index) => (
-                    <div className="gpa-course-row" role="row" key={course.id}>
-                      <label className="gpa-field gpa-name-field">
-                        <span>Course {index + 1}</span>
-                        <input
-                          type="text"
-                          value={course.name}
-                          placeholder={`Course ${index + 1}`}
-                          aria-label={`Course ${index + 1} name`}
-                          onChange={(event) => updateCourse(course.id, 'name', event.target.value)}
-                        />
-                      </label>
-
-                      <label className="gpa-field gpa-select-field">
-                        <span>Grade</span>
-                        <select
-                          value={course.grade}
-                          aria-label={`${course.name || `Course ${index + 1}`} grade`}
-                          onChange={(event) => updateCourse(course.id, 'grade', event.target.value)}
-                        >
-                          {GPA_GRADES.map((grade) => (
-                            <option value={grade} key={grade}>
-                              {grade}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-
-                      <label className="gpa-field gpa-select-field">
-                        <span>Type</span>
-                        <select
-                          value={course.weighted ? 'weighted' : 'unweighted'}
-                          aria-label={`${course.name || `Course ${index + 1}`} type`}
-                          onChange={(event) => updateCourse(course.id, 'weighted', event.target.value === 'weighted')}
-                        >
-                          <option value="unweighted">Unweighted</option>
-                          <option value="weighted">Weighted</option>
-                        </select>
-                      </label>
-
-                      <div className="gpa-course-points" aria-label={`${gpaPoints(course.grade, course.weighted)} grade points`}>
-                        {gpaPoints(course.grade, course.weighted).toFixed(1)} pts
-                      </div>
-
-                      <button
-                        type="button"
-                        className="gpa-remove-button"
-                        aria-label={`Remove ${course.name || `course ${index + 1}`}`}
-                        disabled={courses.length === 1}
-                        onClick={() => removeCourse(course.id)}
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <button type="button" className="gpa-add-button gpa-add-button-bottom" onClick={() => setCourses((current) => [...current, newCourse()])}>
-                Add course
-              </button>
-            </section>
-
-            <aside className="gpa-summary-card" aria-live="polite">
-              <div className="gpa-result">
-                <span>Unweighted GPA</span>
-                <strong>{formatGpa(results?.unweighted)}</strong>
-                <small>4.00 scale</small>
-              </div>
-
-              <div className="gpa-result">
-                <span>Weighted GPA</span>
-                <strong>{formatGpa(results?.weighted)}</strong>
-                <small>5.00 scale</small>
-              </div>
-            </aside>
-          </div>
+      <section className="gpa-baseline-card">
+        <div className="gpa-card-heading"><div><h2>Cumulative GPA starting point</h2><p>Import your latest Pleasanton transcript, or enter the three values manually.</p></div></div>
+        <div className="gpa-transcript-actions">
+          <select value={selectedToken} onChange={(e) => setSelectedToken(e.target.value)} disabled={!transcripts.length}>
+            {!transcripts.length && <option>No transcript found in Documents</option>}
+            {transcripts.map((doc) => <option key={tokenFor(doc)} value={tokenFor(doc)}>{doc.title || doc.name || 'Transcript'}</option>)}
+          </select>
+          <button type="button" className="gpa-add-button" onClick={readSelected} disabled={!selectedToken || busy}>Read transcript</button>
+          <button type="button" className="gpa-add-button gpa-import-button" onClick={() => fileRef.current?.click()} disabled={busy}>Upload PDF</button>
+          <input ref={fileRef} hidden type="file" accept="application/pdf" onChange={(e) => e.target.files?.[0] && applyTranscript(e.target.files[0])} />
         </div>
-      </main>
-    </div>
-  );
-}
+        <div className="gpa-baseline-fields">
+          <label>Current unweighted GPA<input type="number" min="0" max="5" step="0.01" value={baseline.unweighted} onChange={(e) => setBaseline({ ...baseline, unweighted: e.target.value })} /></label>
+          <label>Current weighted GPA<input type="number" min="0" max="5" step="0.01" value={baseline.weighted} onChange={(e) => setBaseline({ ...baseline, weighted: e.target.value })} /></label>
+          <label>Completed credits<input type="number" min="0" step="0.5" value={baseline.credits} onChange={(e) => setBaseline({ ...baseline, credits: e.target.value })} /></label>
+        </div>
+        {status && <p className="gpa-status">{status}</p>}
+        <p className="gpa-local-note">The PDF is read locally in your browser. Its contents are not uploaded to Scoremap.</p>
+      </section>
 
-export default GpaCalculator;
+      <div className="gpa-layout">
+        <section className="gpa-course-card">
+          <div className="gpa-card-heading"><div><h2>Current semester</h2><p>{courses.length} courses</p></div>
+            <div className="gpa-heading-actions">
+              <button className="gpa-add-button" onClick={() => setCourses((all) => [...all, newCourse()])}>Add course</button>
+              <button className="gpa-add-button gpa-import-button" disabled={!importable.length} onClick={() => setCourses(importable.map((c) => ({ ...newCourse(), ...c })))}>Import current grades</button>
+            </div>
+          </div>
+          <div className="gpa-table">
+            <div className="gpa-table-header"><span>Course</span><span>Grade</span><span>Type</span><span>Credits</span><span>Remove</span></div>
+            {courses.map((course) => <div className="gpa-course-row" key={course.id}>
+              <input aria-label="Course name" value={course.name} placeholder="Course name" onChange={(e) => updateCourse(course.id, 'name', e.target.value)} />
+              <select aria-label="Grade" value={course.grade} onChange={(e) => updateCourse(course.id, 'grade', e.target.value)}>{GPA_GRADES.map((g) => <option key={g}>{g}</option>)}</select>
+              <select aria-label="Course type" value={course.weighted ? 'weighted' : 'regular'} onChange={(e) => updateCourse(course.id, 'weighted', e.target.value === 'weighted')}><option value="regular">Unweighted</option><option value="weighted">Weighted</option></select>
+              <input aria-label="Credits" type="number" min="0.5" step="0.5" value={course.credits} onChange={(e) => updateCourse(course.id, 'credits', Number(e.target.value))} />
+              <button className="gpa-remove-button" aria-label="Remove course" onClick={() => setCourses((all) => all.length > 1 ? all.filter((c) => c.id !== course.id) : all)}>×</button>
+            </div>)}
+          </div>
+        </section>
+        <aside className="gpa-summary-card">
+          <div className="gpa-summary-block"><span>Semester unweighted</span><strong>{format(semester?.unweighted)}</strong></div>
+          <div className="gpa-summary-divider" />
+          <div className="gpa-summary-block"><span>Semester weighted</span><strong>{format(semester?.weighted)}</strong></div>
+          <div className="gpa-summary-divider" />
+          <div className="gpa-summary-block"><span>Projected cumulative unweighted</span><strong>{format(projection?.projected.unweighted)}</strong>{projection && <small>{formatChange(projection.projected.unweighted - historical.unweighted)} from {format(historical.unweighted)}</small>}</div>
+          <div className="gpa-summary-divider" />
+          <div className="gpa-summary-block"><span>Projected cumulative weighted</span><strong>{format(projection?.projected.weighted)}</strong>{projection && <small>{formatChange(projection.projected.weighted - historical.weighted)} from {format(historical.weighted)}</small>}</div>
+        </aside>
+      </div>
+    </div></main>
+  </div>;
+}

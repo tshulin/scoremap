@@ -407,7 +407,7 @@ export function buildPdf(title, bodyLines) {
 export function testDocumentContent(docToken) {
   const doc = TEST_DOCUMENTS.find((d) => d.docToken === docToken);
   if (!doc) throw new Error('Unknown test document.');
-  const bytes = buildPdf(doc.title, [
+  const body = [
     "Hustler's University",
     `Student: ${TEST_STUDENT.name} (ID ${TEST_STUDENT.permId})`,
     `Category: ${doc.category}`,
@@ -415,7 +415,17 @@ export function testDocumentContent(docToken) {
     '',
     'This is a generated sample document for the Scoremap test account.',
     'It is not a real school record.',
-  ]);
+  ];
+  if (doc.category === 'Transcript') body.push(
+    'Pleasanton Unified School District',
+    'Cred Cmp: 30.00   GPA: 3.83',
+    'Cred Cmp: 30.00   GPA: 4.00',
+    'Cred Cmp: 30.00   GPA: 3.67',
+    'GPA Summary',
+    'Overall GPA 3.83',
+    'Overall Weighted 4.12',
+  );
+  const bytes = buildPdf(doc.title, body);
   const fileName = `${doc.title.replace(/[\u2013\u2014]/g, '-').replace(/[^A-Za-z0-9-]+/g, '_')}.pdf`;
   return { bytes, mimeType: 'application/pdf', fileName };
 }

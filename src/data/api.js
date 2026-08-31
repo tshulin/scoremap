@@ -574,6 +574,12 @@ export async function downloadMailAttachment(token) {
 
 export async function downloadDocument(docToken) {
   if (isTestSession()) {
+    // Local demo-only transcript. The redacted PDF is intentionally ignored
+    // so a student's document can never enter source control or deployment.
+    if (import.meta.env.DEV && builtinAccount() === 'display' && docToken === 'DISPDOC-01') {
+      const response = await fetch('/local-testing/actual-transcript.pdf');
+      if (response.ok) return { blob: await response.blob(), fileName: 'Redacted_Transcript.pdf' };
+    }
     const { bytes, mimeType, fileName } =
       builtinAccount() === 'display' ? displayDocumentContent(docToken) : testDocumentContent(docToken);
     return { blob: new Blob([bytes], { type: mimeType }), fileName };

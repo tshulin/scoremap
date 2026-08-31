@@ -459,7 +459,7 @@ export const DISPLAY_MAIL = [
 export function displayDocumentContent(docToken) {
   const doc = DISPLAY_DOCUMENTS.find((d) => d.docToken === docToken);
   if (!doc) throw new Error('Unknown display document.');
-  const bytes = buildPdf(doc.title, [
+  const body = [
     "Hustler's University",
     `Student: ${DISPLAY_STUDENT.name} (ID ${DISPLAY_STUDENT.permId})`,
     `Category: ${doc.category}`,
@@ -467,7 +467,18 @@ export function displayDocumentContent(docToken) {
     '',
     'This is a generated sample document for the Scoremap display account.',
     'It is not a real school record.',
-  ]);
+  ];
+  if (doc.category === 'Transcript') body.push(
+    'Pleasanton Unified School District',
+    'Cred Cmp: 30.00   GPA: 4.00',
+    'Cred Cmp: 30.00   GPA: 4.00',
+    'Cred Cmp: 30.00   GPA: 3.67',
+    'Cred Cmp: 30.00   GPA: 3.83',
+    'GPA Summary',
+    'Overall GPA 3.88',
+    'Overall Weighted 4.21',
+  );
+  const bytes = buildPdf(doc.title, body);
   const fileName = `${doc.title.replace(/[–—]/g, '-').replace(/[^A-Za-z0-9-]+/g, '_')}.pdf`;
   return { bytes, mimeType: 'application/pdf', fileName };
 }
