@@ -409,7 +409,11 @@ function ClassDetail() {
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center' }}>
                 <Check label="Hypothetical mode" checked={hypothetical} onChange={scenario.toggleHypothetical} />
-                {hypothetical && <PillButton onClick={scenario.reset}>↺ Reset</PillButton>}
+                {hypothetical && (
+                  <span className="gm-hypothetical-control-in" style={{ display: 'inline-flex' }}>
+                    <PillButton onClick={scenario.reset}>↺ Reset</PillButton>
+                  </span>
+                )}
               </div>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
                 {preferences.showTargetCalculator && (

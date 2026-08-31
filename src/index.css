@@ -180,6 +180,34 @@ body {
   animation: gm-pop-in 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Hypothetical mode swaps read-only assignment text for editable controls.
+   A small fade/settle masks that layout redraw without changing either
+   mode's resting appearance. Hypothetical-only actions use the same timing. */
+@keyframes gm-hypothetical-settle {
+  from { opacity: 0.72; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes gm-hypothetical-control-in {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: none; }
+}
+
+.gm-hypothetical-settle {
+  animation: gm-hypothetical-settle 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.gm-hypothetical-control-in {
+  animation: gm-hypothetical-control-in 200ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gm-hypothetical-settle,
+  .gm-hypothetical-control-in {
+    animation: none;
+  }
+}
+
 /* Landing carousel: the incoming trio swings in around the vertical axis
    like the ring turning one notch - arriving slightly rotated from the side
    it came from, settling flat. A transient composited transform, so it costs

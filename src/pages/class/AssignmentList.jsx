@@ -131,6 +131,20 @@ function DateInput({ value, onChange, label }) {
 
 function AssignmentList({ assignments, categories, scenario, impactById, hiddenRows = [], filter, onFilter }) {
   const { hypothetical, edits, setEdit, added, addAssignment, updateAssignment, removeAssignment, effective } = scenario;
+  const previousMode = React.useRef(hypothetical);
+  const [modeTransitioning, setModeTransitioning] = React.useState(false);
+
+  // The controls inside a row change shape when hypothetical mode toggles.
+  // Briefly soften that redraw so the list settles into its new layout rather
+  // than appearing to jump. useLayoutEffect applies the class before paint;
+  // the initial page render is deliberately left alone.
+  React.useLayoutEffect(() => {
+    if (previousMode.current === hypothetical) return undefined;
+    previousMode.current = hypothetical;
+    setModeTransitioning(true);
+    const timeout = window.setTimeout(() => setModeTransitioning(false), 220);
+    return () => window.clearTimeout(timeout);
+  }, [hypothetical]);
 
   const effById = React.useMemo(() => new Map(effective.map((a) => [a.id, a])), [effective]);
   const weighted = !!(categories && categories.length > 0);
@@ -486,7 +500,10 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
         </div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div
+        className={modeTransitioning ? 'gm-hypothetical-settle' : undefined}
+        style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
+      >
         {/* one click, one blank row - edited in place like everything else */}
         {hypothetical && (
           <button
