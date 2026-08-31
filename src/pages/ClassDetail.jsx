@@ -339,38 +339,40 @@ function ClassDetail() {
         >
           <div style={{ minWidth: 0, justifySelf: 'start', paddingTop: nameH + 10 }}>
             {/* compact section switcher - scrolls away under the name block */}
-            <nav
-              aria-label="Class sections"
-              style={{
-                display: 'inline-flex',
-                gap: 2,
-                padding: 3,
-                borderRadius: 'var(--radius-lg)',
-                background: 'var(--color-surface-card)',
-                border: '1px solid var(--color-hairline-strong)',
-              }}
-            >
-              {visibleTabs.map(([id, label]) => (
-                <button
-                  key={id}
-                  onClick={() => setTab(id)}
-                  style={{
-                    padding: '4px 10px',
-                    borderRadius: 'var(--radius-md)',
-                    border: 'none',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    fontFamily: 'var(--font-sans)',
-                    fontSize: 12,
-                    fontWeight: 500,
-                    background: tab === id ? 'var(--color-surface-dark-elevated)' : 'transparent',
-                    color: tab === id ? 'var(--color-ink)' : 'var(--color-text-meta)',
-                  }}
-                >
-                  {label}
-                </button>
-              ))}
-            </nav>
+            {visibleTabs.length > 1 && (
+              <nav
+                aria-label="Class sections"
+                style={{
+                  display: 'inline-flex',
+                  gap: 2,
+                  padding: 3,
+                  borderRadius: 'var(--radius-lg)',
+                  background: 'var(--color-surface-card)',
+                  border: '1px solid var(--color-hairline-strong)',
+                }}
+              >
+                {visibleTabs.map(([id, label]) => (
+                  <button
+                    key={id}
+                    onClick={() => setTab(id)}
+                    style={{
+                      padding: '4px 10px',
+                      borderRadius: 'var(--radius-md)',
+                      border: 'none',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: 12,
+                      fontWeight: 500,
+                      background: tab === id ? 'var(--color-surface-dark-elevated)' : 'transparent',
+                      color: tab === id ? 'var(--color-ink)' : 'var(--color-text-meta)',
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </nav>
+            )}
           </div>
           <SyncPill scope="gradebook" delta={deltaLine} avoid={namePillRef} />
           <div />
