@@ -131,6 +131,7 @@ function Sidebar() {
   else if (pathname.startsWith('/gpa-calculator')) section = 'gpa-calculator';
   else if (pathname.startsWith('/mail')) section = 'mail';
   else if (pathname.startsWith('/feedback')) section = 'feedback';
+  else if (pathname.startsWith('/profile')) section = 'profile';
   else if (pathname.startsWith('/grades/')) activeClassId = decodeURIComponent(pathname.split('/')[2] || '');
 
   function NavItem({ label, active, sub, onClick, icon: Icon }) {
@@ -257,20 +258,28 @@ function Sidebar() {
         <span style={{ display: 'inline-flex', flexShrink: 0, color: 'var(--color-body)' }}>
           <PersonIcon size={16} />
         </span>
-        <span
+        <button
+          type="button"
+          onClick={() => navigate('/profile')}
+          aria-label="Open profile"
           style={{
             flex: 1,
             minWidth: 0,
+            padding: 0,
+            border: 0,
+            background: 'transparent',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
+            textAlign: 'left',
             fontSize: 14,
             fontWeight: 500,
             color: 'var(--color-ink)',
+            cursor: 'pointer',
           }}
         >
           {session.studentName}
-        </span>
+        </button>
         <IconButton
           label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           onClick={toggleTheme}
