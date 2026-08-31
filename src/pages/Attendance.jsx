@@ -205,7 +205,7 @@ function Attendance() {
           {view === 'calendar' ? (
             <div
               style={{
-                maxWidth: 820,
+                maxWidth: 940,
                 margin: '0 auto',
                 overflow: 'hidden',
                 border: '1px solid var(--color-hairline-strong)',
@@ -220,7 +220,7 @@ function Attendance() {
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   gap: 20,
-                  padding: '14px 18px',
+                  padding: '16px 20px',
                 }}
               >
                 <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.3px', color: 'var(--color-ink)' }}>
@@ -277,7 +277,7 @@ function Attendance() {
               </div>
 
               {/* day grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gridAutoRows: 78 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gridAutoRows: 92 }}>
                 {cells.map((day, i) => {
                   const dividerStyle = {
                     borderRight: i % 7 === 6 ? 'none' : '1px solid var(--color-hairline)',
@@ -300,12 +300,12 @@ function Attendance() {
                       key={iso}
                       style={{
                         ...dividerStyle,
-                        height: 78,
+                        height: 92,
                         minWidth: 0,
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: 5,
-                        padding: 7,
+                        gap: 7,
+                        padding: 9,
                         boxSizing: 'border-box',
                         background: isToday ? 'var(--color-tint-accent)' : 'transparent',
                         overflow: 'hidden',
@@ -343,7 +343,7 @@ function Attendance() {
                               display: 'flex',
                               alignItems: 'flex-start',
                               gap: 6,
-                              padding: '3px 6px',
+                              padding: '4px 7px',
                               borderRadius: 'var(--radius-sm)',
                               background: m.bg,
                               color: m.color,
