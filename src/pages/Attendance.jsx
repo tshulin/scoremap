@@ -203,95 +203,46 @@ function Attendance() {
           </div>
 
           {view === 'calendar' ? (
-            <div
-              style={{
-                maxWidth: 940,
-                margin: '0 auto',
-                overflow: 'hidden',
-                border: '1px solid var(--color-hairline-strong)',
-                borderRadius: 'var(--radius-xl)',
-                background: 'var(--color-surface-card)',
-              }}
-            >
+            <div style={{ maxWidth: 940, margin: '0 auto' }}>
               {/* month navigation */}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 20,
-                  padding: '16px 20px',
-                }}
-              >
-                <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.3px', color: 'var(--color-ink)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 16 }}>
+                <ArrowBtn dir={-1} onClick={() => shiftMonth(-1)} />
+                <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.3px', color: 'var(--color-ink)', minWidth: 190, textAlign: 'center' }}>
                   {MONTHS[month]} {year}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <ArrowBtn dir={-1} onClick={() => shiftMonth(-1)} />
-                  <button
-                    onClick={goToday}
-                    style={{
-                      padding: '7px 14px',
-                      borderRadius: 'var(--radius-pill)',
-                      border: '1px solid var(--color-hairline-strong)',
-                      background: 'transparent',
-                      color: 'var(--color-body)',
-                      fontFamily: 'var(--font-sans)',
-                      fontSize: 13,
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Today
-                  </button>
-                  <ArrowBtn dir={1} onClick={() => shiftMonth(1)} />
-                </div>
+                <ArrowBtn dir={1} onClick={() => shiftMonth(1)} />
+                <button
+                  onClick={goToday}
+                  style={{
+                    marginLeft: 4,
+                    padding: '7px 14px',
+                    borderRadius: 'var(--radius-pill)',
+                    border: '1px solid var(--color-hairline-strong)',
+                    background: 'var(--color-surface-card)',
+                    color: 'var(--color-body)',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: 13,
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Today
+                </button>
               </div>
 
               {/* weekday header */}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(7, minmax(0, 1fr))',
-                  borderTop: '1px solid var(--color-hairline)',
-                  borderBottom: '1px solid var(--color-hairline)',
-                  background: 'var(--color-surface-strong)',
-                }}
-              >
-                {WEEKDAYS.map((w, i) => (
-                  <div
-                    key={w}
-                    style={{
-                      padding: '9px 8px',
-                      borderRight: i === 6 ? 'none' : '1px solid var(--color-hairline)',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      letterSpacing: '0.4px',
-                      textTransform: 'uppercase',
-                      color: 'var(--color-muted)',
-                    }}
-                  >
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6, marginBottom: 6 }}>
+                {WEEKDAYS.map((w) => (
+                  <div key={w} style={{ textAlign: 'center', fontSize: 12, fontWeight: 600, letterSpacing: '0.4px', textTransform: 'uppercase', color: 'var(--color-muted)' }}>
                     {w}
                   </div>
                 ))}
               </div>
 
               {/* day grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gridAutoRows: 92 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gridAutoRows: 74, gap: 6 }}>
                 {cells.map((day, i) => {
-                  const dividerStyle = {
-                    borderRight: i % 7 === 6 ? 'none' : '1px solid var(--color-hairline)',
-                    borderBottom: i >= cells.length - 7 ? 'none' : '1px solid var(--color-hairline)',
-                  };
-                  if (!day) {
-                    return (
-                      <div
-                        key={`e${i}`}
-                        aria-hidden="true"
-                        style={{ ...dividerStyle, background: 'var(--color-canvas)' }}
-                      />
-                    );
-                  }
+                  if (!day) return <div key={`e${i}`} />;
                   const iso = isoOf(year, month, day);
                   const events = byDate[iso] || [];
                   const isToday = iso === todayIso;
@@ -299,19 +250,20 @@ function Attendance() {
                     <div
                       key={iso}
                       style={{
-                        ...dividerStyle,
-                        height: 92,
+                        height: 74,
                         minWidth: 0,
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: 7,
-                        padding: 9,
+                        gap: 4,
+                        padding: 6,
                         boxSizing: 'border-box',
-                        background: isToday ? 'var(--color-tint-accent)' : 'transparent',
+                        borderRadius: 'var(--radius-md)',
+                        border: `1px solid ${isToday ? 'var(--color-hairline-strong)' : 'var(--color-hairline)'}`,
+                        background: events.length ? 'var(--color-surface-card)' : 'transparent',
                         overflow: 'hidden',
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                         <span
                           style={
                             isToday
@@ -319,15 +271,15 @@ function Attendance() {
                                   display: 'inline-flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
-                                  width: 24,
-                                  height: 24,
+                                  width: 22,
+                                  height: 22,
                                   borderRadius: 'var(--radius-full)',
-                                  background: '#2d57d1',
-                                  color: '#fff',
+                                  background: 'var(--color-ink)',
+                                  color: 'var(--color-on-primary)',
                                   fontSize: 13,
                                   fontWeight: 700,
                                 }
-                              : { fontSize: 13, fontWeight: 500, color: 'var(--color-body)', lineHeight: '24px' }
+                              : { fontSize: 13, fontWeight: 500, color: 'var(--color-body)' }
                           }
                         >
                           {day}
@@ -343,7 +295,7 @@ function Attendance() {
                               display: 'flex',
                               alignItems: 'flex-start',
                               gap: 6,
-                              padding: '4px 7px',
+                              padding: '3px 7px',
                               borderRadius: 'var(--radius-sm)',
                               background: m.bg,
                               color: m.color,
@@ -367,21 +319,12 @@ function Attendance() {
               </div>
 
               {/* legend */}
-              <div
-                style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: 20,
-                  justifyContent: 'center',
-                  padding: '13px 20px',
-                  borderTop: '1px solid var(--color-hairline)',
-                }}
-              >
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, justifyContent: 'center', marginTop: 20 }}>
                 {Object.keys(STATUS).map((key) => {
                   const m = STATUS[key];
                   return (
                     <div key={key} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--color-body)' }}>
-                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: m.color }} />
+                      <span style={{ width: 10, height: 10, borderRadius: '50%', background: m.color }} />
                       {m.label}
                     </div>
                   );
