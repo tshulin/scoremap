@@ -28,7 +28,12 @@ const loadBaseline = () => {
   } catch { return { unweighted: '', weighted: '', credits: '' }; }
 };
 const format = (value) => value == null || !Number.isFinite(value) ? 'N/A' : value.toFixed(2);
-const tokenFor = (doc) => doc?.token || doc?.documentToken || doc?.id || '';
+const formatChange = (value) => {
+  if (value == null || !Number.isFinite(value)) return '';
+  if (Math.abs(value) < 0.005) return 'No change';
+  return `${value > 0 ? '+' : ''}${value.toFixed(2)}`;
+};
+const tokenFor = (doc) => doc?.docToken || doc?.token || doc?.documentToken || doc?.id || '';
 
 export default function GpaCalculator() {
   const [courses, setCourses] = useState(loadCourses);
@@ -41,10 +46,11 @@ export default function GpaCalculator() {
   const documents = useDocuments();
 
   const transcripts = useMemo(() => (documents || []).filter((d) =>
-    /transcript/i.test([d.title, d.name, d.type, d.documentName].filter(Boolean).join(' '))
+    /transcript/i.test([d.title, d.name, d.type, d.category, d.documentCategory, d.documentName].filter(Boolean).join(' '))
   ), [documents]);
   useEffect(() => {
-    if (!selectedToken && transcripts.length) setSelectedToken(tokenFor(transcripts[0]));
+    const availableTokens = transcripts.map(tokenFor).filter(Boolean);
+    if (!availableTokens.includes(selectedToken)) setSelectedToken(availableTokens[0] || '');
   }, [selectedToken, transcripts]);
   useEffect(() => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(courses)); } catch {} }, [courses]);
   useEffect(() => { try { localStorage.setItem(BASELINE_KEY, JSON.stringify(baseline)); } catch {} }, [baseline]);
@@ -98,8 +104,8 @@ export default function GpaCalculator() {
           <input ref={fileRef} hidden type="file" accept="application/pdf" onChange={(e) => e.target.files?.[0] && applyTranscript(e.target.files[0])} />
         </div>
         <div className="gpa-baseline-fields">
-          <label>Current unweighted GPA<input type="number" min="0" step="0.01" value={baseline.unweighted} onChange={(e) => setBaseline({ ...baseline, unweighted: e.target.value })} /></label>
-          <label>Current weighted GPA<input type="number" min="0" step="0.01" value={baseline.weighted} onChange={(e) => setBaseline({ ...baseline, weighted: e.target.value })} /></label>
+          <label>Current unweighted GPA<input type="number" min="0" max="5" step="0.01" value={baseline.unweighted} onChange={(e) => setBaseline({ ...baseline, unweighted: e.target.value })} /></label>
+          <label>Current weighted GPA<input type="number" min="0" max="5" step="0.01" value={baseline.weighted} onChange={(e) => setBaseline({ ...baseline, weighted: e.target.value })} /></label>
           <label>Completed credits<input type="number" min="0" step="0.5" value={baseline.credits} onChange={(e) => setBaseline({ ...baseline, credits: e.target.value })} /></label>
         </div>
         {status && <p className="gpa-status">{status}</p>}
@@ -130,9 +136,9 @@ export default function GpaCalculator() {
           <div className="gpa-summary-divider" />
           <div className="gpa-summary-block"><span>Semester weighted</span><strong>{format(semester?.weighted)}</strong></div>
           <div className="gpa-summary-divider" />
-          <div className="gpa-summary-block"><span>Projected cumulative unweighted</span><strong>{format(projection?.projected.unweighted)}</strong></div>
+          <div className="gpa-summary-block"><span>Projected cumulative unweighted</span><strong>{format(projection?.projected.unweighted)}</strong>{projection && <small>{formatChange(projection.projected.unweighted - historical.unweighted)} from {format(historical.unweighted)}</small>}</div>
           <div className="gpa-summary-divider" />
-          <div className="gpa-summary-block"><span>Projected cumulative weighted</span><strong>{format(projection?.projected.weighted)}</strong></div>
+          <div className="gpa-summary-block"><span>Projected cumulative weighted</span><strong>{format(projection?.projected.weighted)}</strong>{projection && <small>{formatChange(projection.projected.weighted - historical.weighted)} from {format(historical.weighted)}</small>}</div>
         </aside>
       </div>
     </div></main>

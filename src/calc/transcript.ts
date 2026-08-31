@@ -8,7 +8,9 @@ export interface TranscriptGpa {
 const readNumber = (text: string, pattern: RegExp, label: string) => {
 	const match = text.match(pattern);
 	if (!match) throw new Error(`Could not find ${label} in this transcript.`);
-	return Number(match[1]);
+	const value = Number(match[1]);
+	if (!Number.isFinite(value)) throw new Error(`Could not read ${label} in this transcript.`);
+	return value;
 };
 
 export function parsePleasantonTranscriptText(text: string): TranscriptGpa {

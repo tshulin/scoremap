@@ -335,6 +335,14 @@
   line-height: 1;
 }
 
+.gpa-summary-block small {
+  display: block;
+  margin-top: 7px;
+  color: var(--color-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
 .gpa-summary-divider {
   height: 1px;
   background: var(--color-hairline);

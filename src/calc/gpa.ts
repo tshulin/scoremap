@@ -74,7 +74,12 @@ export function semesterGpa(courses: GpaCourse[]): SemesterGpa | null {
 
 export function projectCumulativeGpa(courses: GpaCourse[], historical: HistoricalGpa): CumulativeProjection | null {
 	const semester = semesterGpa(courses);
-	if (!semester || !Number.isFinite(historical.credits) || historical.credits <= 0) return null;
+	if (
+		!semester ||
+		!Number.isFinite(historical.unweighted) || historical.unweighted < 0 || historical.unweighted > 5 ||
+		!Number.isFinite(historical.weighted) || historical.weighted < 0 || historical.weighted > 5 ||
+		!Number.isFinite(historical.credits) || historical.credits <= 0
+	) return null;
 	const credits = courses.reduce((sum, course) => sum + (Number.isFinite(course.credits) && Number(course.credits) > 0 ? Number(course.credits) : 1), 0);
 	const totalCredits = historical.credits + credits;
 	return {
