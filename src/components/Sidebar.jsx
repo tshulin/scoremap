@@ -24,7 +24,7 @@ import {
 } from '../lib/icons.jsx';
 import PrivacyDialog from './PrivacyDialog.jsx';
 import ScoremapWordmark from './ScoremapWordmark.jsx';
-import { displayCourseName } from '../lib/courseNames.js';
+import { courseDisplayName, useCourseNameOverrides } from '../data/courseNameOverrides.js';
 
 // Module-level (not inside Sidebar): a component defined inside the render
 // function gets a new identity every render, so React remounts its DOM node -
@@ -62,6 +62,7 @@ function IconButton({ label, onClick, className, onAnimationEnd, children }) {
 
 function Sidebar() {
   const classes = useClasses();
+  const { overrides: courseNameOverrides } = useCourseNameOverrides();
   const session = useSession();
   const signOut = useSignOut();
   const navigate = useNavigate();
@@ -209,7 +210,7 @@ function Sidebar() {
       <nav style={{ flex: 1, overflowY: 'auto' }}>
         <NavItem icon={BookOpenIcon} label="Grades" active={section === 'grades' && !activeClassId} onClick={() => navigate('/dashboard')} />
         {classes.map((c) => (
-          <NavItem key={c.id} label={displayCourseName(c.name)} sub active={activeClassId === c.id} onClick={() => navigate(`/grades/${c.id}`)} />
+          <NavItem key={c.id} label={courseDisplayName(c, courseNameOverrides)} sub active={activeClassId === c.id} onClick={() => navigate(`/grades/${c.id}`)} />
         ))}
         <div style={{ height: 12 }} />
         <NavItem icon={BellIcon} label="Attendance" active={section === 'attendance'} onClick={() => navigate('/attendance')} />

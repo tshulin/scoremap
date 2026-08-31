@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { GPA_GRADES, isWeightedCourseName, parsePleasantonTranscriptText, projectCumulativeGpa, semesterGpa, toGpaGrade } from '../calc/index';
 import Sidebar from '../components/Sidebar.jsx';
 import { useClasses, useDocuments } from '../data/SyncProvider.jsx';
+import { courseDisplayName, useCourseNameOverrides } from '../data/courseNameOverrides.js';
 import { downloadDocument } from '../data/api.js';
 import { extractPdfText } from '../data/transcriptPdf.js';
 import './GpaCalculator.css';
@@ -43,6 +44,7 @@ export default function GpaCalculator() {
   const [busy, setBusy] = useState(false);
   const fileRef = useRef(null);
   const classes = useClasses();
+  const { overrides: courseNameOverrides } = useCourseNameOverrides();
   const documents = useDocuments();
 
   const transcripts = useMemo(() => (documents || []).filter((d) =>
@@ -56,8 +58,8 @@ export default function GpaCalculator() {
   useEffect(() => { try { localStorage.setItem(BASELINE_KEY, JSON.stringify(baseline)); } catch {} }, [baseline]);
 
   const importable = useMemo(() => (classes || []).map((c) => ({
-    name: c.name, grade: toGpaGrade(c.grade || ''), weighted: isWeightedCourseName(c.name || ''), credits: 5,
-  })).filter((c) => c.grade), [classes]);
+    name: courseDisplayName(c, courseNameOverrides), grade: toGpaGrade(c.grade || ''), weighted: isWeightedCourseName(c.name || ''), credits: 5,
+  })).filter((c) => c.grade), [classes, courseNameOverrides]);
   const semester = useMemo(() => semesterGpa(courses), [courses]);
   const historical = {
     unweighted: Number(baseline.unweighted), weighted: Number(baseline.weighted), credits: Number(baseline.credits),
