@@ -144,6 +144,18 @@ export default function Profile() {
               checked={preferences.showGradeIndex}
               onChange={(value) => setPreference('showGradeIndex', value)}
             />
+            <FeatureToggle
+              label="Overview tab"
+              description="Show the Overview tab on class pages."
+              checked={preferences.showOverview}
+              onChange={(value) => setPreference('showOverview', value)}
+            />
+            <FeatureToggle
+              label="Target calculator"
+              description="Show the Target calculator button."
+              checked={preferences.showTargetCalculator}
+              onChange={(value) => setPreference('showTargetCalculator', value)}
+            />
           </section>
         </div>
       </main>

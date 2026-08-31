@@ -140,12 +140,18 @@ function ClassDetail() {
   const [filter, setFilter] = React.useState('All');
   React.useEffect(() => setFilter('All'), [classId]);
   React.useEffect(() => {
-    if (!preferences.showGradeIndex && tab === 'index') setTab('assignments');
-  }, [preferences.showGradeIndex, tab]);
+    if (
+      (!preferences.showGradeIndex && tab === 'index')
+      || (!preferences.showOverview && tab === 'overview')
+    ) {
+      setTab('assignments');
+    }
+  }, [preferences.showGradeIndex, preferences.showOverview, tab]);
 
-  const visibleTabs = preferences.showGradeIndex
-    ? TABS
-    : TABS.filter(([id]) => id !== 'index');
+  const visibleTabs = TABS.filter(([id]) => (
+    (id !== 'index' || preferences.showGradeIndex)
+    && (id !== 'overview' || preferences.showOverview)
+  ));
 
   // Hypothetical mode is scoped to the Assignments tab of one class: leaving
   // the tab (or the class) turns it off and discards the scenario, so
@@ -403,7 +409,9 @@ function ClassDetail() {
                 {hypothetical && <PillButton onClick={scenario.reset}>↺ Reset</PillButton>}
               </div>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-                <PillButton onClick={() => setTargetOpen(true)}>Target calculator</PillButton>
+                {preferences.showTargetCalculator && (
+                  <PillButton onClick={() => setTargetOpen(true)}>Target calculator</PillButton>
+                )}
                 {preferences.showMaxMinGrade && (
                   <PillButton onClick={() => setBoundsOpen(true)}>Max/Min grade</PillButton>
                 )}

@@ -5,6 +5,8 @@ export const PROFILE_PREFERENCES_KEY = 'scoremap-profile-preferences-v1';
 export const DEFAULT_PROFILE_PREFERENCES = {
   showMaxMinGrade: true,
   showGradeIndex: true,
+  showOverview: true,
+  showTargetCalculator: true,
 };
 
 const PREFERENCES_CHANGED_EVENT = 'scoremap-profile-preferences-changed';
@@ -20,6 +22,12 @@ export function readProfilePreferences() {
       showGradeIndex: typeof saved.showGradeIndex === 'boolean'
         ? saved.showGradeIndex
         : DEFAULT_PROFILE_PREFERENCES.showGradeIndex,
+      showOverview: typeof saved.showOverview === 'boolean'
+        ? saved.showOverview
+        : DEFAULT_PROFILE_PREFERENCES.showOverview,
+      showTargetCalculator: typeof saved.showTargetCalculator === 'boolean'
+        ? saved.showTargetCalculator
+        : DEFAULT_PROFILE_PREFERENCES.showTargetCalculator,
     };
   } catch {
     return DEFAULT_PROFILE_PREFERENCES;
