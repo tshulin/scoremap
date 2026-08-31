@@ -146,6 +146,17 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
     [weighted, categories, assignments],
   );
 
+  // Declared category weights, shown on the filter tabs when the class is
+  // weighted (e.g. "Labs/Projects (20%)"). Keyed by a normalized name so a tab
+  // whose casing/spacing differs slightly from the weight row still matches.
+  const weightByCategory = React.useMemo(() => {
+    const map = new Map();
+    if (weighted) for (const c of categories) map.set(c.name.trim().toLowerCase(), c.weightPercentage);
+    return map;
+  }, [weighted, categories]);
+  const weightOf = (name) => (name === 'All' ? undefined : weightByCategory.get(name.trim().toLowerCase()));
+  const fmtWeight = (w) => (Number.isInteger(w) ? `${w}` : `${Math.round(w * 100) / 100}`);
+
   // Tabs and filtering follow the EFFECTIVE category, so recategorizing a row
   // in hypothetical mode moves it between tabs too.
   const effType = (id, fallback) => {
@@ -180,6 +191,7 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
 
   function FilterTab({ id, dot }) {
     const active = filter === id;
+    const weight = weightOf(id);
     return (
       <button
         onClick={() => onFilter(id)}
@@ -200,6 +212,9 @@ function AssignmentList({ assignments, categories, scenario, impactById, hiddenR
       >
         {dot && <span style={{ width: 8, height: 8, borderRadius: '50%', background: dot }} />}
         {id}
+        {weight != null && (
+          <span style={{ fontWeight: 500, opacity: 0.7 }}>({fmtWeight(weight)}%)</span>
+        )}
       </button>
     );
   }
