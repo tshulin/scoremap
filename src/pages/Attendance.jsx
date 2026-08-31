@@ -185,10 +185,7 @@ function Attendance() {
           )}
 
           {/* header + view toggle */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 20, marginBottom: 24, flexWrap: 'wrap' }}>
-            <h1 style={{ margin: 0, fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 600, letterSpacing: '-0.8px', color: 'var(--color-ink)' }}>
-              Attendance
-            </h1>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 24 }}>
             <div
               style={{
                 display: 'inline-flex',
