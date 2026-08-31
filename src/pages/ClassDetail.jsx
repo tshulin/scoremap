@@ -23,6 +23,7 @@ import {
   withHiddenAssignments,
 } from '../calc/index';
 import { useGradeIndex } from '../data/gradeIndexStore.js';
+import { useProfilePreferences } from '../data/profilePreferences.js';
 import AssignmentList from './class/AssignmentList.jsx';
 import BoundsDialog from './class/BoundsDialog.jsx';
 import GradeChart from './class/GradeChart.jsx';
@@ -31,6 +32,7 @@ import OverviewTab from './class/OverviewTab.jsx';
 import TargetDialog from './class/TargetDialog.jsx';
 import { Check, PillButton, fmt2 } from './class/ui.jsx';
 import { useScenario } from './class/useScenario.js';
+import { displayCourseName } from '../lib/courseNames.js';
 
 const TABS = [
   ['assignments', 'Assignments'],
@@ -51,7 +53,7 @@ function ClassDetail() {
   const cls = useClass(classId);
   const ASSIGNMENTS = useAssignments(classId);
 
-  const CLASS_NAME = cls ? cls.name : 'Class';
+  const CLASS_NAME = cls ? displayCourseName(cls.name) : 'Class';
   const GRADE = cls ? (cls.pct != null ? `${cls.grade} ${cls.pct}%` : 'N/A') : '';
   const categories = cls ? cls.categories : undefined;
 
@@ -68,6 +70,7 @@ function ClassDetail() {
   const { hypothetical, effective } = scenario;
   // Per-class letter scale: portal letters observed on sync, overridable.
   const { scale } = useGradeIndex(classId);
+  const { preferences } = useProfilePreferences();
 
   // Sticky-header geometry. Both header blocks hug their own text (the name
   // block sizes to the course name, GradeCompass-style). The assignment lane,
@@ -136,6 +139,19 @@ function ClassDetail() {
   // Category filter lives here so the chart can follow it too.
   const [filter, setFilter] = React.useState('All');
   React.useEffect(() => setFilter('All'), [classId]);
+  React.useEffect(() => {
+    if (
+      (!preferences.showGradeIndex && tab === 'index')
+      || (!preferences.showOverview && tab === 'overview')
+    ) {
+      setTab('assignments');
+    }
+  }, [preferences.showGradeIndex, preferences.showOverview, tab]);
+
+  const visibleTabs = TABS.filter(([id]) => (
+    (id !== 'index' || preferences.showGradeIndex)
+    && (id !== 'overview' || preferences.showOverview)
+  ));
 
   // Hypothetical mode is scoped to the Assignments tab of one class: leaving
   // the tab (or the class) turns it off and discards the scenario, so
@@ -295,7 +311,7 @@ function ClassDetail() {
               key={`ghost-name-${c.id}`}
               style={{ display: 'inline-block', padding: '0 16px', fontFamily: 'var(--font-sans)', fontSize: NAME_FONT, fontWeight: 600, letterSpacing: '-0.7px', lineHeight: 1.2 }}
             >
-              {c.name}
+              {displayCourseName(c.name)}
             </span>
           ))}
           {classes.map((c) => (
@@ -323,38 +339,40 @@ function ClassDetail() {
         >
           <div style={{ minWidth: 0, justifySelf: 'start', paddingTop: nameH + 10 }}>
             {/* compact section switcher - scrolls away under the name block */}
-            <nav
-              aria-label="Class sections"
-              style={{
-                display: 'inline-flex',
-                gap: 2,
-                padding: 3,
-                borderRadius: 'var(--radius-lg)',
-                background: 'var(--color-surface-card)',
-                border: '1px solid var(--color-hairline-strong)',
-              }}
-            >
-              {TABS.map(([id, label]) => (
-                <button
-                  key={id}
-                  onClick={() => setTab(id)}
-                  style={{
-                    padding: '4px 10px',
-                    borderRadius: 'var(--radius-md)',
-                    border: 'none',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    fontFamily: 'var(--font-sans)',
-                    fontSize: 12,
-                    fontWeight: 500,
-                    background: tab === id ? 'var(--color-surface-dark-elevated)' : 'transparent',
-                    color: tab === id ? 'var(--color-ink)' : 'var(--color-text-meta)',
-                  }}
-                >
-                  {label}
-                </button>
-              ))}
-            </nav>
+            {visibleTabs.length > 1 && (
+              <nav
+                aria-label="Class sections"
+                style={{
+                  display: 'inline-flex',
+                  gap: 2,
+                  padding: 3,
+                  borderRadius: 'var(--radius-lg)',
+                  background: 'var(--color-surface-card)',
+                  border: '1px solid var(--color-hairline-strong)',
+                }}
+              >
+                {visibleTabs.map(([id, label]) => (
+                  <button
+                    key={id}
+                    onClick={() => setTab(id)}
+                    style={{
+                      padding: '4px 10px',
+                      borderRadius: 'var(--radius-md)',
+                      border: 'none',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: 12,
+                      fontWeight: 500,
+                      background: tab === id ? 'var(--color-surface-dark-elevated)' : 'transparent',
+                      color: tab === id ? 'var(--color-ink)' : 'var(--color-text-meta)',
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </nav>
+            )}
           </div>
           <SyncPill scope="gradebook" delta={deltaLine} avoid={namePillRef} />
           <div />
@@ -393,8 +411,12 @@ function ClassDetail() {
                 {hypothetical && <PillButton onClick={scenario.reset}>↺ Reset</PillButton>}
               </div>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-                <PillButton onClick={() => setTargetOpen(true)}>Target calculator</PillButton>
-                <PillButton onClick={() => setBoundsOpen(true)}>Max/Min grade</PillButton>
+                {preferences.showTargetCalculator && (
+                  <PillButton onClick={() => setTargetOpen(true)}>Target calculator</PillButton>
+                )}
+                {preferences.showMaxMinGrade && (
+                  <PillButton onClick={() => setBoundsOpen(true)}>Max/Min grade</PillButton>
+                )}
               </div>
             </div>
 

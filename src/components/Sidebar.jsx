@@ -24,6 +24,7 @@ import {
 } from '../lib/icons.jsx';
 import PrivacyDialog from './PrivacyDialog.jsx';
 import ScoremapWordmark from './ScoremapWordmark.jsx';
+import { displayCourseName } from '../lib/courseNames.js';
 
 // Module-level (not inside Sidebar): a component defined inside the render
 // function gets a new identity every render, so React remounts its DOM node -
@@ -130,6 +131,7 @@ function Sidebar() {
   else if (pathname.startsWith('/gpa-calculator')) section = 'gpa-calculator';
   else if (pathname.startsWith('/mail')) section = 'mail';
   else if (pathname.startsWith('/feedback')) section = 'feedback';
+  else if (pathname.startsWith('/profile')) section = 'profile';
   else if (pathname.startsWith('/grades/')) activeClassId = decodeURIComponent(pathname.split('/')[2] || '');
 
   function NavItem({ label, active, sub, onClick, icon: Icon }) {
@@ -207,7 +209,7 @@ function Sidebar() {
       <nav style={{ flex: 1, overflowY: 'auto' }}>
         <NavItem icon={BookOpenIcon} label="Grades" active={section === 'grades' && !activeClassId} onClick={() => navigate('/dashboard')} />
         {classes.map((c) => (
-          <NavItem key={c.id} label={c.name} sub active={activeClassId === c.id} onClick={() => navigate(`/grades/${c.id}`)} />
+          <NavItem key={c.id} label={displayCourseName(c.name)} sub active={activeClassId === c.id} onClick={() => navigate(`/grades/${c.id}`)} />
         ))}
         <div style={{ height: 12 }} />
         <NavItem icon={BellIcon} label="Attendance" active={section === 'attendance'} onClick={() => navigate('/attendance')} />
@@ -256,20 +258,28 @@ function Sidebar() {
         <span style={{ display: 'inline-flex', flexShrink: 0, color: 'var(--color-body)' }}>
           <PersonIcon size={16} />
         </span>
-        <span
+        <button
+          type="button"
+          onClick={() => navigate('/profile')}
+          aria-label="Open profile"
           style={{
             flex: 1,
             minWidth: 0,
+            padding: 0,
+            border: 0,
+            background: 'transparent',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
+            textAlign: 'left',
             fontSize: 14,
             fontWeight: 500,
             color: 'var(--color-ink)',
+            cursor: 'pointer',
           }}
         >
           {session.studentName}
-        </span>
+        </button>
         <IconButton
           label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           onClick={toggleTheme}

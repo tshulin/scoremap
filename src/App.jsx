@@ -24,6 +24,7 @@ import GpaCalculator from './pages/GpaCalculator.jsx';
 import Mail from './pages/Mail.jsx';
 import MailDetail from './pages/MailDetail.jsx';
 import Feedback from './pages/Feedback.jsx';
+import Profile from './pages/Profile.jsx';
 
 function RequireAuth({ children }) {
   const { status } = useSyncStatus();
@@ -46,6 +47,7 @@ export default function App() {
       <Route path="/mail" element={<RequireAuth><Mail /></RequireAuth>} />
       <Route path="/mail/:mailId" element={<RequireAuth><MailDetail /></RequireAuth>} />
       <Route path="/feedback" element={<RequireAuth><Feedback /></RequireAuth>} />
+      <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
