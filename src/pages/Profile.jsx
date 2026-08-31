@@ -31,8 +31,8 @@ function FeatureToggle({ checked, description, label, onChange }) {
       }}
     >
       <div style={{ minWidth: 0 }}>
-        <div style={{ color: 'var(--color-ink)', fontSize: 14, fontWeight: 600 }}>{label}</div>
-        <div style={{ marginTop: 4, color: 'var(--color-body)', fontSize: 12, lineHeight: 1.5 }}>
+        <div style={{ color: 'var(--color-ink)', fontSize: 18, fontWeight: 600, letterSpacing: '-0.2px' }}>{label}</div>
+        <div style={{ marginTop: 4, color: 'var(--color-body)', fontSize: 14, lineHeight: 1.5 }}>
           {description}
         </div>
       </div>
@@ -97,7 +97,7 @@ export default function Profile() {
             <h1 style={{ margin: '0 0 6px', color: 'var(--color-ink)', fontSize: 27, fontWeight: 600, letterSpacing: '-0.6px' }}>
               Profile
             </h1>
-            <p style={{ margin: 0, color: 'var(--color-body)', fontSize: 14, lineHeight: 1.55 }}>
+            <p style={{ margin: 0, color: 'var(--color-body)', fontSize: 15, lineHeight: 1.55 }}>
               Manage your Scoremap profile and preferences.
             </p>
           </header>
@@ -134,7 +134,7 @@ export default function Profile() {
               <div style={{ overflow: 'hidden', color: 'var(--color-ink)', fontSize: 18, fontWeight: 600, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {session.studentName || 'Scoremap student'}
               </div>
-              <div style={{ marginTop: 3, color: 'var(--color-body)', fontSize: 12 }}>
+              <div style={{ marginTop: 3, color: 'var(--color-body)', fontSize: 13 }}>
                 Grade {session.grade || '—'}
               </div>
             </div>
@@ -149,10 +149,10 @@ export default function Profile() {
             }}
           >
             <div style={{ padding: '17px 0 13px' }}>
-              <h2 style={{ margin: 0, color: 'var(--color-ink)', fontSize: 17, fontWeight: 600, letterSpacing: '-0.2px' }}>
+              <h2 style={{ margin: 0, color: 'var(--color-ink)', fontSize: 18, fontWeight: 600, letterSpacing: '-0.2px' }}>
                 Feature preferences
               </h2>
-              <p style={{ margin: '5px 0 0', color: 'var(--color-body)', fontSize: 12, lineHeight: 1.5 }}>
+              <p style={{ margin: '5px 0 0', color: 'var(--color-body)', fontSize: 14, lineHeight: 1.5 }}>
                 These are placeholder controls for features added later.
               </p>
             </div>
