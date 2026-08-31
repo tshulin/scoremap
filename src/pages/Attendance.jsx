@@ -243,7 +243,7 @@ function Attendance() {
               </div>
 
               {/* day grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gridAutoRows: 74, gap: 6 }}>
                 {cells.map((day, i) => {
                   if (!day) return <div key={`e${i}`} />;
                   const iso = isoOf(year, month, day);
@@ -253,7 +253,8 @@ function Attendance() {
                     <div
                       key={iso}
                       style={{
-                        minHeight: 74,
+                        height: 74,
+                        minWidth: 0,
                         display: 'flex',
                         flexDirection: 'column',
                         gap: 4,
@@ -262,6 +263,7 @@ function Attendance() {
                         borderRadius: 'var(--radius-md)',
                         border: `1px solid ${isToday ? 'var(--color-hairline-strong)' : 'var(--color-hairline)'}`,
                         background: events.length ? 'var(--color-surface-card)' : 'transparent',
+                        overflow: 'hidden',
                       }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -294,7 +296,7 @@ function Attendance() {
                             title={e.note || m.label}
                             style={{
                               display: 'flex',
-                              alignItems: 'center',
+                              alignItems: 'flex-start',
                               gap: 6,
                               padding: '3px 7px',
                               borderRadius: 'var(--radius-sm)',
@@ -303,11 +305,12 @@ function Attendance() {
                               fontSize: 11,
                               fontWeight: 600,
                               lineHeight: 1.3,
+                              minWidth: 0,
                               overflow: 'hidden',
                             }}
                           >
-                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: m.color, flexShrink: 0 }} />
-                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <span style={{ width: 6, height: 6, marginTop: 4, borderRadius: '50%', background: m.color, flexShrink: 0 }} />
+                            <span style={{ minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere' }}>
                               {e.note || m.label}
                             </span>
                           </div>
