@@ -12,7 +12,7 @@
  * the visitor's theme.
  */
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   HeroBand, Button,
   FeatureCard,
@@ -352,7 +352,18 @@ function Landing() {
         >
           <strong>Scoremap is no longer in service.</strong>{' '}
           Connections to external school systems have been permanently removed, and all
-          related servers have been shut down. What remains is an offline demo using fictional data.
+          related servers have been shut down. What remains is an offline demo using fictional data.{' '}
+          <Link
+            to="/shutdown"
+            style={{
+              color: 'inherit',
+              fontWeight: 500,
+              textDecoration: 'underline',
+              textUnderlineOffset: 3,
+            }}
+          >
+            Learn more
+          </Link>
         </div>
       </section>
 

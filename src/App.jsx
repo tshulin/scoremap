@@ -10,6 +10,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { hasDemo } from './data/api.js';
 import { useSyncStatus } from './data/SyncProvider.jsx';
 import Landing from './pages/Landing.jsx';
+import Shutdown from './pages/Shutdown.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import ClassDetail from './pages/ClassDetail.jsx';
 import Attendance from './pages/Attendance.jsx';
@@ -30,6 +31,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
+      <Route path="/shutdown" element={<Shutdown />} />
       <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
       <Route path="/grades/:classId" element={<RequireAuth><ClassDetail /></RequireAuth>} />
       <Route path="/attendance" element={<RequireAuth><Attendance /></RequireAuth>} />

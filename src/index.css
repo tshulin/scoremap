@@ -16,6 +16,86 @@ body {
   font-family: var(--font-sans);
 }
 
+/* Retirement announcement linked from the landing-page service notice. */
+.gm-shutdown-page {
+  min-height: 100vh;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+}
+
+.gm-shutdown-header {
+  width: min(720px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 36px 0 28px;
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.gm-shutdown-wordmark {
+  display: inline-flex;
+  color: var(--color-ink);
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  text-decoration: none;
+}
+
+.gm-shutdown-article {
+  width: min(720px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 72px 0 112px;
+}
+
+.gm-shutdown-article h1 {
+  margin: 0 0 12px;
+  font-size: clamp(38px, 7vw, 64px);
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+}
+
+.gm-shutdown-article time {
+  display: block;
+  margin-bottom: 52px;
+  color: var(--color-muted);
+  font-size: 15px;
+}
+
+.gm-shutdown-article h2 {
+  margin: 52px 0 18px;
+  font-size: 25px;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+}
+
+.gm-shutdown-article p {
+  margin: 0 0 24px;
+  color: var(--color-body);
+  font-size: 17px;
+  line-height: 1.75;
+}
+
+.gm-shutdown-article strong {
+  color: var(--color-ink);
+}
+
+.gm-shutdown-article .gm-shutdown-thanks {
+  margin-top: 56px;
+  font-size: 19px;
+}
+
+@media (max-width: 600px) {
+  .gm-shutdown-header {
+    padding-top: 28px;
+  }
+
+  .gm-shutdown-article {
+    padding: 52px 0 80px;
+  }
+
+  .gm-shutdown-article time {
+    margin-bottom: 40px;
+  }
+}
+
 /* ---- Dark theme (default) - the original Scoremap dark palette ----
    Values match the design-system defaults (_ds/tokens/colors.css); the
    purpose tokens map them onto the same knobs the light theme drives, so
