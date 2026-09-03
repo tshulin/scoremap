@@ -1,0 +1,23 @@
+node_modules
+dist
+.DS_Store
+*.local
+
+# Plans, notes and other docs stay local (scripts/plans/); only READMEs are tracked.
+plans/
+*.md
+!README.md
+
+# Raw student-record captures contain personal data (names, IDs, grades). Never commit.
+captures/
+
+# Local environment files holding secrets or session material.
+.env
+.env.local
+
+# SSH keys for the VPS partner account. Never commit.
+local/partner-access/
+
+/design_handoff_grademax/
+/tmp/
+/public/local-testing/

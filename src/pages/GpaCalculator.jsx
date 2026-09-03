@@ -1,0 +1,99 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { GPA_GRADES, isWeightedCourseName, projectCumulativeGpa, semesterGpa, toGpaGrade } from '../calc/index';
+import Sidebar from '../components/Sidebar.jsx';
+import { useClasses } from '../data/SyncProvider.jsx';
+import { courseDisplayName, useCourseNameOverrides } from '../data/courseNameOverrides.js';
+import './GpaCalculator.css';
+
+const STORAGE_KEY = 'grademax-gpa-calculator-v1';
+const BASELINE_KEY = 'scoremap-cumulative-gpa-baseline-v1';
+let sequence = 0;
+const newCourse = () => ({ id: `gpa-${Date.now()}-${sequence++}`, name: '', grade: 'A', weighted: false, credits: 5 });
+const defaultCourses = () => Array.from({ length: 6 }, newCourse);
+const loadCourses = () => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (!Array.isArray(saved) || !saved.length) return defaultCourses();
+    return saved.filter((c) => c && GPA_GRADES.includes(c.grade)).map((c) => ({
+      id: c.id || newCourse().id, name: c.name || '', grade: c.grade,
+      weighted: c.weighted === true, credits: Number(c.credits) > 0 ? Number(c.credits) : 5,
+    }));
+  } catch { return defaultCourses(); }
+};
+const loadBaseline = () => {
+  try {
+    const value = JSON.parse(localStorage.getItem(BASELINE_KEY));
+    return { unweighted: value?.unweighted ?? '', weighted: value?.weighted ?? '', credits: value?.credits ?? '' };
+  } catch { return { unweighted: '', weighted: '', credits: '' }; }
+};
+const format = (value) => value == null || !Number.isFinite(value) ? 'N/A' : value.toFixed(2);
+const formatChange = (value) => {
+  if (value == null || !Number.isFinite(value)) return '';
+  if (Math.abs(value) < 0.005) return 'No change';
+  return `${value > 0 ? '+' : ''}${value.toFixed(2)}`;
+};
+export default function GpaCalculator() {
+  const [courses, setCourses] = useState(loadCourses);
+  const [baseline, setBaseline] = useState(loadBaseline);
+  const classes = useClasses();
+  const { overrides: courseNameOverrides } = useCourseNameOverrides();
+  useEffect(() => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(courses)); } catch {} }, [courses]);
+  useEffect(() => { try { localStorage.setItem(BASELINE_KEY, JSON.stringify(baseline)); } catch {} }, [baseline]);
+
+  const importable = useMemo(() => (classes || []).map((c) => ({
+    name: courseDisplayName(c, courseNameOverrides), grade: toGpaGrade(c.grade || ''), weighted: isWeightedCourseName(c.name || ''), credits: 5,
+  })).filter((c) => c.grade), [classes, courseNameOverrides]);
+  const semester = useMemo(() => semesterGpa(courses), [courses]);
+  const historical = {
+    unweighted: Number(baseline.unweighted), weighted: Number(baseline.weighted), credits: Number(baseline.credits),
+  };
+  const projection = useMemo(() => projectCumulativeGpa(courses, historical), [courses, baseline]);
+
+  const updateCourse = (id, field, value) => setCourses((all) => all.map((c) => c.id === id ? { ...c, [field]: value } : c));
+
+  return <div className="gpa-page">
+    <Sidebar />
+    <main className="gpa-main"><div className="gpa-shell">
+      <header className="gpa-header"><div><h1>GPA calculator</h1><p>See how this semester could affect your cumulative GPA.</p></div></header>
+
+      <section className="gpa-baseline-card">
+        <div className="gpa-card-heading"><div><h2>Cumulative GPA starting point</h2><p>Enter your current GPA and completed credits manually.</p></div></div>
+        <div className="gpa-baseline-fields">
+          <label>Current unweighted GPA<input type="number" min="0" max="5" step="0.01" value={baseline.unweighted} onChange={(e) => setBaseline({ ...baseline, unweighted: e.target.value })} /></label>
+          <label>Current weighted GPA<input type="number" min="0" max="5" step="0.01" value={baseline.weighted} onChange={(e) => setBaseline({ ...baseline, weighted: e.target.value })} /></label>
+          <label>Completed credits<input type="number" min="0" step="0.5" value={baseline.credits} onChange={(e) => setBaseline({ ...baseline, credits: e.target.value })} /></label>
+        </div>
+      </section>
+
+      <div className="gpa-layout">
+        <section className="gpa-course-card">
+          <div className="gpa-card-heading"><div><h2>Current semester</h2><p>{courses.length} courses</p></div>
+            <div className="gpa-heading-actions">
+              <button className="gpa-add-button" onClick={() => setCourses((all) => [...all, newCourse()])}>Add course</button>
+              <button className="gpa-add-button gpa-import-button" disabled={!importable.length} onClick={() => setCourses(importable.map((c) => ({ ...newCourse(), ...c })))}>Import current grades</button>
+            </div>
+          </div>
+          <div className="gpa-table">
+            <div className="gpa-table-header"><span>Course</span><span>Grade</span><span>Type</span><span>Credits</span><span>Remove</span></div>
+            {courses.map((course) => <div className="gpa-course-row" key={course.id}>
+              <input aria-label="Course name" value={course.name} placeholder="Course name" onChange={(e) => updateCourse(course.id, 'name', e.target.value)} />
+              <select aria-label="Grade" value={course.grade} onChange={(e) => updateCourse(course.id, 'grade', e.target.value)}>{GPA_GRADES.map((g) => <option key={g}>{g}</option>)}</select>
+              <select aria-label="Course type" value={course.weighted ? 'weighted' : 'regular'} onChange={(e) => updateCourse(course.id, 'weighted', e.target.value === 'weighted')}><option value="regular">Unweighted</option><option value="weighted">Weighted</option></select>
+              <input aria-label="Credits" type="number" min="0.5" step="0.5" value={course.credits} onChange={(e) => updateCourse(course.id, 'credits', Number(e.target.value))} />
+              <button className="gpa-remove-button" aria-label="Remove course" onClick={() => setCourses((all) => all.length > 1 ? all.filter((c) => c.id !== course.id) : all)}>×</button>
+            </div>)}
+          </div>
+        </section>
+        <aside className="gpa-summary-card">
+          <div className="gpa-summary-block"><span>Semester unweighted</span><strong>{format(semester?.unweighted)}</strong></div>
+          <div className="gpa-summary-divider" />
+          <div className="gpa-summary-block"><span>Semester weighted</span><strong>{format(semester?.weighted)}</strong></div>
+          <div className="gpa-summary-divider" />
+          <div className="gpa-summary-block"><span>Projected cumulative unweighted</span><strong>{format(projection?.projected.unweighted)}</strong>{projection && <small>{formatChange(projection.projected.unweighted - historical.unweighted)} from {format(historical.unweighted)}</small>}</div>
+          <div className="gpa-summary-divider" />
+          <div className="gpa-summary-block"><span>Projected cumulative weighted</span><strong>{format(projection?.projected.weighted)}</strong>{projection && <small>{formatChange(projection.projected.weighted - historical.weighted)} from {format(historical.weighted)}</small>}</div>
+        </aside>
+      </div>
+    </div></main>
+  </div>;
+}

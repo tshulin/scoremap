@@ -1,0 +1,13 @@
+# Scoremap - https://www.scoremap.org
+# The retired demo is public; deeper routes are omitted from search results.
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /grades/
+Disallow: /attendance
+Disallow: /documents
+Disallow: /gpa-calculator
+Disallow: /mail
+Disallow: /feedback
+
+Sitemap: https://www.scoremap.org/sitemap.xml
