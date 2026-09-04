@@ -352,10 +352,13 @@ function Landing() {
         >
           <strong>Scoremap is no longer in service.</strong>{' '}
           Connections to external school systems have been permanently removed, and all
-          related servers have been shut down. What remains is an offline demo using fictional data.{' '}
+          related servers have been shut down. What remains is an offline demo using fictional data.
           <Link
             to="/shutdown"
             style={{
+              display: 'block',
+              width: 'fit-content',
+              margin: '6px auto 0',
               color: 'inherit',
               fontWeight: 500,
               textDecoration: 'underline',
