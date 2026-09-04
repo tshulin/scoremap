@@ -36,13 +36,13 @@ function Shutdown() {
         <h2>Why is Scoremap shutting down?</h2>
 
         <p>
-          Edupoint Educational Systems, the company behind the student information systems used by
-          the districts Scoremap supported, contacted us and asked us to stop accessing its systems.
+          The provider behind the school information systems used by the districts Scoremap
+          supported contacted us and asked us to stop accessing its systems.
         </p>
 
         <p>
           Although Scoremap was designed to keep student credentials and records out of our servers,
-          Edupoint&apos;s position is that third-party applications are not authorized to connect to its
+          the provider&apos;s position is that third-party applications are not authorized to connect to its
           systems using student credentials.
         </p>
 
