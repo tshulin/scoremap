@@ -25,6 +25,11 @@ import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, GitHubIcon, MoonIco
 
 const GITHUB_REPO_URL = 'https://github.com/tshulin/scoremap';
 
+// Bump when the screenshots in public/landing/ change: the images are cached
+// for hours under the same file names, so a new query string makes browsers
+// fetch the new captures instead of showing stale ones.
+const LANDING_VERSION = '2026-09-13';
+
 // One entry per screenshot in public/landing/ ({key}-dark.png / {key}-light.png).
 const SLIDES = [
   {
@@ -157,7 +162,7 @@ function ShowcaseCarousel() {
       for (const s of SLIDES) {
         for (const suffix of ['', '-left', '-right']) {
           const img = new Image();
-          img.src = `${base}landing/${s.key}-${theme}${suffix}.png`;
+          img.src = `${base}landing/${s.key}-${theme}${suffix}.png?v=${LANDING_VERSION}`;
         }
       }
     }, 1200);
@@ -189,7 +194,7 @@ function ShowcaseCarousel() {
             }}
           >
             <img
-              src={`${base}landing/${leftSlide.key}-${theme}-left.png`}
+              src={`${base}landing/${leftSlide.key}-${theme}-left.png?v=${LANDING_VERSION}`}
               alt=""
               aria-hidden="true"
               draggable="false"
@@ -197,7 +202,7 @@ function ShowcaseCarousel() {
             />
           </button>
           <img
-            src={`${base}landing/${active.key}-${theme}.png`}
+            src={`${base}landing/${active.key}-${theme}.png?v=${LANDING_VERSION}`}
             alt={`Scoremap - ${active.title}`}
             style={{
               width: SLIDE_W,
@@ -224,7 +229,7 @@ function ShowcaseCarousel() {
             }}
           >
             <img
-              src={`${base}landing/${rightSlide.key}-${theme}-right.png`}
+              src={`${base}landing/${rightSlide.key}-${theme}-right.png?v=${LANDING_VERSION}`}
               alt=""
               aria-hidden="true"
               draggable="false"
