@@ -17,10 +17,10 @@ const ANGLE = 59; // degrees the panel turns away from the viewer
 const PERSPECTIVE = 907; // px, relative to the 800px-wide slide below
 
 const SLIDE_W = 800;
-const SLIDE_H = Math.round((SLIDE_W * 752) / 1140);
-const SCALE = 4;
-const BOX_W = 244; // 976px at 4x
-const BOX_H = 536.75; // 2147px at 4x
+const SLIDE_H = Math.round((SLIDE_W * 1880) / 2850);
+const SCALE = 2.5;
+const BOX_W = 244; // 610px at 2.5x
+const BOX_H = 536.8; // 1342px at 2.5x
 const PAD = 2;
 
 // --color-hairline-strong for each theme (src/index.css).

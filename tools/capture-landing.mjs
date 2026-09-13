@@ -12,10 +12,9 @@ import { LANDING_DIR, bakeSides, launchBrowser } from './bake-landing-sides.mjs'
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const THEMES = process.argv.length > 2 ? process.argv.slice(2) : ['light', 'dark'];
 
-// 1140x752 is the zoom the gallery was designed around; at 4x the captures
-// are 4560x3008, sharp even on high-density displays.
+// 1140x752 at 2.5x = 2850x1880, the size and zoom the gallery was designed around.
 const VIEWPORT = { width: 1140, height: 752 };
-const SCALE = 4;
+const SCALE = 2.5;
 // A fixed clock keeps the greeting, "Last updated" time and attendance month stable.
 const CLOCK = new Date('2026-08-11T13:17:00');
 
