@@ -69,7 +69,10 @@ const SIDE_H = Math.round((SLIDE_W * 950) / 1440);
 // underneath. Advances on a timer, pauses while hovered, and can be driven
 // by the arrows or dots.
 //
-// Side panels reuse the same sanitized fictional screenshots as the center.
+// The side panels are PRE-BAKED PNGs ({key}-{theme}-left/right.png, made by
+// a capture script): the perspective tilt, the outer-edge fade-out, and the
+// rounded border are rendered once into the file, so the live page
+// composites three plain images - no 3D transforms or filters taxing the GPU.
 function ShowcaseCarousel() {
   // Monotonic, deliberately never wrapped: the angle just keeps growing, so
   // the ring always turns the direction you asked instead of unwinding.
@@ -152,8 +155,10 @@ function ShowcaseCarousel() {
   React.useEffect(() => {
     const timer = setTimeout(() => {
       for (const s of SLIDES) {
-        const img = new Image();
-        img.src = `${base}landing/${s.key}-${theme}.png`;
+        for (const suffix of ['', '-left', '-right']) {
+          const img = new Image();
+          img.src = `${base}landing/${s.key}-${theme}${suffix}.png`;
+        }
       }
     }, 1200);
     return () => clearTimeout(timer);
@@ -174,7 +179,7 @@ function ShowcaseCarousel() {
             onClick={() => step(-1)}
             style={{
               height: SIDE_H,
-              width: 360,
+              width: 'auto',
               flexShrink: 0,
               padding: 0,
               border: 0,
@@ -184,22 +189,11 @@ function ShowcaseCarousel() {
             }}
           >
             <img
-              src={`${base}landing/${leftSlide.key}-${theme}.png`}
+              src={`${base}landing/${leftSlide.key}-${theme}-left.png`}
               alt=""
               aria-hidden="true"
               draggable="false"
-              style={{
-                height: '100%',
-                width: '100%',
-                objectFit: 'cover',
-                objectPosition: 'right center',
-                display: 'block',
-                borderRadius: 'var(--radius-xl)',
-                border: '1px solid var(--color-hairline-strong)',
-                opacity: 0.55,
-                transform: 'perspective(900px) rotateY(18deg)',
-                transformOrigin: 'right center',
-              }}
+              style={{ height: '100%', width: 'auto', display: 'block' }}
             />
           </button>
           <img
@@ -220,7 +214,7 @@ function ShowcaseCarousel() {
             onClick={() => step(1)}
             style={{
               height: SIDE_H,
-              width: 360,
+              width: 'auto',
               flexShrink: 0,
               padding: 0,
               border: 0,
@@ -230,22 +224,11 @@ function ShowcaseCarousel() {
             }}
           >
             <img
-              src={`${base}landing/${rightSlide.key}-${theme}.png`}
+              src={`${base}landing/${rightSlide.key}-${theme}-right.png`}
               alt=""
               aria-hidden="true"
               draggable="false"
-              style={{
-                height: '100%',
-                width: '100%',
-                objectFit: 'cover',
-                objectPosition: 'left center',
-                display: 'block',
-                borderRadius: 'var(--radius-xl)',
-                border: '1px solid var(--color-hairline-strong)',
-                opacity: 0.55,
-                transform: 'perspective(900px) rotateY(-18deg)',
-                transformOrigin: 'left center',
-              }}
+              style={{ height: '100%', width: 'auto', display: 'block' }}
             />
           </button>
         </div>
